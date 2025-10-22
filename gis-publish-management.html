@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS发布管理 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-globe-asia text-green-500 mr-2"></i>
+                GIS发布管理
+            </h1>
+            <p class="text-gray-600 mt-2">管理GIS地图的发布与共享</p>
+        </div>
+
+        <!-- 发布操作栏 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="搜索发布的地图..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>全部状态</option>
+                        <option>已发布</option>
+                        <option>草稿</option>
+                        <option>已下线</option>
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-plus mr-1"></i> 新建发布
+                    </button>
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-sync-alt mr-1"></i> 同步数据
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地图发布列表 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">地图名称</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目关联</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发布者</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">发布时间</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">访问权限</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">广州至深圳高速征地图</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广州至深圳高速公路项目</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">张伟</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-15 10:30</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">公开</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已发布
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-yellow-500 hover:text-yellow-700 mr-3">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">广州南站扩建征地图</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广州南站扩建项目</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">李娜</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-18 14:20</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">内部</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已发布
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-yellow-500 hover:text-yellow-700 mr-3">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">白云机场连接线征地图</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">白云机场高速连接线</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">王军</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-20 09:45</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">公开</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    草稿
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-yellow-500 hover:text-yellow-700 mr-3">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">广州北二环扩建征地图</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广州北二环高速扩建</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">陈明</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-22 16:10</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">内部</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    已下线
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-yellow-500 hover:text-yellow-700 mr-3">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="flex items-center justify-between mt-6">
+                <div class="text-sm text-gray-700">
+                    显示第 1 到 4 条记录，共 16 条记录
+                </div>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="px-3 py-1 rounded-lg bg-blue-500 text-white">1</button>
+                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">...</button>
+                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 发布统计 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">总发布数</p>
+                        <h3 class="text-3xl font-bold mt-2">24</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-map text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">已发布</p>
+                        <h3 class="text-3xl font-bold mt-2">18</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">草稿</p>
+                        <h3 class="text-3xl font-bold mt-2">4</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-edit text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">已下线</p>
+                        <h3 class="text-3xl font-bold mt-2">2</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-times-circle text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 发布设置 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">发布设置</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">默认访问权限</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>公开</option>
+                            <option>内部</option>
+                            <option>私有</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">自动同步时间</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>每天</option>
+                            <option>每周</option>
+                            <option>每月</option>
+                            <option>不自动同步</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">水印设置</label>
+                        <div class="flex items-center">
+                            <input type="checkbox" class="h-4 w-4 text-blue-600 rounded mr-2">
+                            <span>启用地图水印</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">版权信息</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="© 2023 高速公路征地拆迁管理系统">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
+                    保存设置
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./gis/publish-management.js"></script>
+</body>
+</html>

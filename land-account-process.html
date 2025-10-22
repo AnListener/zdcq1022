@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征地台账业务流程 - 征拆管理系统</title>
+    <link href="https://unpkg.com/tailwindcss@3.2.4/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.0.0/dist/framer-motion.min.js"></script>
+    <style>
+        /* 页面基础样式 */
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 便当盒网格布局 */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* 卡片样式 */
+        .bento-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        /* 渐变背景 */
+        .gradient-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        /* 流程图容器样式 */
+        .flow-chart-container {
+            height: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 标题样式 */
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 2px;
+        }
+
+        /* 步骤卡片样式 */
+        .step-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .step-card:hover {
+            border-left-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
+        /* 动画延迟类 */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .flow-chart-container {
+                height: 400px;
+            }
+        }
+
+        /* 工具提示样式 */
+        .tooltip-custom {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-custom .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+
+        .tooltip-custom .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip-custom:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 高亮样式 */
+        .highlight {
+            background: linear-gradient(120deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 8px;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <!-- 页面标题 -->
+    <div class="mb-8">
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            class="flex items-center"
+        >
+            <i class="fas fa-project-diagram text-3xl text-blue-500 mr-3"></i>
+            <h1 class="text-3xl font-bold text-gray-800">征地台账业务流程</h1>
+        </motion.div>
+        <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            class="text-gray-600 mt-3 text-lg"
+        >
+            全面了解征地台账的完整业务流程、关键环节和操作规范
+        </motion.p>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto">
+        <!-- 流程图总览 -->
+        <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            class="mb-12"
+        >
+            <h2 class="text-2xl font-bold text-gray-800 section-title">流程总览</h2>
+            <div class="flow-chart-container" id="mainFlowChart"></div>
+        </motion.section>
+
+        <!-- 统计概览卡片 -->
+        <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            class="mb-12"
+        >
+            <h2 class="text-2xl font-bold text-gray-800 section-title">流程关键指标</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- 流程环节总数 -->
+                <div class="bento-card p-6 gradient-blue text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-lg">流程环节总数</h3>
+                        <i class="fas fa-list-ol text-2xl opacity-80"></i>
+                    </div>
+                    <p class="text-4xl font-bold mb-2">12</p>
+                    <p class="text-sm opacity-90">完整征地台账流程包含的环节数</p>
+                </div>
+                
+                <!-- 平均处理时长 -->
+                <div class="bento-card p-6 gradient-green text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-lg">平均处理时长</h3>
+                        <i class="fas fa-clock text-2xl opacity-80"></i>
+                    </div>
+                    <p class="text-4xl font-bold mb-2">35天</p>
+                    <p class="text-sm opacity-90">从开始到完成的平均周期</p>
+                </div>
+                
+                <!-- 审批节点数 -->
+                <div class="bento-card p-6 gradient-purple text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-lg">审批节点数</h3>
+                        <i class="fas fa-clipboard-check text-2xl opacity-80"></i>
+                    </div>
+                    <p class="text-4xl font-bold mb-2">5</p>
+                    <p class="text-sm opacity-90">流程中需要审核的关键节点</p>
+                </div>
+                
+                <!-- 数据关联模块 -->
+                <div class="bento-card p-6 bg-gradient-to-br from-orange-500 to-amber-500 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-lg">关联模块数</h3>
+                        <i class="fas fa-plug text-2xl opacity-80"></i>
+                    </div>
+                    <p class="text-4xl font-bold mb-2">4</p>
+                    <p class="text-sm opacity-90">与征地台账相关联的系统模块</p>
+                </div>
+            </div>
+        </motion.section>
+
+        <!-- 流程详情说明 -->
+        <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            class="mb-12"
+        >
+            <h2 class="text-2xl font-bold text-gray-800 section-title">流程详细说明</h2>
+            
+            <!-- 步骤卡片组 -->
+            <div class="space-y-5">
+                <!-- 步骤1 -->
+                <motion.div 
+                    class="bento-card p-6 step-card"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                >
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4 flex-shrink-0">
+                            <span class="block text-blue-600 font-bold text-lg">1</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">项目立项与前期准备</h3>
+                            <p class="text-gray-600 mb-4">根据高速公路建设规划，确定征地范围，制定征地计划，成立征地工作小组。</p>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">项目规划</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">范围确定</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">计划制定</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-users mr-1"></i> 责任部门：<span class="text-blue-600">项目管理部</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <!-- 步骤2 -->
+                <motion.div 
+                    class="bento-card p-6 step-card"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                >
+                    <div class="flex items-start">
+                        <div class="bg-green-100 rounded-full p-3 mr-4 flex-shrink-0">
+                            <span class="block text-green-600 font-bold text-lg">2</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">土地调查与测量</h3>
+                            <p class="text-gray-600 mb-4">对征地范围内的土地进行实地调查和测量，记录土地面积、权属、地类等基础信息。</p>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">实地测量</span>
+                                <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">权属调查</span>
+                                <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">数据记录</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-map mr-1"></i> 责任部门：<span class="text-green-600">GIS测量部</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <!-- 步骤3 -->
+                <motion.div 
+                    class="bento-card p-6 step-card"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                >
+                    <div class="flex items-start">
+                        <div class="bg-purple-100 rounded-full p-3 mr-4 flex-shrink-0">
+                            <span class="block text-purple-600 font-bold text-lg">3</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">台账数据录入</h3>
+                            <p class="text-gray-600 mb-4">将测量得到的土地信息录入征地台账系统，包括地块编号、权属单位/人、土地性质、面积等。</p>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">数据录入</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">信息核对</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">台账创建</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-keyboard mr-1"></i> 责任部门：<span class="text-purple-600">数据管理部</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <!-- 步骤4 -->
+                <motion.div 
+                    class="bento-card p-6 step-card"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                >
+                    <div class="flex items-start">
+                        <div class="bg-amber-100 rounded-full p-3 mr-4 flex-shrink-0">
+                            <span class="block text-amber-600 font-bold text-lg">4</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">补偿标准核定</h3>
+                            <p class="text-gray-600 mb-4">根据土地性质、地理位置等因素，按照相关政策法规，确定补偿标准和金额。</p>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-amber-100 text-amber-800 text-xs px-3 py-1 rounded-full">标准制定</span>
+                                <span class="bg-amber-100 text-amber-800 text-xs px-3 py-1 rounded-full">金额计算</span>
+                                <span class="bg-amber-100 text-amber-800 text-xs px-3 py-1 rounded-full">政策依据</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-calculator mr-1"></i> 责任部门：<span class="text-amber-600">成本核算部</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <!-- 步骤5-12 可以根据实际情况继续添加 -->
+            </div>
+        </motion.section>
+
+        <!-- 关键节点和文档 -->
+        <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+        >
+            <h2 class="text-2xl font-bold text-gray-800 section-title">关键节点与相关文档</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 关键节点 -->
+                <div class="bento-card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-flag-checkered text-red-500 mr-2"></i>
+                        关键控制点
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <div class="bg-red-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-800">权属确认</span>
+                                <p class="text-sm text-gray-600">必须确保土地权属清晰，避免后续纠纷</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-red-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-800">面积测量</span>
+                                <p class="text-sm text-gray-600">测量数据必须准确，是补偿金额计算的基础</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-red-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-800">补偿审核</span>
+                                <p class="text-sm text-gray-600">补偿标准和金额必须经过多级审核确认</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-red-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-800">协议签署</span>
+                                <p class="text-sm text-gray-600">确保所有相关方签署补偿协议</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 相关文档 -->
+                <div class="bento-card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                        相关法规与文档
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-external-link-alt text-blue-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <a href="#" class="font-medium text-blue-600 hover:text-blue-800">《土地管理法》</a>
+                                <p class="text-sm text-gray-600">国家层面的土地管理基本法律</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-external-link-alt text-blue-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <a href="#" class="font-medium text-blue-600 hover:text-blue-800">《征收土地公告办法》</a>
+                                <p class="text-sm text-gray-600">规范征地公告程序的法规</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-external-link-alt text-blue-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <a href="#" class="font-medium text-blue-600 hover:text-blue-800">《高速公路建设征地拆迁补偿标准》</a>
+                                <p class="text-sm text-gray-600">行业特定的补偿标准文件</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 rounded-full p-1 mt-1 mr-3 flex-shrink-0">
+                                <i class="fas fa-external-link-alt text-blue-500 text-xs"></i>
+                            </div>
+                            <div>
+                                <a href="#" class="font-medium text-blue-600 hover:text-blue-800">《征地台账管理规范》</a>
+                                <p class="text-sm text-gray-600">内部管理规范文件</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </motion.section>
+    </div>
+
+    <!-- 流程图JS -->
+    <script>
+        // 初始化主流程图
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取图表容器
+            const chartContainer = document.getElementById('mainFlowChart');
+            
+            // 初始化ECharts实例
+            const myChart = echarts.init(chartContainer);
+            
+            // 流程图配置
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}'
+                },
+                legend: {
+                    top: '5%',
+                    left: 'center',
+                    data: ['流程环节', '审批节点', '完成状态', '进行中', '待处理']
+                },
+                series: [{
+                    name: '征地台账业务流程',
+                    type: 'sankey',
+                    left: 50,
+                    top: 60,
+                    right: 150,
+                    bottom: 25,
+                    data: [
+                        { name: '项目立项' },
+                        { name: '土地调查' },
+                        { name: '数据录入' },
+                        { name: '补偿标准核定' },
+                        { name: '第一次审核' },
+                        { name: '协议签署' },
+                        { name: '第二次审核' },
+                        { name: '资金拨付' },
+                        { name: '补偿支付' },
+                        { name: '第三次审核' },
+                        { name: '台账归档' },
+                        { name: '流程完成' }
+                    ],
+                    links: [
+                        { source: '项目立项', target: '土地调查', value: 1 },
+                        { source: '土地调查', target: '数据录入', value: 1 },
+                        { source: '数据录入', target: '补偿标准核定', value: 1 },
+                        { source: '补偿标准核定', target: '第一次审核', value: 1 },
+                        { source: '第一次审核', target: '协议签署', value: 1 },
+                        { source: '协议签署', target: '第二次审核', value: 1 },
+                        { source: '第二次审核', target: '资金拨付', value: 1 },
+                        { source: '资金拨付', target: '补偿支付', value: 1 },
+                        { source: '补偿支付', target: '第三次审核', value: 1 },
+                        { source: '第三次审核', target: '台账归档', value: 1 },
+                        { source: '台账归档', target: '流程完成', value: 1 }
+                    ],
+                    lineStyle: {
+                        color: 'gradient',
+                        curveness: 0.5
+                    },
+                    itemStyle: {
+                        color: function(params) {
+                            // 根据节点名称设置不同颜色
+                            const colors = {
+                                '项目立项': '#3b82f6',
+                                '土地调查': '#10b981',
+                                '数据录入': '#8b5cf6',
+                                '补偿标准核定': '#f59e0b',
+                                '第一次审核': '#ef4444',
+                                '协议签署': '#ec4899',
+                                '第二次审核': '#ef4444',
+                                '资金拨付': '#06b6d4',
+                                '补偿支付': '#14b8a6',
+                                '第三次审核': '#ef4444',
+                                '台账归档': '#6366f1',
+                                '流程完成': '#22c55e'
+                            };
+                            return colors[params.name] || '#6b7280';
+                        },
+                        borderWidth: 1,
+                        borderColor: '#fff',
+                        shadowBlur: 5,
+                        shadowColor: 'rgba(0, 0, 0, 0.2)'
+                    },
+                    label: {
+                        color: '#333',
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        position: 'right'
+                    },
+                    emphasis: {
+                        focus: 'adjacency'
+                    }
+                }]
+            };
+            
+            // 设置图表配置
+            myChart.setOption(option);
+            
+            // 响应式处理
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+            
+            // 添加点击事件，可以跳转到相应的功能页面
+            myChart.on('click', function(params) {
+                console.log('点击了节点:', params.name);
+                // 这里可以根据需要添加跳转逻辑
+            });
+        });
+
+        // 使用Framer Motion为页面元素添加滚动动画效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取所有需要添加滚动动画的元素
+            const animatedElements = document.querySelectorAll('.bento-card, .step-card');
+            
+            // 创建滚动动画控制器
+            const controls = {
+                hidden: { opacity: 0, y: 50 },
+                visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                        duration: 0.8,
+                        ease: [0.22, 1, 0.36, 1]
+                    }
+                }
+            };
+            
+            // 为每个元素创建动画
+            animatedElements.forEach((el, index) => {
+                // 使用Framer Motion的ScrollTrigger效果
+                el.classList.add('motion-initialized');
+                
+                // 使用Intersection Observer实现滚动触发动画
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                // 添加延迟，使动画更有层次感
+                                setTimeout(() => {
+                                    el.style.opacity = '1';
+                                    el.style.transform = 'translateY(0)';
+                                    el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                                }, index * 100);
+                                observer.unobserve(el);
+                            }
+                        });
+                    },
+                    {
+                        threshold: 0.1
+                    }
+                );
+                
+                // 初始状态
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(50px)';
+                
+                // 开始观察
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测绘数据管理 - GIS管理 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        /* 自定义样式 */
+        .content-auto {
+            content-visibility: auto;
+        }
+        
+        .tab-active {
+            color: #10b981;
+            border-bottom: 2px solid #10b981;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .gradient-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .gradient-yellow {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .gradient-red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="h-screen">
+        <!-- 主内容区域 - 自适应整个宽度 -->
+        <div id="main-content" class="w-full p-6 h-[calc(100vh-4rem)] overflow-y-auto transition-all duration-300">
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-database text-blue-500 mr-2"></i>
+                    测绘数据管理
+                </h1>
+                <p class="text-gray-600 mt-2">管理征地拆迁相关的测绘数据</p>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="gradient-blue rounded-xl shadow-lg p-6 text-white stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-80">总数据量</p>
+                            <h3 class="text-2xl font-bold mt-2">128</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-database text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gradient-green rounded-xl shadow-lg p-6 text-white stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-80">已审核</p>
+                            <h3 class="text-2xl font-bold mt-2">96</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gradient-yellow rounded-xl shadow-lg p-6 text-white stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-80">待审核</p>
+                            <h3 class="text-2xl font-bold mt-2">24</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-clock text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gradient-red rounded-xl shadow-lg p-6 text-white stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-80">已驳回</p>
+                            <h3 class="text-2xl font-bold mt-2">8</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-times-circle text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标签页导航 -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="tab-data-management" class="tab-active px-6 py-3 font-medium text-gray-700 hover:text-green-600 transition-colors">
+                    <i class="fas fa-table mr-2"></i>数据管理
+                </button>
+                <button id="tab-upload-data" class="px-6 py-3 font-medium text-gray-700 hover:text-green-600 transition-colors">
+                    <i class="fas fa-upload mr-2"></i>上传数据
+                </button>
+                <button id="tab-verification" class="px-6 py-3 font-medium text-gray-700 hover:text-green-600 transition-colors">
+                    <i class="fas fa-clipboard-check mr-2"></i>校验中心
+                </button>
+                <button id="tab-push-ledger" class="px-6 py-3 font-medium text-gray-700 hover:text-green-600 transition-colors">
+                    <i class="fas fa-paper-plane mr-2"></i>推送台账
+                </button>
+            </div>
+
+            <!-- 数据管理标签页内容 (默认显示) -->
+            <div id="tab-content-data-management" class="bg-white rounded-b-xl shadow-lg p-6 mb-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- 使用flex布局将区域树和内容并排显示 -->
+                <div class="flex gap-6">
+                    <!-- 左侧区域树 -->
+                    <div class="w-64 bg-gray-50 rounded-lg p-4 h-full flex-shrink-0">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold text-gray-800">区域筛选</h3>
+                            <button id="refresh-data-tree-btn" class="text-gray-500 hover:text-gray-700 text-sm">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 区域树搜索 -->
+                        <div class="relative mb-4">
+                            <input type="text" id="data-tree-search" placeholder="搜索区域..." class="w-full pl-8 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <i class="fas fa-search absolute left-2 top-2 text-gray-400 text-xs"></i>
+                        </div>
+                        
+                        <!-- 区域树结构 -->
+                        <div id="data-area-tree" class="text-sm">
+                            <ul class="space-y-1">
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2 text-xs"></i>
+                                        <span class="font-medium">广西壮族自治区</span>
+                                    </div>
+                                    <ul class="ml-6 mt-1 space-y-1">
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">柳州市</span>
+                                            </div>
+                                            <ul class="ml-6 mt-1 space-y-1">
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer data-tree-node active">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>融水县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">24</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer data-tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>柳城县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">18</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer data-tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>鹿寨县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">12</span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">南宁市</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2 text-xs"></i>
+                                        <span class="font-medium">湖南省</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 数据说明 -->
+                        <div class="mt-4 text-xs text-gray-600 bg-blue-50 p-2 rounded">
+                            <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                            选择区域后，仅显示该区域的测绘数据
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧内容区域 -->
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-6">
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                                    <div class="relative">
+                                        <input type="text" placeholder="搜索数据..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                    </div>
+                                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option>全部状态</option>
+                                        <option>已审核</option>
+                                        <option>待审核</option>
+                                        <option>已驳回</option>
+                                    </select>
+                                </div>
+                                <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <i class="fas fa-plus mr-1"></i> 新增数据
+                                </button>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">文件名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测绘面积(亩)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传时间</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-001</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">dwg</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">86.3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    <i class="fas fa-check mr-1"></i> 已审核
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-15</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-002</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">shp</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">120.5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-clock mr-1"></i> 待审核
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-16</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-003</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">tiff</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">320.5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    <i class="fas fa-times mr-1"></i> 已驳回
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-17</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-green-500 hover:text-green-700 mr-3">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-6">
+                                <div class="text-sm text-gray-700">
+                                    显示第 1 到 3 条记录，共 24 条记录
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="px-3 py-1 rounded-lg bg-blue-500 text-white">1</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 上传数据标签页内容 (默认隐藏) -->
+            <div id="tab-content-upload-data" class="hidden bg-white rounded-b-xl shadow-lg p-6 mb-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- 使用flex布局将区域树和内容并排显示 -->
+                <div class="flex gap-6">
+                    <!-- 左侧区域树 -->
+                    <div class="w-64 bg-white rounded-xl shadow-lg p-4 h-[calc(100vh-200px)] overflow-y-auto flex-shrink-0">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">区域树</h3>
+                            <button id="refresh-tree-btn" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 区域树搜索 -->
+                        <div class="relative mb-4">
+                            <input type="text" id="tree-search" placeholder="搜索区域..." class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <i class="fas fa-search absolute left-2 top-3 text-gray-400 text-sm"></i>
+                        </div>
+                        
+                        <!-- 区域树结构 -->
+                        <div id="area-tree" class="text-sm">
+                            <ul class="space-y-1">
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2"></i>
+                                        <span class="font-medium">广西壮族自治区</span>
+                                    </div>
+                                    <ul class="ml-6 mt-1 space-y-1">
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle"></i>
+                                                <i class="fas fa-city text-green-500 mr-2"></i>
+                                                <span class="font-medium">柳州市</span>
+                                            </div>
+                                            <ul class="ml-6 mt-1 space-y-1">
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer tree-node active">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                                        <span>融水县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">24</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                                        <span>柳城县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">18</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                                        <span>鹿寨县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">12</span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle"></i>
+                                                <i class="fas fa-city text-green-500 mr-2"></i>
+                                                <span class="font-medium">南宁市</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2"></i>
+                                        <span class="font-medium">湖南省</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 上传按钮 -->
+                        <div class="mt-6">
+                            <button id="upload-by-area-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors flex items-center justify-center">
+                                <i class="fas fa-upload mr-2"></i> 按区域上传
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧内容区域 -->
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">上传数据</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 <span class="text-red-500">*</span></label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <option value="">请选择项目</option>
+                                        <option value="guangzhou-shenzhen">融罗高速项目</option>
+                                        <option value="guangzhou-nanzhan">融罗高速项目</option>
+                                        <option value="baiyun-airport">融罗高速项目</option>
+                                        <option value="beierhuan">融罗高速项目</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">数据类型 <span class="text-red-500">*</span></label>
+                                    <select id="data-type-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <option value="">请选择数据类型</option>
+                                        <option value="dwg">CAD图纸 (dwg)</option>
+                                        <option value="shp">矢量数据 (shp)</option>
+                                        <option value="dat">RTK数据 (dat)</option>
+                                        <option value="tiff">影像数据 (tiff)</option>
+                                        <option value="geojson">轻量矢量 (geojson)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">所属区域 <span class="text-red-500">*</span></label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <option value="">请选择区域</option>
+                                        <option value="guangdong-guangzhou" selected>广西-融水县</option>
+                                        <option value="guangdong-shenzhen">广西-柳城县</option>
+                                        <option value="guangdong-foshan">广西-鹿寨县</option>
+                                        <option value="guangxi-nanning">广西 - 南宁市</option>
+                                        <option value="guangxi-liuzhou">广西 - 柳州市</option>
+                                        <option value="hunan-changsha">湖南-长沙市</option>
+                                        <option value="hunan-yueyang">湖南-岳阳市</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">测绘面积(亩) <span class="text-red-500">*</span></label>
+                                    <input type="number" step="0.01" placeholder="请输入测绘面积" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">数据描述</label>
+                                <textarea placeholder="请输入数据描述" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            
+                            <!-- 文件上传区域 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">文件上传 <span class="text-red-500">*</span></label>
+                                <div id="upload-dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-500 mb-2">拖拽文件到此处或点击上传</p>
+                                    <p class="text-xs text-gray-400 mb-4">支持 dwg, shp, dat, tiff, geojson 格式，大文件(>200MB)将自动启用分片上传</p>
+                                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                        选择文件
+                                    </button>
+                                    <input type="file" class="hidden" accept=".dwg,.shp,.dat,.tiff,.geojson">
+                                </div>
+                            </div>
+                            
+                            <!-- 上传控制按钮 -->
+                            <div class="flex justify-end space-x-4 pt-4">
+                                <button class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                    保存为草稿
+                                </button>
+                                <button id="start-upload-btn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    开始上传
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 校验中心标签页内容 (默认隐藏) -->
+            <div id="tab-content-verification" class="hidden bg-white rounded-b-xl shadow-lg p-6 mb-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- 使用flex布局将区域树和内容并排显示 -->
+                <div class="flex gap-6">
+                    <!-- 左侧区域树 -->
+                    <div class="w-64 bg-gray-50 rounded-lg p-4 h-full flex-shrink-0">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold text-gray-800">区域筛选</h3>
+                            <button id="refresh-verification-tree-btn" class="text-gray-500 hover:text-gray-700 text-sm">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 区域树搜索 -->
+                        <div class="relative mb-4">
+                            <input type="text" id="verification-tree-search" placeholder="搜索区域..." class="w-full pl-8 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <i class="fas fa-search absolute left-2 top-2 text-gray-400 text-xs"></i>
+                        </div>
+                        
+                        <!-- 区域树结构 -->
+                        <div id="verification-area-tree" class="text-sm">
+                            <ul class="space-y-1">
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2 text-xs"></i>
+                                        <span class="font-medium">广西壮族自治区</span>
+                                    </div>
+                                    <ul class="ml-6 mt-1 space-y-1">
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">柳州市</span>
+                                            </div>
+                                            <ul class="ml-6 mt-1 space-y-1">
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer verification-tree-node active">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>融水县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">5</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer verification-tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>柳城县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">3</span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">南宁市</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 校验说明 -->
+                        <div class="mt-4 text-xs text-gray-600 bg-yellow-50 p-2 rounded">
+                            <i class="fas fa-info-circle text-yellow-500 mr-1"></i>
+                            选择区域后，仅显示该区域的待校验数据
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧内容区域 -->
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-6">校验中心</h3>
+                            
+                            <!-- 操作栏 -->
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-6">
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                                    <div class="relative">
+                                        <input type="text" placeholder="搜索校验数据..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                    </div>
+                                    <select id="verification-status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option>全部状态</option>
+                                        <option>待校验</option>
+                                        <option>校验中</option>
+                                        <option>校验通过</option>
+                                        <option>校验失败</option>
+                                    </select>
+                                </div>
+                                <button id="manual-verification-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <i class="fas fa-sync-alt mr-1"></i> 手动校验
+                                </button>
+                            </div>
+                            
+                            <!-- 数据列表 -->
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">文件名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测绘面积(亩)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">校验状态</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">校验时间</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">校验人</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-002</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">shp</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">86.3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-clock mr-1"></i> 待校验
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3 view-detail-btn" data-id="1">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-purple-500 hover:text-purple-700 verify-now-btn">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-005</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">tiff</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">320.5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    <i class="fas fa-spinner fa-spin mr-1"></i> 校验中
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">进行中</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">系统自动</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3 view-detail-btn" data-id="2">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-003</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">dat</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">210.8</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    <i class="fas fa-times mr-1"></i> 校验失败
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-21</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">系统自动</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3 view-detail-btn" data-id="3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-purple-500 hover:text-purple-700 verify-now-btn">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- 分页 -->
+                            <div class="flex items-center justify-between mt-6">
+                                <div class="text-sm text-gray-700">
+                                    显示第 1 到 3 条记录，共 15 条记录
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="px-3 py-1 rounded-lg bg-blue-500 text-white">1</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">...</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 校验详情区域 (默认隐藏) -->
+                        <div id="verification-detail-section" class="hidden bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h4 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                    校验详情
+                                </h4>
+                                <button id="close-detail-btn" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- 文件基本信息 -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600">文件名称</p>
+                                        <p class="font-medium text-gray-900" id="detail-file-name">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">项目名称</p>
+                                        <p class="font-medium text-gray-900" id="detail-project-name">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">校验状态</p>
+                                        <p class="font-medium text-gray-900" id="detail-status">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">数据类型</p>
+                                        <p class="font-medium text-gray-900" id="detail-data-type">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">校验时间</p>
+                                        <p class="font-medium text-gray-900" id="detail-verify-time">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">校验人</p>
+                                        <p class="font-medium text-gray-900" id="detail-verifier">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 校验规则和结果 -->
+                            <div class="mb-6">
+                                <h5 class="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fas fa-clipboard-list text-green-500 mr-2"></i>
+                                    校验规则与结果
+                                </h5>
+                                
+                                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">校验规则</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">校验结果</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">详细信息</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="verification-rules-table">
+                                            <!-- 校验规则将通过JavaScript动态添加 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 异常数据区域 (默认隐藏) -->
+                            <div id="anomalies-section" class="mb-6 hidden">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h5 class="text-md font-semibold text-gray-800 flex items-center">
+                                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                        异常数据列表
+                                    </h5>
+                                    <button id="export-anomaly-btn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition-colors text-sm flex items-center">
+                                        <i class="fas fa-file-export mr-1"></i> 导出异常清单
+                                    </button>
+                                </div>
+                                
+                                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">异常类型</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">异常描述</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">位置</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">严重程度</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="anomalies-table-body">
+                                            <!-- 异常数据将通过JavaScript动态添加 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                                    <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+                                    系统已自动标记异常数据（用红色高亮显示），请复核并修正后重新检测。
+                                </div>
+                            </div>
+                            
+                            <!-- 检测规则设置区域 -->
+                            <div class="mb-6">
+                                <h5 class="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fas fa-cog text-blue-500 mr-2"></i>
+                                    检测规则设置
+                                </h5>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <h6 class="font-medium text-gray-900 mb-2 flex items-center">
+                                            <i class="fas fa-file-contract text-green-500 mr-2"></i>
+                                            数据完整性检测
+                                        </h6>
+                                        <ul class="text-sm text-gray-600 space-y-1">
+                                            <li class="flex items-start">
+                                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                                <span>识别缺失关键字段（如无产权人、无实测面积）</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <h6 class="font-medium text-gray-900 mb-2 flex items-center">
+                                            <i class="fas fa-balance-scale text-blue-500 mr-2"></i>
+                                            逻辑一致性检测
+                                        </h6>
+                                        <ul class="text-sm text-gray-600 space-y-1">
+                                            <li class="flex items-start">
+                                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+                                                <span>上传完成后自动进入校验流程</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                                                <span>必须选择所属区域才能上传</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推送台账标签页内容 (默认隐藏) -->
+            <div id="tab-content-push-ledger" class="hidden bg-white rounded-b-xl shadow-lg p-6 mb-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- 使用flex布局将区域树和内容并排显示 -->
+                <div class="flex gap-6">
+                    <!-- 左侧区域树 -->
+                    <div class="w-64 bg-gray-50 rounded-lg p-4 h-full flex-shrink-0">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-semibold text-gray-800">区域筛选</h3>
+                            <button id="refresh-ledger-tree-btn" class="text-gray-500 hover:text-gray-700 text-sm">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 区域树搜索 -->
+                        <div class="relative mb-4">
+                            <input type="text" id="ledger-tree-search" placeholder="搜索区域..." class="w-full pl-8 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <i class="fas fa-search absolute left-2 top-2 text-gray-400 text-xs"></i>
+                        </div>
+                        
+                        <!-- 区域树结构 -->
+                        <div id="ledger-area-tree" class="text-sm">
+                            <ul class="space-y-1">
+                                <li>
+                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                        <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                        <i class="fas fa-globe-americas text-blue-500 mr-2 text-xs"></i>
+                                        <span class="font-medium">广西壮族自治区</span>
+                                    </div>
+                                    <ul class="ml-6 mt-1 space-y-1">
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-down text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">柳州市</span>
+                                            </div>
+                                            <ul class="ml-6 mt-1 space-y-1">
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer ledger-tree-node active">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>融水县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">5</span>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer ledger-tree-node">
+                                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-xs"></i>
+                                                        <span>柳城县</span>
+                                                        <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">3</span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                                                <i class="fas fa-chevron-right text-gray-500 mr-2 tree-toggle text-xs"></i>
+                                                <i class="fas fa-city text-green-500 mr-2 text-xs"></i>
+                                                <span class="font-medium">南宁市</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 台账说明 -->
+                        <div class="mt-4 text-xs text-gray-600 bg-green-50 p-2 rounded">
+                            <i class="fas fa-info-circle text-green-500 mr-1"></i>
+                            选择区域后，仅显示该区域的台账数据
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧内容区域 -->
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-6">
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                                    <div class="relative">
+                                        <input type="text" placeholder="搜索台账..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                    </div>
+                                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option>全部状态</option>
+                                        <option>已推送</option>
+                                        <option>待推送</option>
+                                        <option>推送失败</option>
+                                    </select>
+                                </div>
+                                <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <i class="fas fa-paper-plane mr-1"></i> 手动推送
+                                </button>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">文件名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目名称</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测绘面积(亩)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">推送状态</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">推送时间</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">推送人</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-001</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">dwg</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">86.3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    <i class="fas fa-check mr-1"></i> 已推送
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-15</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">系统自动</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-002</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">shp</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">120.5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-clock mr-1"></i> 待推送
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-16</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">系统自动</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">3</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水镇测绘-003</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">融罗高速项目</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">tiff</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">320.5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">广西-融水县</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    <i class="fas fa-times mr-1"></i> 推送失败
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2023-06-17</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">系统自动</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-6">
+                                <div class="text-sm text-gray-700">
+                                    显示第 1 到 3 条记录，共 24 条记录
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="px-3 py-1 rounded-lg bg-blue-500 text-white">1</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                                    <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域已移除 -->
+        
+            <!-- 推送确认页面 (默认隐藏，作为主内容区域的一部分) -->
+            <div id="push-confirm-modal" class="hidden bg-white rounded-xl shadow-xl h-full" style="position: absolute; top: 0; left: 0; width: 100%; z-index: 100;">
+                <!-- 弹窗头部 -->
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-paper-plane text-blue-500 mr-2"></i>
+                        推送确认页面
+                    </h3>
+                    <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none transition-colors duration-300">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- 页面内容 -->
+                <div class="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+                    <!-- 推送确认区域 -->
+                    <div id="push-confirm-section" class="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-600 flex items-center">
+                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                <span>确认推送将发送当前选择的数据到征地台账</span>
+                            </div>
+                            <button id="quick-confirm-push-btn" class="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 focus:outline-none transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                                <i class="fas fa-paper-plane mr-1"></i> 确认推送
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 合并后的推送数据表格 - Excel表格样式 -->
+                    <div class="mb-8 animate-fade-in" style="animation-delay: 200ms;">
+                        <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-file-excel text-green-500 mr-2"></i>
+                            推送项目数据清单
+                        </h4>
+                        <div id="combined-data-list" class="overflow-x-auto">
+                            <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                                <!-- 项目信息表头 -->
+                                <table class="min-w-full">
+                                    <tbody>
+                                        <tr class="bg-gray-50">
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">源文件名称：</td>
+                                            <td class="px-5 py-3 text-sm text-blue-600 font-medium border-b border-gray-200" id="project-id">融水镇三月份测绘数据.shp</td>
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">推送区域：</td>
+                                            <td class="px-5 py-3 text-sm text-gray-600 border-b border-gray-200" id="project-name">融罗高速公路项目-融水镇</td>
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">推送时间：</td>
+                                            <td class="px-5 py-3 text-sm text-gray-600 border-b border-gray-200" id="push-time">2023-10-10 14:30:00</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">接收台账：</td>
+                                            <td class="px-5 py-3 text-sm text-green-600 border-b border-gray-200" id="target-system">征地台账</td>
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">推送方式：</td>
+                                            <td class="px-5 py-3 text-sm text-indigo-600 border-b border-gray-200" id="push-method">批量推送</td>
+                                            <td class="px-5 py-3 text-sm text-gray-700 font-medium border-b border-gray-200">推送用户：</td>
+                                            <td class="px-5 py-3 text-sm text-gray-600 border-b border-gray-200" id="push-user">张三</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <!-- 统计信息 -->
+                                <div class="grid grid-cols-4 border-b border-gray-200 bg-blue-50">
+                                    <div class="px-5 py-3 text-sm text-gray-700 font-medium">地块总数：</div>
+                                    <div class="px-5 py-3 text-sm text-blue-600 font-bold" id="total-plot-count">12</div>
+                                    <div class="px-5 py-3 text-sm text-gray-700 font-medium">总面积（亩）：</div>
+                                    <div class="px-5 py-3 text-sm text-green-600 font-bold" id="total-area">24.5609</div>
+                                </div>
+                                
+                                <!-- 矢量数据表格 - Excel样式 -->
+                                <table class="min-w-full">
+                                    <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                                        <tr>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">序号</th>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">地块编号</th>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">户主</th>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">面积（亩）</th>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">坐标系</th>
+                                            <th class="px-5 py-3 text-left text-sm font-medium">数据状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vector-data-table-body" class="divide-y divide-gray-200">
+                                        <!-- 矢量数据将通过JavaScript动态添加 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 按钮组 -->
+                <div class="flex justify-end space-x-4 mt-8 px-6 pb-6">
+                    <button id="cancel-push-btn" class="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 focus:outline-none transition-all duration-300">
+                        取消
+                    </button>
+                    <button id="confirm-push-btn" class="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 focus:outline-none transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                        <i class="fas fa-paper-plane mr-1"></i> 确认推送
+                    </button>
+                </div>
+            </div>
+    
+    <!-- 完整的JavaScript代码 -->
+    <script>
+        // 添加CSS动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .animate-fade-in {
+                animation: fadeIn 0.6s ease-out forwards;
+            }
+            
+            .animate-fade-in-up {
+                animation: fadeInUp 0.5s ease-out forwards;
+            }
+            
+            /* 为推送确认页面显示时添加入场动画 */
+            #push-confirm-modal.show {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            
+            /* 为表格行添加悬停效果 */
+            #vector-data-table-body tr, #field-mapping-table-body tr {
+                transition: background-color 0.2s ease;
+            }
+            
+            /* 按钮悬停效果 */
+            button {
+                transition: all 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
+        // 注意：页面初始化已移至外部的survey-data.js文件中
+        // 避免重复初始化导致的问题
+        // 页面初始化函数
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     console.log('JavaScript loaded successfully!');
+        //     
+        //     // 预加载模拟数据，让页面看起来更真实
+        //     if (document.getElementById('push-confirm-modal')) {
+        //         loadMockData();
+        //     }
+        //     
+        //     // 初始化标签页切换功能
+        //     initTabs();
+        //     
+        //     // 初始化其他功能
+        //     initOtherFeatures();
+        // });
+        
+        // 加载模拟数据
+        function loadMockData() {
+            // 模拟推送项目数据
+            const pushItemsList = document.getElementById('push-items-list');
+            if (pushItemsList) {
+                pushItemsList.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">项目编号：</span>
+                            <span class="text-blue-600">融水镇测绘-007</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">项目名称：</span>
+                            <span class="text-gray-600">高速公路征地项目</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-800">推送时间：</span>
+                            <span class="text-gray-600">2023-10-10 14:30:00</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">接收系统：</span>
+                            <span class="text-green-600">征地台账管理系统 v2.0</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">推送方式：</span>
+                            <span class="text-indigo-600">批量推送</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-800">推送用户：</span>
+                            <span class="text-gray-600">张工程师</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 模拟矢量数据
+            const vectorDataTableBody = document.getElementById('vector-data-table-body');
+            if (vectorDataTableBody) {
+                vectorDataTableBody.innerHTML = `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-600">001</td>
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">A-2023-001</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">张三</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">2.56</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000</td>
+                        <td class="px-5 py-3 text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已校验</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-600">002</td>
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">A-2023-002</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">李四</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">3.25</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000</td>
+                        <td class="px-5 py-3 text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已校验</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-600">003</td>
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">A-2023-003</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">王五</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">4.18</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000</td>
+                        <td class="px-5 py-3 text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已校验</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-600">004</td>
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">A-2023-004</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">赵六</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">2.87</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000</td>
+                        <td class="px-5 py-3 text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已校验</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-600">005</td>
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">A-2023-005</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">孙七</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">3.72</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000</td>
+                        <td class="px-5 py-3 text-sm">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已校验</span>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // 模拟字段映射数据
+            const fieldMappingTableBody = document.getElementById('field-mapping-table-body');
+            if (fieldMappingTableBody) {
+                fieldMappingTableBody.innerHTML = `
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">地块编号</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">征地编号</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">唯一标识符</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">地块面积</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">征地面积</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">单位：亩</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">权属人</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">户主姓名</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">土地所有权人</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">坐标信息</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">地理坐标</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">CGCS2000坐标系</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">土地类型</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">地类</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">耕地、林地等</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">位置描述</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">坐落位置</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">详细地址描述</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">测量日期</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">勘测日期</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">数据采集时间</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50 transition-colors">
+                        <td class="px-5 py-3 text-sm text-gray-800 font-medium">测量人</td>
+                        <td class="px-5 py-3 text-sm text-gray-600 text-center">→</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">勘测员</td>
+                        <td class="px-5 py-3 text-sm text-gray-600">数据采集人员</td>
+                    </tr>
+                `;
+            }
+            
+            // 更新统计信息（现在由页面其他地方统一调用，无需在此处重复调用）
+        }
+        
+        // 标签页切换功能
+        function initTabs() {
+            // 获取所有标签页按钮和内容区域
+            const tabButtons = [
+                document.getElementById('tab-data-management'),
+                document.getElementById('tab-upload-data'),
+                document.getElementById('tab-verification'),
+                document.getElementById('tab-push-ledger')
+            ];
+            
+            const tabContents = [
+                document.getElementById('tab-content-data-management'),
+                document.getElementById('tab-content-upload-data'),
+                document.getElementById('tab-content-verification'),
+                document.getElementById('tab-content-push-ledger')
+            ];
+            
+            // 为每个标签页按钮添加点击事件
+            tabButtons.forEach((button, index) => {
+                if (button) {
+                    button.addEventListener('click', function() {
+                        // 移除所有标签页的active状态
+                        tabButtons.forEach(btn => {
+                            if (btn) btn.classList.remove('tab-active');
+                        });
+                        
+                        // 隐藏所有内容区域
+                        tabContents.forEach(content => {
+                            if (content) content.style.display = 'none';
+                        });
+                        
+                        // 为当前点击的标签页添加active状态并显示对应内容
+                        button.classList.add('tab-active');
+                        if (tabContents[index]) {
+                            tabContents[index].style.display = 'block';
+                        }
+                    });
+                }
+            });
+        }
+        
+        // 其他功能初始化
+        function initOtherFeatures() {
+            // 加载数据
+            loadData();
+            
+            // 绑定推送相关按钮事件
+            bindPushButtons();
+            
+            // 初始化分页功能
+            initPagination();
+            
+            // 绑定推送台账页面的推送按钮
+            bindPushLedgerButtons();
+            
+            // 由于推送确认区域已移至模态框内部，不需要单独的隐藏逻辑
+        }
+        
+        // 加载数据函数
+        function loadData() {
+            // 模拟加载数据的动画效果
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+            
+            // 模拟异步加载数据
+            setTimeout(function() {
+                console.log('Data loaded successfully');
+                
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+                
+                // 这里可以添加实际的数据加载逻辑
+            }, 1000);
+        }
+        
+        // 显示推送确认页面
+        function showPushConfirmModal(pushType) {
+            // 获取所有主内容区域
+            const mainContents = document.querySelectorAll('[id^="tab-content-"]');
+            
+            // 隐藏所有主内容区域
+            mainContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // 显示推送确认页面
+            const pushConfirmModal = document.getElementById('push-confirm-modal');
+            if (pushConfirmModal) {
+                pushConfirmModal.style.display = 'block';
+                
+                // 加载推送项目信息
+                loadPushItems();
+                
+                // 加载矢量数据列表
+                loadVectorData();
+                
+                // 加载字段映射关系
+                loadFieldMapping();
+                
+                // 更新统计信息
+                updateStatistics();
+            }
+        }
+        
+        // 加载推送项目信息
+        function loadPushItems() {
+            const pushItemsContainer = document.getElementById('push-items-list');
+            if (pushItemsContainer) {
+                // 模拟推送项目数据
+                const pushItems = [
+                    {
+                        id: '1',
+                        name: '城市更新项目A',
+                        type: '征拆项目',
+                        area: '5.2公顷',
+                        status: '待推送'
+                    },
+                    {
+                        id: '2',
+                        name: '基础设施项目B',
+                        type: '道路建设',
+                        area: '3.8公顷',
+                        status: '待推送'
+                    }
+                ];
+                
+                // 清空容器
+                pushItemsContainer.innerHTML = '';
+                
+                // 添加推送项目
+                pushItems.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'push-item p-4 border-b border-gray-200';
+                    itemElement.innerHTML = `
+                        <h4 class="font-medium text-gray-900">${item.name}</h4>
+                        <div class="flex flex-wrap mt-2 text-sm text-gray-600">
+                            <span class="mr-4"><strong>类型:</strong> ${item.type}</span>
+                            <span class="mr-4"><strong>面积:</strong> ${item.area}</span>
+                            <span class="mr-4"><strong>状态:</strong> ${item.status}</span>
+                        </div>
+                    `;
+                    pushItemsContainer.appendChild(itemElement);
+                });
+            }
+        }
+        
+        // 加载矢量数据列表
+        function loadVectorData() {
+            const vectorDataContainer = document.getElementById('vector-data-list');
+            if (vectorDataContainer) {
+                // 模拟矢量数据
+                const vectorData = [
+                    {
+                        id: '1001',
+                        name: '建筑物面',
+                        type: 'Polygon',
+                        count: '56',
+                        size: '2.3MB'
+                    },
+                    {
+                        id: '1002',
+                        name: '道路线',
+                        type: 'LineString',
+                        count: '12',
+                        size: '0.8MB'
+                    },
+                    {
+                        id: '1003',
+                        name: '控制点',
+                        type: 'Point',
+                        count: '89',
+                        size: '0.4MB'
+                    }
+                ];
+                
+                // 清空表格内容
+                vectorDataContainer.innerHTML = '';
+                
+                // 添加表头
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据名称</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">大小</th>
+                    </tr>
+                `;
+                vectorDataContainer.appendChild(thead);
+                
+                // 添加表格主体
+                const tbody = document.createElement('tbody');
+                vectorData.forEach(data => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'bg-white border-b';
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${data.name}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${data.type}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${data.count}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${data.size}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                vectorDataContainer.appendChild(tbody);
+            }
+        }
+        
+        // 加载字段映射关系
+        function loadFieldMapping() {
+            const fieldMappingContainer = document.getElementById('field-mapping-list');
+            if (fieldMappingContainer) {
+                // 模拟字段映射数据
+                const fieldMappings = [
+                    {
+                        sourceField: '权属人',
+                        targetField: 'owner_name',
+                        type: 'string',
+                        status: '已映射'
+                    },
+                    {
+                        sourceField: '宗地面积',
+                        targetField: 'land_area',
+                        type: 'number',
+                        status: '已映射'
+                    },
+                    {
+                        sourceField: '建筑年代',
+                        targetField: 'build_year',
+                        type: 'number',
+                        status: '已映射'
+                    },
+                    {
+                        sourceField: '房屋用途',
+                        targetField: 'building_use',
+                        type: 'string',
+                        status: '已映射'
+                    }
+                ];
+                
+                // 清空表格内容
+                fieldMappingContainer.innerHTML = '';
+                
+                // 添加表头
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">源字段</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">目标字段</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">映射状态</th>
+                    </tr>
+                `;
+                fieldMappingContainer.appendChild(thead);
+                
+                // 添加表格主体
+                const tbody = document.createElement('tbody');
+                fieldMappings.forEach(mapping => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'bg-white border-b';
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${mapping.sourceField}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${mapping.targetField}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${mapping.type}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-green-600">${mapping.status}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                fieldMappingContainer.appendChild(tbody);
+            }
+        }
+        
+        // 更新统计信息
+        function updateStatistics() {
+            const projectCount = document.getElementById('project-count');
+            const dataCount = document.getElementById('data-count');
+            const fieldCount = document.getElementById('field-count');
+            
+            if (projectCount) {
+                animateValue(projectCount, 0, 2, 1000);
+            }
+            
+            if (dataCount) {
+                animateValue(dataCount, 0, 157, 1000);
+            }
+            
+            if (fieldCount) {
+                animateValue(fieldCount, 0, 4, 1000);
+            }
+        }
+        
+        // 数字递增动画
+        function animateValue(element, start, end, duration) {
+            let startTime = null;
+            
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                
+                element.textContent = value;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animation);
+                }
+            }
+            
+            requestAnimationFrame(animation);
+        }
+        
+        // 绑定推送相关按钮事件
+        function bindPushButtons() {
+            const cancelPushBtn = document.getElementById('cancel-push-btn');
+            const confirmPushBtn = document.getElementById('confirm-push-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const quickConfirmPushBtn = document.getElementById('quick-confirm-push-btn');
+            
+            // 关闭模态框并返回到推送台账页面
+            function closeModal() {
+                const pushConfirmModal = document.getElementById('push-confirm-modal');
+                if (pushConfirmModal) {
+                    pushConfirmModal.style.display = 'none';
+                }
+                
+                // 显示推送台账页面
+                const tabContentPushLedger = document.getElementById('tab-content-push-ledger');
+                if (tabContentPushLedger) {
+                    tabContentPushLedger.style.display = 'block';
+                }
+                
+                // 激活推送台账标签
+                const tabPushLedger = document.getElementById('tab-push-ledger');
+                if (tabPushLedger) {
+                    tabPushLedger.classList.add('tab-active');
+                }
+            }
+            
+            if (cancelPushBtn) {
+                cancelPushBtn.addEventListener('click', function() {
+                    if (confirm('确定要取消推送吗？')) {
+                        console.log('Push canceled');
+                        alert('推送已取消');
+                        closeModal();
+                    }
+                });
+            }
+            
+            if (confirmPushBtn) {
+                confirmPushBtn.addEventListener('click', function() {
+                    alert('推送成功！');
+                    console.log('Push confirmed');
+                    closeModal();
+                });
+            }
+            
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', function() {
+                    console.log('Modal closed');
+                    closeModal();
+                });
+            }
+            
+            // 快速确认推送按钮
+            if (quickConfirmPushBtn) {
+                quickConfirmPushBtn.addEventListener('click', function() {
+                    alert('推送成功！');
+                    console.log('Quick push confirmed');
+                    closeModal();
+                });
+            }
+        }
+        
+        // 绑定推送台账页面的推送按钮
+        function bindPushLedgerButtons() {
+            // 批量推送按钮
+            const batchPushBtn = document.getElementById('batch-push-btn');
+            if (batchPushBtn) {
+                batchPushBtn.addEventListener('click', function() {
+                    // 直接显示推送确认模态框
+                    showPushConfirmModal('批量推送');
+                });
+            }
+            
+            // 单个推送按钮
+            const pushBtns = document.querySelectorAll('.push-btn');
+            pushBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 直接显示推送确认模态框
+                    showPushConfirmModal('单个推送');
+                });
+            });
+        }
+        
+        // 执行数据检测
+        function performDataDetection(dataId) {
+            // 模拟检测过程
+            console.log(`开始检测数据 ${dataId}`);
+            
+            // 数据完整性检测
+            console.log('执行数据完整性检测...');
+            
+            // 逻辑一致性检测
+            console.log('执行逻辑一致性检测...');
+            
+            // 数值合理性检测
+            console.log('执行数值合理性检测...');
+            
+            // 地块唯一性检测
+            console.log('执行地块唯一性检测...');
+            
+            // 模拟检测结果
+            setTimeout(() => {
+                console.log(`数据 ${dataId} 检测完成`);
+                alert(`数据 ${dataId} 检测完成`);
+            }, 2000);
+        }
+        
+        /* 内联JavaScript代码已移至外部survey-data.js文件，以避免重复初始化问题 */
+    </script>
+    <!-- 引入外部的survey-data.js文件 -->
+    <script src="survey-data.js"></script>
+</body>
+</html>

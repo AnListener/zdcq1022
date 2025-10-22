@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审核台账 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 区域树样式 */
+        .tree-node:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tree-node.active {
+            background-color: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .tree-children {
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-container {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+        }
+        
+        .region-tree-container.region-tree-collapsed {
+            width: 0;
+            padding: 0;
+            border: none;
+            overflow: visible;
+        }
+        
+        .region-tree-container.region-tree-collapsed > *:not(.region-tree-toggle) {
+            display: none;
+        }
+        
+        .region-tree-toggle {
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-toggle:hover {
+            background: #f9fafb;
+        }
+        
+        /* 折叠按钮旋转动画 */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-clipboard-check text-orange-500 mr-2"></i>
+                审核台账
+            </h1>
+            <p class="text-gray-600 mt-2">管理征拆项目中的数据审核信息</p>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="flex flex-1 overflow-hidden mt-6 gap-6">
+            <!-- 左侧地区分类树 -->
+            <div class="region-tree-container w-80 bg-white rounded-xl shadow-lg p-6 flex-shrink-0 transition-all duration-300 relative">
+                <div class="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+                    <h2 class="font-bold text-gray-800 text-lg">地区分类</h2>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">共426项</span>
+                </div>
+                
+                <!-- 折叠按钮 -->
+                <div class="region-tree-toggle" id="region-tree-toggle" title="折叠/展开地区分类">
+                    <i class="fas fa-chevron-left text-xs text-gray-500"></i>
+                </div>
+                
+                <!-- 项目选择下拉 -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">选择项目</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" id="project-selector">
+                        <option value="all">全部项目</option>
+                        <option value="project1">融罗高速项目</option>
+                    </select>
+                </div>
+                
+                <!-- 行政区域树 -->
+                <div class="space-y-3">
+                    <!-- 融水苗族自治县 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-lg" onclick="selectTreeNode('rongshui')">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-down text-sm mr-3 transform transition-transform duration-200" id="rongshui-arrow"></i>
+                                <span class="font-medium text-gray-800">融水县</span>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-3 py-1 font-medium">186</span>
+                        </div>
+                        <div class="tree-children ml-3 pl-10 pr-3 py-2" id="rongshui-children">
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'rongshui-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">融水镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">32</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'hemu-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">和睦镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">28</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'sanfang-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">三防镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">30</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'huaibao-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">怀宝镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">25</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'yongle-xiang')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">永乐乡</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">35</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'sirong-xiang')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">四荣乡</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">36</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 罗城仫佬族自治县 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-lg" onclick="selectTreeNode('luocheng')">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-down text-sm mr-3 transform transition-transform duration-200" id="luocheng-arrow"></i>
+                                <span class="font-medium text-gray-800">罗城县</span>
+                            </div>
+                            <span class="text-xs bg-green-100 text-green-800 rounded-full px-3 py-1 font-medium">158</span>
+                        </div>
+                        <div class="tree-children ml-3 pl-10 pr-3 py-2" id="luocheng-children">
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'dongmen-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">东门镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">26</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'longan-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">龙岸镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">24</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'huangjin-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">黄金镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">28</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'xiaochangan-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">小长安镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">25</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'siba-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">四把镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">27</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'tianhe-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">天河镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">28</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 独立标准 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-lg" onclick="selectTreeNode('independent')">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-down text-sm mr-3 transform transition-transform duration-200" id="independent-arrow"></i>
+                                <span class="font-medium text-gray-800">其他</span>
+                            </div>
+                            <span class="text-xs bg-purple-100 text-purple-800 rounded-full px-3 py-1 font-medium">82</span>
+                        </div>
+                        <div class="tree-children ml-3 pl-10 pr-3 py-2" id="independent-children">
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('independent', 'national')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">项目部</span>
+                                </div>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 rounded-full px-2 py-1 font-medium">32</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('independent', 'industry')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">指挥部</span>
+                                </div>
+                                <span class="text-xs bg-indigo-100 text-indigo-800 rounded-full px-2 py-1 font-medium">25</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('independent', 'local')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">办事处</span>
+                                </div>
+                                <span class="text-xs bg-pink-100 text-pink-800 rounded-full px-2 py-1 font-medium">25</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧内容区域 -->
+            <div class="flex-1 bg-white rounded-xl shadow-lg overflow-hidden" id="main-content-area">
+                <!-- 筛选条件区域 -->
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-gray-800">筛选条件</h2>
+                        <button id="toggle-filters" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-chevron-up transition-transform duration-300" id="filter-arrow"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4" id="filter-section">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">审核编号</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="请输入审核编号">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">权属人</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="请输入权属人">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">所属区域</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="">请选择区域</option>
+                                    <option value="rongshui">融水县</option>
+                                    <option value="luocheng">罗城县</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">数据类型</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="">全部类型</option>
+                                    <option value="land">征地数据</option>
+                                    <option value="house">房屋数据</option>
+                                    <option value="attached">附着物数据</option>
+                                    <option value="agreement">协议数据</option>
+                                    <option value="settlement">结算数据</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">提交时间</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">审核状态</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="">全部状态</option>
+                                    <option value="pending">待审核</option>
+                                    <option value="reviewing">审核中</option>
+                                    <option value="approved">已通过</option>
+                                    <option value="rejected">被驳回</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">审核人员</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="请输入审核人员">
+                            </div>
+                            <div class="flex items-end">
+                                <div class="flex space-x-2">
+                                    <button class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                                        重置
+                                    </button>
+                                    <button class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+                                        <i class="fas fa-search mr-1"></i>搜索
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 统计信息区域 -->
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-gray-800">统计信息</h2>
+                        <button id="toggle-stats" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-chevron-up transition-transform duration-300" id="stats-arrow"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4" id="stats-section">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-clipboard-check text-orange-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-gray-500 text-sm">审核总数</p>
+                                        <p class="text-2xl font-bold text-gray-800">426</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-gray-500 text-sm">待审核</p>
+                                        <p class="text-2xl font-bold text-gray-800">68</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-sync text-blue-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-gray-500 text-sm">审核中</p>
+                                        <p class="text-2xl font-bold text-gray-800">42</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-gray-500 text-sm">已通过</p>
+                                        <p class="text-2xl font-bold text-gray-800">286</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-gray-500 text-sm">被驳回</p>
+                                        <p class="text-2xl font-bold text-gray-800">30</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮区域 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                        <div class="flex space-x-2">
+                            <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-plus mr-1"></i>新增审核
+                            </button>
+                            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-check mr-1"></i>批量审核
+                            </button>
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-file-export mr-1"></i>导出数据
+                            </button>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-print mr-1"></i>打印审核单
+                            </button>
+                            <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-chart-pie mr-1"></i>统计分析
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 审核列表 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">审核编号</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">权属人</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提交时间</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">审核人员</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SH-2023-001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">张三</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">征地数据</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">李审核员</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            已通过
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SH-2023-002</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">李四</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">房屋数据</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-18</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">王审核员</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            待审核
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SH-2023-003</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">王五</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">附着物数据</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-20</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">张审核员</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            审核中
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SH-2023-004</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">协议数据</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-22</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">李审核员</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            被驳回
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SH-2023-005</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">结算数据</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-25</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">王审核员</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            已通过
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                显示第 1 到 5 条记录，共 426 条记录
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="px-3 py-1 rounded-lg bg-orange-500 text-white">1</button>
+                                <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                                <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                                <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./audit-account.js" defer></script>
+</body>
+</html>

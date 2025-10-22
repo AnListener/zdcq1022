@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导入数据 - 征拆管理系统</title>
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 上传文件样式 */
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover,
+        .upload-area.active {
+            border-color: #3182ce;
+            background-color: #ebf8ff;
+        }
+        .file-input {
+            display: none;
+        }
+        .template-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .template-card:hover {
+            border-color: #3182ce;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .template-card.selected {
+            border-color: #3182ce;
+            background-color: #ebf8ff;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            max-height: 300px;
+            overflow-y: auto;
+            display: block;
+        }
+        .preview-table th,
+        .preview-table td {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .preview-table th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        .error-cell {
+            background-color: #fff5f5;
+            color: #c53030;
+        }
+        .warning-cell {
+            background-color: #fffaf0;
+            color: #d97706;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="page-container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h2 class="page-title">导入征地数据</h2>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="flex-1 overflow-y-auto p-4">
+        <div class="max-w-4xl mx-auto">
+        <!-- 标题区域 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-800">导入征地数据</h2>
+            <p class="text-gray-500 mt-1">请按照模板格式填写数据后上传，系统将进行数据验证和导入。</p>
+        </div>
+        
+        <!-- 模板选择区域 -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">请选择导入模板类型：</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="template-basic" class="template-card selected">
+                    <div class="flex items-start">
+                        <div class="text-blue-500 mr-3">
+                            <i class="fas fa-file-excel text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-900">基础数据导入模板</h3>
+                            <p class="text-sm text-gray-500 mt-1">包含地块基本信息、权属信息、面积及补偿标准等基础字段</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="template-full" class="template-card">
+                    <div class="flex items-start">
+                        <div class="text-blue-500 mr-3">
+                            <i class="fas fa-file-alt text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-900">完整数据导入模板</h3>
+                            <p class="text-sm text-gray-500 mt-1">包含全部字段，适用于数据迁移或批量录入场景</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 下载模板按钮 -->
+        <div class="mb-6">
+            <button id="download-template-btn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-download mr-1"></i> 下载导入模板
+            </button>
+        </div>
+        
+        <!-- 文件上传区域 -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">上传Excel文件：</label>
+            <div id="upload-area" class="upload-area">
+                <input type="file" id="file-input" class="file-input" accept=".xlsx,.xls">
+                <label for="file-input" class="cursor-pointer">
+                    <div class="text-blue-500 mb-2">
+                        <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                    </div>
+                    <p class="text-gray-700 font-medium">点击或拖拽文件到此处上传</p>
+                    <p class="text-xs text-gray-500 mt-1">支持 .xlsx 和 .xls 格式，文件大小不超过10MB</p>
+                </label>
+            </div>
+            
+            <!-- 已上传文件信息 -->
+            <div id="file-info" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-excel text-green-500 mr-2"></i>
+                        <span id="file-name" class="text-sm font-medium text-gray-800">文件名.xlsx</span>
+                    </div>
+                    <button id="remove-file-btn" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 预览区域 (默认隐藏) -->
+        <div id="preview-area" class="hidden mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <label class="block text-sm font-medium text-gray-700">数据预览：</label>
+                <span class="text-xs text-gray-500">显示前10条数据</span>
+            </div>
+            
+            <!-- 数据验证结果 -->
+            <div id="validation-result" class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-2"></i>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">数据验证结果</p>
+                        <p class="text-xs text-gray-600 mt-1">发现 <span class="text-red-500 font-medium">2</span> 条错误记录和 <span class="text-yellow-500 font-medium">3</span> 条警告记录，请查看并修正。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 预览表格 -->
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>地块编号</th>
+                            <th>权属单位/人</th>
+                            <th>面积(亩)</th>
+                            <th>土地性质</th>
+                            <th>补偿标准(元/亩)</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>TD-2024-001</td>
+                            <td>张三</td>
+                            <td>3.5000</td>
+                            <td class="error-cell">无效土地性质</td>
+                            <td>68000</td>
+                            <td class="text-red-500">错误</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>TD-2024-002</td>
+                            <td>李四</td>
+                            <td>2.8000</td>
+                            <td>耕地</td>
+                            <td>68000</td>
+                            <td class="text-green-500">正常</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>TD-2024-003</td>
+                            <td>王五</td>
+                            <td class="warning-cell">格式不正确</td>
+                            <td>建设用地</td>
+                            <td>65000</td>
+                            <td class="text-yellow-500">警告</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>TD-2024-004</td>
+                            <td>赵六</td>
+                            <td>8.6000</td>
+                            <td>未利用地</td>
+                            <td>30200</td>
+                            <td class="text-green-500">正常</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td class="error-cell">地块编号重复</td>
+                            <td>孙七</td>
+                            <td>4.3000</td>
+                            <td>耕地</td>
+                            <td>68000</td>
+                            <td class="text-red-500">错误</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 导入设置 -->
+            <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">导入设置：</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="skip-error-rows" class="rounded text-blue-500 focus:ring-blue-500" checked>
+                        <span class="ml-2 text-sm text-gray-700">跳过错误行</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="update-existing" class="rounded text-blue-500 focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">更新已有记录</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="import-attachments" class="rounded text-blue-500 focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">导入相关附件</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button id="cancel-import-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                <i class="fas fa-times mr-1"></i> 取消
+            </button>
+            <button id="upload-preview-btn" class="hidden px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+                <i class="fas fa-eye mr-1"></i> 上传并预览
+            </button>
+            <button id="confirm-import-btn" class="hidden px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                <i class="fas fa-check mr-1"></i> 确认导入
+            </button>
+        </div>
+        </div>
+    </div>
+    
+    <script>
+        /* 添加全局样式 */
+        const style = document.createElement('style');
+        style.textContent = `
+            .page-container {
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                background-color: white;
+            }
+            .page-header {
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                align-items: center;
+                background-color: white;
+            }
+            .page-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #1f2937;
+            }
+        `;
+        document.head.appendChild(style);
+        // 模板选择
+        document.getElementById('template-basic').addEventListener('click', function() {
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            this.classList.add('selected');
+        });
+        
+        document.getElementById('template-full').addEventListener('click', function() {
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            this.classList.add('selected');
+        });
+        
+        // 下载模板
+        document.getElementById('download-template-btn').addEventListener('click', function() {
+            alert('正在下载导入模板...');
+            // 在实际应用中，这里会触发模板文件下载
+        });
+        
+        // 文件上传区域交互
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file-btn');
+        const uploadPreviewBtn = document.getElementById('upload-preview-btn');
+        const previewArea = document.getElementById('preview-area');
+        const confirmImportBtn = document.getElementById('confirm-import-btn');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+        });
+        
+        uploadArea.addEventListener('dragleave', function() {
+            this.classList.remove('active');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                handleFile(this.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            // 验证文件类型
+            const validExtensions = ['.xlsx', '.xls'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validExtensions.includes(fileExtension)) {
+                alert('请上传Excel文件，支持 .xlsx 和 .xls 格式。');
+                return;
+            }
+            
+            // 验证文件大小
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                alert('文件大小不能超过10MB。');
+                return;
+            }
+            
+            // 显示文件信息
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            uploadPreviewBtn.classList.remove('hidden');
+            previewArea.classList.add('hidden');
+            confirmImportBtn.classList.add('hidden');
+        }
+        
+        // 移除文件
+        removeFileBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            uploadPreviewBtn.classList.add('hidden');
+            previewArea.classList.add('hidden');
+            confirmImportBtn.classList.add('hidden');
+        });
+        
+        // 上传并预览
+        uploadPreviewBtn.addEventListener('click', function() {
+            // 显示上传进度
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 上传中...';
+            
+            // 模拟上传过程
+            setTimeout(() => {
+                // 恢复按钮状态
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                // 显示预览区域
+                previewArea.classList.remove('hidden');
+                confirmImportBtn.classList.remove('hidden');
+                uploadPreviewBtn.classList.add('hidden');
+            }, 1500);
+        });
+        
+        // 取消按钮
+        document.getElementById('cancel-import-btn').addEventListener('click', function() {
+            // 在主内容区全屏显示模式下，返回上一页
+            window.history.back();
+        });
+        
+        // 确认导入按钮
+        confirmImportBtn.addEventListener('click', function() {
+            // 显示导入进度
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 导入中...';
+            
+            // 模拟导入过程
+            setTimeout(() => {
+                alert('数据导入成功！共导入5条记录，其中2条已跳过错误记录。');
+                
+                // 恢复按钮状态
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                // 在主内容区全屏显示模式下，返回上一页
+                window.history.back();
+                
+                // 如果需要刷新数据，可以考虑添加刷新逻辑或者发送消息
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

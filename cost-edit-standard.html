@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑补偿标准 - 高速公路征地拆迁管理系统</title>
+    <!-- 本地CSS -->
+    <link href="./styles.css" rel="stylesheet">
+    <!-- CDN作为备用 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./styles.css" rel="stylesheet">
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        .form-section {
+            transition: all 0.3s ease;
+        }
+        
+        .form-section-header {
+            background-color: #f9fafb;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .region-tree-container {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+        }
+        
+        .region-tree-toggle {
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-toggle:hover {
+            background: #f9fafb;
+        }
+        
+        .tree-node:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tree-node.active {
+            background-color: #fef2f2;
+            border-left: 3px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-file-contract text-red-500 mr-2"></i>
+                        编辑补偿标准
+                    </h1>
+                    <p class="text-gray-600 mt-2">修改征拆补偿标准信息</p>
+                </div>
+                <button id="back-to-detail-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i>返回详情
+                </button>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="flex flex-1 overflow-hidden gap-6">
+            <!-- 左侧表单区域 -->
+            <div class="flex-1 bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800">标准基本信息</h2>
+                </div>
+                
+                <!-- 表单内容 -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">区域 <span class="text-red-500">*</span></label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>融水苗族自治县</option>
+                                <option>罗城仫佬族自治县</option>
+                                <option>柳州市</option>
+                                <option>广西壮族自治区</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">补偿对象名称 <span class="text-red-500">*</span></label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>集体农用地</option>
+                                <option>宅基地</option>
+                                <option>房屋</option>
+                                <option>附着物</option>
+                                <option>青苗</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">规格</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="请输入规格，如：胸径10cm" value="--">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">补偿标准 <span class="text-red-500">*</span></label>
+                            <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="请输入补偿标准金额" value="50000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">费用类别 <span class="text-red-500">*</span></label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>土地补偿</option>
+                                <option>房屋补偿</option>
+                                <option>附着物补偿</option>
+                                <option>青苗补偿</option>
+                                <option>临时安置</option>
+                                <option>搬迁补助</option>
+                                <option>停产停业</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">计量单位 <span class="text-red-500">*</span></label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>元/亩</option>
+                                <option>元/平方米</option>
+                                <option>元/棵</option>
+                                <option>元/立方米</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">生效日期 <span class="text-red-500">*</span></label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" value="2023-01-15">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">状态 <span class="text-red-500">*</span></label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option>现行</option>
+                                <option>已废止</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">计算公式</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="请输入计算公式或选择已有公式" value="area * unitPrice * adjustmentFactor">
+                            <p class="mt-1 text-xs text-gray-500">例如：area * unitPrice * adjustmentFactor</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">公式描述</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="请输入公式描述" value="土地补偿标准计算公式">
+                            <p class="mt-1 text-xs text-gray-500">例如：土地补偿标准计算公式</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">公式生效日期</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" value="2023-01-15">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-end space-x-4">
+                        <button id="cancel-edit-btn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-times mr-1"></i>取消
+                        </button>
+                        <button id="save-edit-btn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center">
+                            <i class="fas fa-save mr-1"></i>保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧说明区域 -->
+            <div class="w-80 bg-white rounded-xl shadow-lg p-6 flex-shrink-0">
+                <h3 class="font-bold text-gray-800 text-lg mb-4">填写说明</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">区域</h4>
+                        <p class="text-sm text-gray-600">选择该标准适用的行政区域，可精确到县/区级</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">补偿对象名称</h4>
+                        <p class="text-sm text-gray-600">选择补偿对象的类型，如土地、房屋、附着物等</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">补偿标准</h4>
+                        <p class="text-sm text-gray-600">填写单位补偿金额，单位为元，支持小数点后两位</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">计量单位</h4>
+                        <p class="text-sm text-gray-600">选择补偿标准的计量单位，如平方米、亩、棵等</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">计算公式</h4>
+                        <p class="text-sm text-gray-600">输入计算公式或选择已有公式，例如：area * unitPrice * adjustmentFactor</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">公式描述</h4>
+                        <p class="text-sm text-gray-600">输入公式描述信息，例如：土地补偿标准计算公式</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">公式生效日期</h4>
+                        <p class="text-sm text-gray-600">选择计算公式的生效日期</p>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2"></i>
+                            <div>
+                                <h4 class="font-medium text-blue-800">注意事项</h4>
+                                <p class="text-sm text-blue-700 mt-1">带 <span class="text-red-500">*</span> 的为必填项，请务必填写完整</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回详情按钮功能
+            const backToDetailBtn = document.getElementById('back-to-detail-btn');
+            if (backToDetailBtn) {
+                backToDetailBtn.addEventListener('click', function() {
+                    // 返回到补偿标准详情页面
+                    window.location.href = 'standard-detail.html';
+                });
+            }
+            
+            // 取消编辑按钮功能
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', function() {
+                    // 返回到补偿标准详情页面
+                    window.location.href = 'standard-detail.html';
+                });
+            }
+            
+            // 保存编辑按钮功能
+            const saveEditBtn = document.getElementById('save-edit-btn');
+            if (saveEditBtn) {
+                saveEditBtn.addEventListener('click', function() {
+                    // 保存编辑内容并返回到详情页面
+                    alert('保存成功');
+                    window.location.href = 'standard-detail.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

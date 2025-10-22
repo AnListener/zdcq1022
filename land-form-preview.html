@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征地补偿明细表</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF',
+                        secondary: '#3B82F6',
+                        accent: '#8B5CF6',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Microsoft YaHei', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .excel-border {
+                border: 1px solid #D1D5DB;
+            }
+            .excel-header-bg {
+                background-color: #F3F4F6;
+            }
+            .excel-alt-row {
+                background-color: #F9FAFB;
+            }
+            .excel-cell-padding {
+                padding: 8px;
+            }
+            .excel-header-text {
+                font-weight: 600;
+                color: #1F2937;
+            }
+            .excel-title {
+                font-size: 1.5rem;
+                font-weight: bold;
+                text-align: center;
+            }
+            .excel-subtitle {
+                font-size: 1rem;
+                text-align: center;
+                color: #4B5563;
+            }
+            .excel-footer {
+                font-weight: bold;
+                background-color: #F3F4F6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 页面操作栏 -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold text-gray-800">征地补偿明细表</h1>
+            <div class="flex space-x-2">
+                <button id="print-button" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition duration-200 flex items-center">
+                    <i class="fas fa-print mr-2"></i>
+                    <span>打印</span>
+                </button>
+                <button id="close-preview" class="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-md transition duration-200">
+                    关闭
+                </button>
+            </div>
+        </div>
+        
+        <!-- 预览页面内容 - 模拟Excel样式 -->
+        <div id="preview-content" class="bg-white shadow-lg overflow-hidden">
+            <!-- Excel标题区域 -->
+            <div class="p-6 border-b">
+                <h2 id="excel-title" class="excel-title mb-2">G7221南宁-衡阳（融安至罗城）罗城段东门镇石门村小源屯第一批</h2>
+                <p class="excel-subtitle">征地补偿明细汇总表</p>
+            </div>
+            
+            <!-- 主要数据表格 - 模拟Excel样式 -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse" cellspacing="0">
+                    <thead>
+                        <tr class="excel-header-bg">
+                            <!-- 第一行表头 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" rowspan="2">序号</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" rowspan="2">权属人</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" rowspan="2">地块编号</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" rowspan="2">土地类型</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" rowspan="2">面积(㎡)</th>
+                            
+                            <!-- 土地补偿及安置费（合并单元格） -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" colspan="2">土地补偿及安置费</th>
+                            
+                            <!-- 青苗补偿费（合并单元格） -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" colspan="6">青苗补偿费</th>
+                            
+                            <!-- 征地奖励（合并单元格） -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text" colspan="2">征地奖励</th>
+                            
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿金额合计(元)</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">备注</th>
+                        </tr>
+                        <tr class="excel-header-bg">
+                            <!-- 土地补偿及安置费子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿标准(元/亩)</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿金额(元)</th>
+                            
+                            <!-- 青苗补偿费子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">青苗名称</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">面积或数量</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿单位</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">规格</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿标准</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿金额(元)</th>
+                            
+                            <!-- 征地奖励子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">奖励标准(元/亩)</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">补偿金额(元)</th>
+                            
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">11230.00</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text"></th>
+                        </tr>
+                        <tr class="excel-header-bg">
+                            <!-- 第三行表头 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">1</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">张三</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">AB01</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">集体农用地</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">1.00</th>
+                            
+                            <!-- 土地补偿及安置费子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">12300.00</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">12300.00</th>
+                            
+                            <!-- 青苗补偿费子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">桉树</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">30</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">棵</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">一年内种植</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">50.00(元/棵)</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">1500.00</th>
+                            
+                            <!-- 征地奖励子列 -->
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">2000(元/亩)</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">2000</th>
+                            <th class="excel-border excel-cell-padding text-center excel-header-text">2000</th>
+                            
+                            <th class="excel-border excel-cell-padding text-center excel-header-text"></th>
+                           
+                        </tr>
+                    </thead>
+                    <tbody id="excel-data-body">
+                        <!-- 数据行将通过JavaScript动态填充 -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="excel-footer">
+                            <td class="excel-border excel-cell-padding text-center" colspan="15">总计</td>
+                            <td id="total-compensation" class="excel-border excel-cell-padding text-center font-bold text-primary">0.00</td>
+                            <td class="excel-border excel-cell-padding text-center"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 从URL参数中获取表单数据
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            const data = {};
+            for (const [key, value] of params.entries()) {
+                try {
+                    data[key] = JSON.parse(decodeURIComponent(value));
+                } catch (e) {
+                    data[key] = decodeURIComponent(value);
+                }
+            }
+            return data;
+        }
+        
+        // 生成表头标题
+        function generateExcelTitle(data) {
+            const basicInfo = data.basicInfo || {};
+            const projectName = basicInfo.projectName || '未知项目';
+            const region = basicInfo.region || '未知区域';
+            const batchNumber = basicInfo.batchNumber || '未知批次';
+            const title = `${projectName}+${region}+${batchNumber}+明细表`;
+            document.getElementById('excel-title').textContent = title;
+        }
+        
+        // 填充Excel数据表格
+        function fillExcelData(data) {
+            const basicInfo = data.basicInfo || {};
+            const landParcels = data.landParcels || [];
+            const landCompensations = data.landCompensations || [];
+            const cropCompensations = data.cropCompensations || [];
+            const rewardCompensations = data.rewardCompensations || [];
+            const tbody = document.getElementById('excel-data-body');
+            tbody.innerHTML = '';
+            
+            // 如果没有地块数据，显示空数据提示
+            if (landParcels.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td class="excel-border excel-cell-padding text-center text-gray-500" colspan="15">暂无征地补偿数据</td>
+                `;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+            
+            // 计算总补偿金额
+            let totalCompensation = 0;
+            
+            // 遍历地块数据，填充表格
+            landParcels.forEach((parcel, index) => {
+                // 查找对应地块的补偿信息
+                const landComp = landCompensations.find(c => c.landNumber === parcel.landNumber) || {};
+                const cropComp = cropCompensations.find(c => c.landNumber === parcel.landNumber) || {};
+                const rewardComp = rewardCompensations.find(c => c.landNumber === parcel.landNumber) || {};
+                
+                // 计算当前行的合计金额
+                const landAmount = parseFloat(landComp.compensationAmount || '0');
+                const cropAmount = parseFloat(cropComp.compensationAmount || '0');
+                const rewardAmount = parseFloat(rewardComp.compensationAmount || '0');
+                const rowTotal = landAmount + cropAmount + rewardAmount;
+                totalCompensation += rowTotal;
+                
+                // 创建行
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? '' : 'excel-alt-row';
+                
+                // 获取土地类型显示文本
+                let landTypeText = '';
+                if (basicInfo.landType === 'arable') landTypeText = '耕地';
+                else if (basicInfo.landType === 'construction') landTypeText = '建设用地';
+                else if (basicInfo.landType === 'unused') landTypeText = '未利用地';
+                
+                // 填充单元格
+                row.innerHTML = `
+                    <td class="excel-border excel-cell-padding text-center">${index + 1}</td>
+                    <td class="excel-border excel-cell-padding">${parcel.owner || ''}</td>
+                    <td class="excel-border excel-cell-padding">${parcel.landNumber || ''}</td>
+                    <td class="excel-border excel-cell-padding">${landTypeText}</td>
+                    <td class="excel-border excel-cell-padding text-right">${parseFloat(parcel.area || '0').toFixed(4)}</td>
+                    
+                    <!-- 土地补偿及安置费 -->
+                    <td class="excel-border excel-cell-padding text-right">${parseFloat(landComp.compensationStandard || '0').toFixed(2)}</td>
+                    <td class="excel-border excel-cell-padding text-right">${landAmount.toFixed(2)}</td>
+                    
+                    <!-- 青苗补偿费 -->
+                    <td class="excel-border excel-cell-padding">${cropComp.cropType || (parcel.hasCropCompensation ? '有' : '无')}</td>
+                    <td class="excel-border excel-cell-padding text-right">${parseFloat(cropComp.area || '0').toFixed(4)}</td>
+                    <td class="excel-border excel-cell-padding text-right">${parseFloat(cropComp.compensationStandard || '0').toFixed(2)}</td>
+                    <td class="excel-border excel-cell-padding text-right">${cropAmount.toFixed(2)}</td>
+                    
+                    <!-- 征地奖励 -->
+                    <td class="excel-border excel-cell-padding text-right">${parseFloat(rewardComp.compensationStandard || '0').toFixed(2)}</td>
+                    <td class="excel-border excel-cell-padding text-right">${rewardAmount.toFixed(2)}</td>
+                    
+                    <!-- 合计和备注 -->
+                    <td class="excel-border excel-cell-padding text-right font-semibold">${rowTotal.toFixed(2)}</td>
+                    <td class="excel-border excel-cell-padding">${parcel.remarks || ''}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // 更新总补偿金额
+            document.getElementById('total-compensation').textContent = totalCompensation.toFixed(2);
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = getQueryParams();
+            
+            // 如果有数据，则填充预览页面
+            if (Object.keys(params).length > 0) {
+                generateExcelTitle(params);
+                fillExcelData(params);
+            }
+            
+            // 打印按钮点击事件
+            document.getElementById('print-button').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // 关闭预览按钮点击事件
+            document.getElementById('close-preview').addEventListener('click', function() {
+                // 如果是从其他页面打开的，返回上一页
+                if (document.referrer) {
+                    window.history.back();
+                } else {
+                    // 否则关闭当前窗口
+                    window.close();
+                }
+            });
+        });
+        
+        // 打印样式调整
+        window.addEventListener('beforeprint', function() {
+            document.body.classList.add('bg-white');
+        });
+        
+        window.addEventListener('afterprint', function() {
+            document.body.classList.remove('bg-white');
+        });
+    </script>
+</body>
+</html>

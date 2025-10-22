@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成费用报表 - 征拆项目管理系统</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        .step-active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .step-inactive {
+            background-color: #e5e7eb;
+            color: #6b7280;
+        }
+        .step-completed {
+            background-color: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- 顶部导航 -->
+    <div class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">生成费用报表</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between relative">
+            <!-- 连接线 -->
+            <div class="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 z-0"></div>
+            
+            <!-- 步骤1 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-active flex items-center justify-center mb-2">
+                    <span>1</span>
+                </div>
+                <span class="text-sm font-medium">选择报表类型</span>
+            </div>
+            
+            <!-- 步骤2 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-inactive flex items-center justify-center mb-2">
+                    <span>2</span>
+                </div>
+                <span class="text-sm font-medium">设置报表参数</span>
+            </div>
+            
+            <!-- 步骤3 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-inactive flex items-center justify-center mb-2">
+                    <span>3</span>
+                </div>
+                <span class="text-sm font-medium">生成报表</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 表单内容 -->
+    <div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-6">选择报表类型</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition-colors">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="radio" name="report-type" id="summary-report" class="rounded text-indigo-500 focus:ring-indigo-500" checked>
+                        </div>
+                        <label for="summary-report" class="ml-3">
+                            <h3 class="text-md font-medium text-gray-900">费用汇总报表</h3>
+                            <p class="text-sm text-gray-500 mt-1">按费用分类汇总各项目费用情况</p>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition-colors">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="radio" name="report-type" id="detail-report" class="rounded text-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <label for="detail-report" class="ml-3">
+                            <h3 class="text-md font-medium text-gray-900">费用明细报表</h3>
+                            <p class="text-sm text-gray-500 mt-1">显示各费用项的详细信息</p>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition-colors">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="radio" name="report-type" id="comparison-report" class="rounded text-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <label for="comparison-report" class="ml-3">
+                            <h3 class="text-md font-medium text-gray-900">费用对比报表</h3>
+                            <p class="text-sm text-gray-500 mt-1">对比不同时间段或项目的费用情况</p>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition-colors">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="radio" name="report-type" id="trend-report" class="rounded text-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <label for="trend-report" class="ml-3">
+                            <h3 class="text-md font-medium text-gray-900">费用趋势报表</h3>
+                            <p class="text-sm text-gray-500 mt-1">显示费用变化趋势和预测</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">报表说明</h3>
+                <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                    <li>费用汇总报表：按费用分类统计各项目总费用</li>
+                    <li>费用明细报表：列出所有费用项的详细信息</li>
+                    <li>费用对比报表：支持时间维度和项目维度的费用对比</li>
+                    <li>费用趋势报表：基于历史数据预测未来费用趋势</li>
+                </ul>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-btn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    取消
+                </button>
+                <button id="next-btn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    下一步
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script src="./cost/generate-cost-report.js"></script>
+</body>
+</html>

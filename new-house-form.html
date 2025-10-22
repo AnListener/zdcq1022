@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增房屋信息</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#eff6ff',
+                        border: '#e5e7eb'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            }
+            .card-shadow-hover {
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    <style>
+        /* 标签页样式 */
+        .tab-active {
+            color: #3b82f6;
+            font-weight: 500;
+            border-bottom: 2px solid #3b82f6;
+        }
+        /* 输入框聚焦样式 */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <!-- 全屏模态框 -->
+    <div id="new-house-modal" class="fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- 顶部标题栏 -->
+        <div class="bg-primary text-white p-4 flex justify-between items-center shadow-sm">
+            <h1 class="text-xl font-semibold">新增房屋信息</h1>
+            <button id="close-modal" class="text-white hover:text-gray-200 transition-colors">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 中间内容区域 -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <!-- 基础信息卡片 -->
+                <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-id-card text-primary mr-2"></i>基础信息
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 <span class="text-red-500">*</span></label>
+                            <input type="text" id="project-name" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm bg-gray-50" value="融水苗族自治县城镇建设项目" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">所属区域 <span class="text-red-500">*</span></label>
+                            <input type="text" id="region" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm bg-gray-50" value="融水县" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">权属人 <span class="text-red-500">*</span></label>
+                            <input type="text" id="owner-name" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">权属人类型 <span class="text-red-500">*</span></label>
+                            <select id="owner-type" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="individual">个人</option>
+                                <option value="collective">集体</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">权属人身份证号</label>
+                            <input type="text" id="owner-id" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">权属人联系地址</label>
+                            <input type="text" id="owner-address" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                            <input type="tel" id="owner-phone" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">银行卡号</label>
+                            <input type="text" id="bank-card" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">开户行</label>
+                            <select id="bank" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="icbc">工商银行</option>
+                                <option value="abc">农业银行</option>
+                                <option value="boc">中国银行</option>
+                                <option value="ccb">建设银行</option>
+                                <option value="psbc">邮政储蓄银行</option>
+                                <option value="other">其他银行</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">录入日期</label>
+                            <input type="date" id="entry-date" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">录入人 <span class="text-red-500">*</span></label>
+                            <input type="text" id="entry-person" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm bg-gray-50" value="系统管理员" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 房屋信息卡片 -->
+                <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-home text-primary mr-2"></i>房屋信息
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">批次 <span class="text-red-500">*</span></label>
+                            <input type="text" id="batch" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">房屋编号 <span class="text-red-500">*</span></label>
+                            <input type="text" id="house-number" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="FW-YYYY-XXX">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">房屋位置 <span class="text-red-500">*</span></label>
+                            <input type="text" id="house-location" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">房屋类型 <span class="text-red-500">*</span></label>
+                            <select id="house-type" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="brick-concrete">砖混结构</option>
+                                <option value="brick-wood">砖木结构</option>
+                                <option value="concrete">混凝土结构</option>
+                                <option value="other">其他结构</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">证载建筑面积(㎡) <span class="text-red-500">*</span></label>
+                            <input type="number" id="certificate-area" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">实际建筑面积(㎡) <span class="text-red-500">*</span></label>
+                            <input type="number" id="actual-area" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">产权证件编号</label>
+                            <input type="text" id="property-certificate" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">是否符合"一户一宅"条件</label>
+                            <select id="is-one-house-one-homestead" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="yes">是</option>
+                                <option value="no">否</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">宅基地面积(㎡) <span class="text-red-500">*</span></label>
+                            <input type="number" id="homestead-area" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">宅基地补偿方式 <span class="text-red-500">*</span></label>
+                            <select id="homestead-compensation-type" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="money">全货币补偿</option>
+                                <option value="self-built">自行申请回建用地补偿</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">是否为自改经营性房屋 <span class="text-red-500">*</span></label>
+                            <select id="is-business" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                <option value="">请选择</option>
+                                <option value="yes">是</option>
+                                <option value="no">否</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">营业执照编号</label>
+                            <input type="text" id="business-license" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        </div>
+                        <div class="form-group col-span-1 md:col-span-2 lg:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                            <textarea id="remarks" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 补偿费用项卡片 -->
+                <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-calculator text-primary mr-2"></i>补偿费用项
+                    </h2>
+                    
+                    <!-- 标签页导航 -->
+                    <div class="border-b border-border mb-4">
+                        <div class="flex space-x-6 overflow-x-auto scrollbar-hide">
+                            <button id="tab-homestead" class="tab-active py-3 px-1 text-sm font-medium transition-colors" onclick="switchTab('homestead')">
+                                宅基地补偿费
+                            </button>
+                            <button id="tab-facility" class="py-3 px-1 text-sm font-medium text-gray-500 transition-colors" onclick="switchTab('facility')">
+                                房屋附属实施补偿费
+                            </button>
+                            <button id="tab-other" class="py-3 px-1 text-sm font-medium text-gray-500 transition-colors" onclick="switchTab('other')">
+                                其他补偿费
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 宅基地补偿费标签页内容 -->
+                    <div id="homestead-content" class="tab-content">
+                        <div class="mb-4">
+                            <details class="bg-secondary rounded-md overflow-hidden">
+                                <summary class="text-md font-medium p-4 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    补偿情况说明
+                                </summary>
+                                <div class="p-4 text-sm space-y-3">
+                                    <div>
+                                        <strong>1. 有权属凭证的房屋</strong>
+                                        <p class="mt-1">认定补偿的宅基地面积每户不得超过150平方米，超过150平方米的部分按一般农用地标准补偿。</p>
+                                    </div>
+                                    <div>
+                                        <strong>2. 无权属凭证但符合"一户一宅"的房屋</strong>
+                                        <p class="mt-1">参照农村居民一户只能有一处宅基地的法律规定，由被征收集体土地上的房屋权利当事人提供村民委员会、村民小组出具的房屋情况说明，并经乡镇人民政府或县相关行政部门作出"一户一宅"认定书。符合上述条件，经公示无争议的，按照有证房屋标准予以补偿。认定补偿的宅基地面积每户不得超过150平方米，超过150平方米的部分按一般农用地标准补偿。</p>
+                                    </div>
+                                    <div>
+                                        <strong>3. 无权属凭证且不符合"一户一宅"的房屋</strong>
+                                        <p class="mt-1">宅基地按一般农用地标准补偿。</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <details class="bg-secondary rounded-md overflow-hidden">
+                                <summary class="text-md font-medium p-4 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    补偿方式说明
+                                </summary>
+                                <div class="p-4 text-sm space-y-3">
+                                    <div>
+                                        <strong>1. 全货币补偿</strong>
+                                        <p class="mt-1">被征收房屋实际用地面积按每平方米1500元的标准进行补偿，每宗宅基地的最大货币补偿面积不超过150平方米，超过150平方米的部分按一般农用地补偿。</p>
+                                        <p class="mt-1">计算公式：</p>
+                                        <ul class="list-disc pl-5 mt-1">
+                                            <li>若面积 ≤ 150㎡，补偿金额 = 面积 × 1500元；</li>
+                                            <li>若面积 > 150㎡，补偿金额 = 150 × 1500元 + (面积 - 150) × 一般农用地补偿单价。</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong>2. 自行申请回建用地补偿</strong>
+                                        <p class="mt-1">被征收房屋的宅基地面积按一般农用地标准补偿，另补被征收房屋的宅基地回建费为每户4万元。</p>
+                                        <p class="mt-1">计算公式：补偿金额 = 面积 × 一般农用地补偿单价 + 40000元。</p>
+                                        <p class="mt-1">其后，房屋被征收人可自行按行政审批程序申请回建用地。</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>房屋编号</th>
+                                        <th>补偿方式</th>
+                                        <th>补偿面积(㎡)</th>
+                                        <th>补偿标准(元/㎡)</th>
+                                        <th>补偿金额(元)</th>
+                                        <th>计算结果</th>
+                                        <th>计算说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="homestead-compensation-table-body">
+                                    <tr>
+                                        <td>1</td>
+                                        <td>
+                                            <input type="text" id="homestead-house-number" class="form-input w-full border border-gray-300 rounded-md py-1 px-2 text-sm" placeholder="FW-YYYY-XXX">
+                                        </td>
+                                        <td>
+                                            <select id="homestead-compensation-type-table" class="form-input w-full border border-gray-300 rounded-md py-1 px-2 text-sm">
+                                                <option value="money">全货币补偿</option>
+                                                <option value="self-built">自行申请回建用地补偿</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" id="homestead-area-input" class="form-input w-full border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.0001">
+                                        </td>
+                                        <td>
+                                            <input type="number" id="farmland-price" class="form-input w-full border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" value="800">
+                                        </td>
+                                        <td>
+                                            <input type="text" id="homestead-amount" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" readonly>
+                                        </td>
+                                        <td>
+                                            <div id="homestead-formula" class="text-sm"></div>
+                                        </td>
+                                        <td>
+                                            <div class="text-xs text-gray-500">详见上方说明</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 房屋附属实施补偿费标签页内容 -->
+                    <div id="facility-content" class="tab-content hidden">
+                        <div class="mb-4">
+                            <details class="bg-secondary rounded-md overflow-hidden">
+                                <summary class="text-md font-medium p-4 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    补偿方式说明
+                                </summary>
+                                <div class="p-4 text-sm space-y-3">
+                                    <div>
+                                        <strong>1. 房屋结构名称</strong>
+                                        <p class="mt-1">默认为房屋结构面积补偿，该金额会根据已选择的房屋结构和已录入的实际建筑面积（㎡）自动计算，且该记录为只读状态，后续记录则用于录入附属设施补偿信息。</p>
+                                    </div>
+                                    <div>
+                                        <strong>2. 其他设施</strong>
+                                        <p class="mt-1">用户可根据实际情况添加其他设施，如：电梯、楼梯、走廊等。每个设施记录包含设施类型/名称（下拉选择框）、面积/数量（可编辑）、补偿标准（可编辑）、补偿金额（自动计算）、计算结果（公式文本显示）、操作（编辑、删除）。</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <details class="bg-secondary rounded-md overflow-hidden">
+                                <summary class="text-md font-medium p-4 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    建筑面积补偿情况说明
+                                </summary>
+                                <div class="p-4 text-sm space-y-3">
+                                    <div>
+                                        <strong>1. 有权属凭证的房屋</strong>
+                                        <p class="mt-1">以证载的面积为有证房屋面积，如实际建筑面积小于证载面积的，以实际建成面积确定为有证房屋补偿面积；实际建筑面积大于证载面积的，超出证载面积部分按标准的80%给予补偿。</p>
+                                    </div>
+                                    <div>
+                                        <strong>2. 无权属凭证但符合"一户一宅"的房屋</strong>
+                                        <p class="mt-1">经公示无争议的，按照有证房屋标准予以补偿。认定补偿的房屋建筑面积每户不得超过450平方米，超过450平方米的部分按照补偿标准的80%给予补偿。</p>
+                                    </div>
+                                    <div>
+                                        <strong>3. 无权属凭证且不符合"一户一宅"的房屋</strong>
+                                        <p class="mt-1">房屋建筑面积参照补偿标准的80%计算补偿金。</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>设施类型/名称</th>
+                                        <th>面积/数量</th>
+                                        <th>单位</th>
+                                        <th>补偿标准(元/单位)</th>
+                                        <th>补偿金额(元)</th>
+                                        <th>计算结果</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="facility-compensation-table-body">
+                                    <tr>
+                                        <td>1</td>
+                                        <td>
+                                            <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="房屋结构面积补偿" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="number" id="house-structure-area" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.0001" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="平方米" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="number" id="house-structure-standard" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="text" id="house-structure-amount" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" readonly>
+                                        </td>
+                                        <td>
+                                            <div id="house-structure-formula" class="text-sm"></div>
+                                        </td>
+                                        <td>
+                                            <div class="text-xs text-gray-500">只读</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>
+                                            <select class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" disabled>
+                                                <option value="wall">围墙</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" value="50" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="米" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" value="50" readonly>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="2500.00" readonly>
+                                        </td>
+                                        <td>
+                                            <div class="text-sm">50 × 50 = 2500.00</div>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="edit-facility bg-blue-500 text-white text-xs py-1 px-2 rounded mr-1">编辑</button>
+                                            <button type="button" class="delete-facility bg-red-500 text-white text-xs py-1 px-2 rounded">删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end">
+                            <button id="add-facility-btn" class="bg-primary text-white text-sm py-2 px-4 rounded flex items-center hover:bg-primary/90 transition-colors">
+                                <i class="fa fa-plus mr-2"></i>添加设施
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 其他补偿费标签页内容 -->
+                    <div id="other-content" class="tab-content hidden">
+                        <!-- 房屋搬迁补助费 -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" id="moving-compensation" class="mr-2">
+                                <h3 class="text-md font-medium">房屋搬迁补助费</h3>
+                            </div>
+                            
+                            <div id="moving-compensation-content" class="bg-secondary p-4 rounded-md text-sm space-y-3 ml-6">
+                                <div>
+                                    <strong>计算标准说明：</strong>
+                                    <p class="mt-1">按被征收房屋产权证载面积或征收认定建筑面积10元/㎡计算，每户搬迁费一次性支付，不足2000元的按2000元补助，超过2000元的，按实际面积结算。计算公式：</p>
+                                    <ul class="list-disc pl-5 mt-1">
+                                        <li>若面积 × 10元/㎡ ≤ 2000元，搬迁补助费 = 2000元；</li>
+                                        <li>若面积 × 10元/㎡ > 2000元，搬迁补助费 = 面积 × 10元/㎡。</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">面积计算方式</label>
+                                        <select id="moving-area-type" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                            <option value="certificate">按产权证载面积</option>
+                                            <option value="actual">按征收认定建筑面积</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">计算面积(㎡)</label>
+                                        <input type="number" id="moving-area" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.0001">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">搬迁标准(元/㎡)</label>
+                                        <input type="number" id="moving-standard" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.01" value="10">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium">搬迁补偿金额(元)：</span>
+                                        <input type="text" id="moving-amount" class="form-input w-32 text-right border border-gray-300 rounded-md py-1 px-2 text-sm bg-gray-50" readonly>
+                                    </div>
+                                    <div id="moving-formula" class="text-xs text-gray-500 mt-1"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 房屋征收临时安置补助费 -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" id="temporary-compensation" class="mr-2">
+                                <h3 class="text-md font-medium">房屋征收临时安置补助费</h3>
+                            </div>
+                            
+                            <div id="temporary-compensation-content" class="bg-secondary p-4 rounded-md text-sm space-y-3 ml-6">
+                                <div>
+                                    <strong>计算标准说明：</strong>
+                                    <p class="mt-1">按房屋征收协议确认的房屋建筑面积10元/㎡/月计算，不足2000元的按2000元结算支付，超过2000元的按实际面积结算支付，一次性结清六个月临时安置费。计算公式：</p>
+                                    <ul class="list-disc pl-5 mt-1">
+                                        <li>每月费用：若面积 ≤ 2000㎡，每月临时安置费 = 2000元；若面积 > 2000㎡，每月临时安置费 = 面积 × 10元/㎡。</li>
+                                        <li>总费用：总临时安置费 = 每月临时安置费 × 6。</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">面积计算方式</label>
+                                        <select id="temporary-area-type" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                            <option value="certificate">按产权证载面积</option>
+                                            <option value="actual">按征收认定建筑面积</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">计算面积(㎡)</label>
+                                        <input type="number" id="temporary-area" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.0001">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">补偿标准(元/㎡/月)</label>
+                                        <input type="number" id="temporary-standard" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" min="0" step="0.01" value="10">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium">临时安置补偿金额(元)：</span>
+                                        <input type="text" id="temporary-amount" class="form-input w-32 text-right border border-gray-300 rounded-md py-1 px-2 text-sm bg-gray-50" readonly>
+                                    </div>
+                                    <div id="temporary-formula" class="text-xs text-gray-500 mt-1"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 自改经营性房屋铺面补助费 -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" id="business-compensation" class="mr-2">
+                                <h3 class="text-md font-medium">自改经营性房屋铺面补助费</h3>
+                            </div>
+                            
+                            <div id="business-compensation-content" class="bg-secondary p-4 rounded-md text-sm space-y-3 ml-6">
+                                <div>
+                                    <strong>计算标准说明：</strong>
+                                    <p class="mt-1">本项目征地公告发布前已经持有经营证照的，按30000元/户一次性给予停产停业补助;本项目征地公告发布时未持有经营证照，但已连续经营达6个月以上的，按15000元/户给予停产停业补助。</p>
+                                </div>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>序号</th>
+                                                <th>经营证照情况</th>
+                                                <th>补偿金额(元)</th>
+                                                <th>计算结果</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>
+                                                    <select id="business-license-status" class="form-input w-full border border-gray-300 rounded-md py-1 px-2 text-sm">
+                                                        <option value="">请选择</option>
+                                                        <option value="has-license">征地公告发布前已持有经营证照</option>
+                                                        <option value="no-license">征地公告发布时未持有但已连续经营达6个月以上</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="text" id="business-amount" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" readonly>
+                                                </td>
+                                                <td>
+                                                    <div id="business-formula" class="text-sm"></div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 特殊补助 -->
+                        <div class="mb-6">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" id="special-compensation" class="mr-2">
+                                <h3 class="text-md font-medium">特殊补助</h3>
+                            </div>
+                            
+                            <div id="special-compensation-content" class="bg-secondary p-4 rounded-md text-sm space-y-3 ml-6">
+                                <div>
+                                    <strong>计算标准说明：</strong>
+                                    <p class="mt-1">被征收房屋权利当事人有以下情况之一的，一次性给予30000元/户的补助：</p>
+                                    <ol class="list-decimal pl-5 mt-1">
+                                        <li>经民政局核定为城乡居民最低生活保障户；</li>
+                                        <li>生活困难的孤寡老人或无劳动能力的残疾人；</li>
+                                        <li>烈属、伤残军人</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">适用条件</label>
+                                        <select id="special-condition" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm">
+                                            <option value="">请选择</option>
+                                            <option value="low-income">城乡居民最低生活保障户</option>
+                                            <option value="elderly-disabled">生活困难的孤寡老人或无劳动能力的残疾人</option>
+                                            <option value="martyr-disabled">烈属、伤残军人</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">特殊补助金额(元)</label>
+                                        <input type="text" id="special-amount" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-2 px-3 text-sm" value="30000.00" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 费用汇总卡片 -->
+                <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-calculator text-purple-500 mr-2"></i>房屋费用汇总
+                    </h2>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>补偿费用项</th>
+                                    <th class="text-right">补偿金额(元)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>宅基地补偿费</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-homestead" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>房屋附属设施费</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-facility" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>房屋搬迁补助费</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-moving" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>房屋征收临时安置补助费</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-temporary" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>自改经营性房屋铺面补助费</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-business" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>特殊补助</td>
+                                    <td class="text-right">
+                                        <input type="text" id="summary-special" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm" readonly>
+                                    </td>
+                                </tr>
+                                <tr class="bg-primary/10">
+                                    <td></td>
+                                    <td class="font-medium">总补偿金额(元)</td>
+                                    <td class="text-right font-medium">
+                                        <input type="text" id="summary-total" class="form-input text-right border-0 bg-transparent py-1 px-2 text-sm font-medium" readonly>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 附件管理卡片 -->
+                <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-paperclip text-primary mr-2"></i>附件管理
+                    </h2>
+                    
+                    <!-- 文件上传区域 -->
+                    <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-md p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                        <input type="file" id="file-upload" class="hidden" multiple>
+                        <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-sm text-gray-500">点击或拖拽文件到此处上传</p>
+                        <p class="text-xs text-gray-400 mt-1">支持JPG、PNG、PDF等格式，单个文件不超过10MB</p>
+                    </div>
+                    
+                    <!-- 已上传文件列表 -->
+                    <div id="file-list" class="mt-4 hidden">
+                        <h3 class="text-sm font-medium mb-2">已上传文件</h3>
+                        <div id="file-items-container" class="space-y-2">
+                            <!-- 文件列表项会动态添加到这里 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部按钮区域 -->
+        <div class="bg-white border-t border-border p-4 flex justify-end space-x-3">
+            <button id="cancel-btn" class="border border-gray-300 text-gray-700 py-2 px-5 rounded-md hover:bg-gray-50 transition-colors">
+                取消
+            </button>
+            <button id="save-btn" class="bg-primary text-white py-2 px-5 rounded-md hover:bg-primary/90 transition-colors">
+                保存
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换逻辑
+        function switchTab(tabId) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 移除所有标签页的激活状态
+            document.querySelectorAll('#tab-homestead, #tab-facility, #tab-other').forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('text-gray-500');
+            });
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabId + '-content').classList.remove('hidden');
+            
+            // 激活选中的标签页
+            document.getElementById('tab-' + tabId).classList.add('tab-active');
+            document.getElementById('tab-' + tabId).classList.remove('text-gray-500');
+        }
+
+        // 房屋类型与补偿标准联动逻辑
+        const houseType = document.getElementById('house-type');
+        const houseStructureStandard = document.getElementById('house-structure-standard');
+        
+        houseType.addEventListener('change', function() {
+            switch(this.value) {
+                case 'brick-concrete':
+                    houseStructureStandard.value = '1200';
+                    break;
+                case 'brick-wood':
+                    houseStructureStandard.value = '800';
+                    break;
+                case 'concrete':
+                    houseStructureStandard.value = '1500';
+                    break;
+                case 'other':
+                    houseStructureStandard.value = '600';
+                    break;
+                default:
+                    houseStructureStandard.value = '';
+            }
+            updateCompensationAmounts();
+        });
+        
+        // 宅基地信息联动逻辑
+        const homesteadCompensationType = document.getElementById('homestead-compensation-type');
+        const homesteadCompensationTypeTable = document.getElementById('homestead-compensation-type-table');
+        const homesteadArea = document.getElementById('homestead-area');
+        const homesteadAreaInput = document.getElementById('homestead-area-input');
+        const houseNumber = document.getElementById('house-number');
+        const homesteadHouseNumber = document.getElementById('homestead-house-number');
+        
+        // 房屋编号联动
+        houseNumber.addEventListener('input', function() {
+            homesteadHouseNumber.value = this.value;
+        });
+        
+        // 宅基地补偿方式联动
+        homesteadCompensationType.addEventListener('change', function() {
+            homesteadCompensationTypeTable.value = this.value;
+            updateCompensationAmounts();
+        });
+        
+        // 宅基地面积联动
+        homesteadArea.addEventListener('input', function() {
+            homesteadAreaInput.value = this.value;
+            updateCompensationAmounts();
+        });
+
+        // 实际建筑面积与房屋结构面积联动
+        const actualArea = document.getElementById('actual-area');
+        const houseStructureArea = document.getElementById('house-structure-area');
+        
+        actualArea.addEventListener('input', function() {
+            houseStructureArea.value = this.value || '';
+            updateCompensationAmounts();
+        });
+
+        // 计算房屋结构面积补偿
+        function calculateHouseStructureCompensation() {
+            const actualAreaValue = parseFloat(actualArea.value) || 0;
+            const certificateAreaValue = parseFloat(document.getElementById('certificate-area').value) || 0;
+            const standard = parseFloat(houseStructureStandard.value) || 0;
+            let amount = 0;
+            let formulaText = '';
+            
+            // 判断是否有产权证件编号，以确定房屋是否有权属凭证
+            const hasPropertyCertificate = document.getElementById('property-certificate').value.trim() !== '';
+            
+            // 判断是否符合"一户一宅"条件
+            const oneHouseOneHomesteadValue = document.getElementById('is-one-house-one-homestead').value;
+            const isOneHouseOneHomestead = oneHouseOneHomesteadValue === 'yes';
+            
+            if (hasPropertyCertificate) {
+                // 有权属凭证的房屋
+                if (actualAreaValue <= certificateAreaValue) {
+                    // 实际建筑面积小于等于证载面积，以实际面积计算
+                    amount = actualAreaValue * standard;
+                    formulaText = `${actualAreaValue.toFixed(4)} × ${standard.toFixed(2)} = ${amount.toFixed(2)}`;
+                } else {
+                    // 实际建筑面积大于证载面积
+                    // 基础面积（证载面积）按100%计算
+                    const basicAmount = certificateAreaValue * standard;
+                    // 超出部分按80%计算
+                    const exceedArea = actualAreaValue - certificateAreaValue;
+                    const exceedAmount = exceedArea * standard * 0.8;
+                    amount = basicAmount + exceedAmount;
+                    formulaText = `${certificateAreaValue.toFixed(4)} × ${standard.toFixed(2)} + ${exceedArea.toFixed(4)} × ${standard.toFixed(2)} × 0.8 = ${amount.toFixed(2)}`;
+                }
+            } else if (isOneHouseOneHomestead) {
+                // 无权属凭证但符合"一户一宅"的房屋
+                if (actualAreaValue <= 450) {
+                    // 面积不超过450平方米，按100%计算
+                    amount = actualAreaValue * standard;
+                    formulaText = `${actualAreaValue.toFixed(4)} × ${standard.toFixed(2)} = ${amount.toFixed(2)}`;
+                } else {
+                    // 面积超过450平方米
+                    // 基础面积（450平方米）按100%计算
+                    const basicAmount = 450 * standard;
+                    // 超出部分按80%计算
+                    const exceedArea = actualAreaValue - 450;
+                    const exceedAmount = exceedArea * standard * 0.8;
+                    amount = basicAmount + exceedAmount;
+                    formulaText = `450 × ${standard.toFixed(2)} + ${exceedArea.toFixed(4)} × ${standard.toFixed(2)} × 0.8 = ${amount.toFixed(2)}`;
+                }
+            } else {
+                // 无权属凭证且不符合"一户一宅"的房屋，按80%计算
+                amount = actualAreaValue * standard * 0.8;
+                formulaText = `${actualAreaValue.toFixed(4)} × ${standard.toFixed(2)} × 0.8 = ${amount.toFixed(2)}`;
+            }
+            
+            // 更新显示的补偿金额
+            document.getElementById('house-structure-amount').value = amount.toFixed(2);
+            
+            // 更新计算公式
+            if (actualAreaValue > 0 && standard > 0) {
+                document.getElementById('house-structure-formula').textContent = formulaText;
+            } else {
+                document.getElementById('house-structure-formula').textContent = '';
+            }
+            
+            return amount;
+        }
+
+        // 计算搬迁补助费
+        function calculateMovingCompensation() {
+            const isChecked = document.getElementById('moving-compensation').checked;
+            if (!isChecked) return 0;
+            
+            const areaType = document.getElementById('moving-area-type').value;
+            let area;
+            
+            if (areaType === 'certificate') {
+                area = parseFloat(document.getElementById('certificate-area').value) || 0;
+            } else {
+                area = parseFloat(document.getElementById('actual-area').value) || 0;
+            }
+            
+            const standard = parseFloat(document.getElementById('moving-standard').value) || 0;
+            let amount;
+            
+            // 根据设计文档的计算标准
+            const areaTimesStandard = area * standard;
+            if (areaTimesStandard <= 2000) {
+                amount = 2000;
+            } else {
+                amount = areaTimesStandard;
+            }
+            
+            // 更新显示的补偿金额
+            document.getElementById('moving-amount').value = amount.toFixed(2);
+            
+            // 更新计算公式
+            if (area > 0 && standard > 0) {
+                if (areaTimesStandard <= 2000) {
+                    document.getElementById('moving-formula').textContent = `因为${area.toFixed(4)} × ${standard.toFixed(2)} = ${areaTimesStandard.toFixed(2)} ≤ 2000元，所以搬迁补助费 = 2000元`;
+                } else {
+                    document.getElementById('moving-formula').textContent = `${area.toFixed(4)} × ${standard.toFixed(2)} = ${amount.toFixed(2)}`;
+                }
+            } else {
+                document.getElementById('moving-formula').textContent = '';
+            }
+            
+            return amount;
+        }
+        
+        // 添加事件监听器，确保房屋搬迁补助费的计算公式能够显示
+        document.getElementById('moving-area-type').addEventListener('change', calculateMovingCompensation);
+        document.getElementById('moving-standard').addEventListener('input', calculateMovingCompensation);
+        document.getElementById('certificate-area').addEventListener('input', calculateMovingCompensation);
+        document.getElementById('actual-area').addEventListener('input', calculateMovingCompensation);
+        
+        // 添加事件监听器，确保建筑面积补偿能够根据权属情况自动更新
+        document.getElementById('property-certificate').addEventListener('input', updateCompensationAmounts);
+        document.getElementById('is-one-house-one-homestead').addEventListener('change', updateCompensationAmounts);
+
+        // 更新所有补偿金额
+        function updateCompensationAmounts() {
+            // 计算房屋结构面积补偿
+            const houseStructureCompensation = calculateHouseStructureCompensation();
+            
+            // 计算宅基地补偿费
+            const homesteadType = document.getElementById('homestead-compensation-type-table').value;
+            const homesteadArea = parseFloat(document.getElementById('homestead-area-input').value) || 0;
+            const farmlandPrice = parseFloat(document.getElementById('farmland-price').value) || 0;
+            let homesteadAmount = 0;
+            let formulaText = '';
+            
+            if (homesteadType === 'money') {
+                if (homesteadArea <= 150) {
+                    homesteadAmount = homesteadArea * 1500;
+                    formulaText = `${homesteadArea.toFixed(4)} × 1500 = ${homesteadAmount.toFixed(2)}`;
+                } else {
+                    homesteadAmount = 150 * 1500 + (homesteadArea - 150) * farmlandPrice;
+                    formulaText = `150 × 1500 + (${homesteadArea.toFixed(4)} - 150) × ${farmlandPrice.toFixed(2)} = ${homesteadAmount.toFixed(2)}`;
+                }
+            } else if (homesteadType === 'self-built') {
+                homesteadAmount = homesteadArea * farmlandPrice + 40000;
+                formulaText = `${homesteadArea.toFixed(4)} × ${farmlandPrice.toFixed(2)} + 40000 = ${homesteadAmount.toFixed(2)}`;
+            }
+            
+            document.getElementById('homestead-amount').value = homesteadAmount.toFixed(2);
+            document.getElementById('homestead-formula').textContent = formulaText;
+            
+            // 计算房屋附属设施费 (包含房屋结构面积补偿)
+            let facilityTotal = houseStructureCompensation;
+            const facilityRows = document.querySelectorAll('#facility-compensation-table-body tr');
+            
+            // 跳过第一个房屋结构面积补偿行
+            for (let i = 1; i < facilityRows.length; i++) {
+                const row = facilityRows[i];
+                const areaInput = row.querySelector('td:nth-child(3) input');
+                const standardInput = row.querySelector('td:nth-child(5) input');
+                const amountInput = row.querySelector('td:nth-child(6) input');
+                const formulaDiv = row.querySelector('td:nth-child(7) div');
+                
+                if (areaInput && standardInput && amountInput && formulaDiv) {
+                    const area = parseFloat(areaInput.value) || 0;
+                    const standard = parseFloat(standardInput.value) || 0;
+                    const amount = area * standard;
+                    
+                    // 更新显示的补偿金额
+                    amountInput.value = amount.toFixed(2);
+                    facilityTotal += amount;
+                    
+                    // 更新计算公式
+                    if (area > 0 && standard > 0) {
+                        formulaDiv.textContent = `${area.toFixed(2)} × ${standard.toFixed(2)} = ${amount.toFixed(2)}`;
+                    } else {
+                        formulaDiv.textContent = '';
+                    }
+                }
+            }
+            
+            // 计算其他补偿费
+            const movingCompensation = calculateMovingCompensation();
+            const temporaryCompensation = calculateTemporaryCompensation();
+            const businessCompensation = calculateBusinessCompensation();
+            const specialCompensation = document.getElementById('special-compensation').checked ? 
+                parseFloat(document.getElementById('special-amount').value) || 0 : 0;
+            
+            // 计算总补偿金额
+            const totalAmount = homesteadAmount + facilityTotal + movingCompensation + 
+                temporaryCompensation + businessCompensation + specialCompensation;
+            
+            // 更新汇总表
+            document.getElementById('summary-homestead').value = homesteadAmount.toFixed(2);
+            document.getElementById('summary-facility').value = facilityTotal.toFixed(2);
+            document.getElementById('summary-moving').value = movingCompensation.toFixed(2);
+            document.getElementById('summary-temporary').value = temporaryCompensation.toFixed(2);
+            document.getElementById('summary-business').value = businessCompensation.toFixed(2);
+            document.getElementById('summary-special').value = specialCompensation.toFixed(2);
+            document.getElementById('summary-total').value = totalAmount.toFixed(2);
+        }
+
+        // 附属设施补偿费表格操作按钮逻辑
+        // 编辑按钮功能
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-facility')) {
+                const button = e.target.closest('.edit-facility');
+                const row = button.closest('tr');
+                const cells = row.querySelectorAll('td');
+                
+                // 切换编辑/保存状态
+                if (button.textContent === '编辑') {
+                    button.textContent = '保存';
+                    button.classList.remove('bg-blue-500');
+                    button.classList.add('bg-green-500');
+                    
+                    // 将只读字段切换为可编辑状态
+                    const select = cells[1].querySelector('select');
+                    const areaInput = cells[2].querySelector('input');
+                    const standardInput = cells[4].querySelector('input');
+                    
+                    if (select) {
+                        select.disabled = false;
+                        select.classList.remove('bg-gray-50');
+                        select.classList.add('bg-white');
+                    }
+                    
+                    if (areaInput) {
+                        areaInput.readOnly = false;
+                        areaInput.classList.remove('bg-gray-50');
+                        areaInput.classList.add('bg-white');
+                    }
+                    
+                    if (standardInput) {
+                        standardInput.readOnly = false;
+                        standardInput.classList.remove('bg-gray-50');
+                        standardInput.classList.add('bg-white');
+                    }
+                } else {
+                    button.textContent = '编辑';
+                    button.classList.remove('bg-green-500');
+                    button.classList.add('bg-blue-500');
+                    
+                    // 保存后切换回只读状态
+                    const select = cells[1].querySelector('select');
+                    const areaInput = cells[2].querySelector('input');
+                    const standardInput = cells[4].querySelector('input');
+                    
+                    if (select) {
+                        select.disabled = true;
+                        select.classList.remove('bg-white');
+                        select.classList.add('bg-gray-50');
+                    }
+                    
+                    if (areaInput) {
+                        areaInput.readOnly = true;
+                        areaInput.classList.remove('bg-white');
+                        areaInput.classList.add('bg-gray-50');
+                    }
+                    
+                    if (standardInput) {
+                        standardInput.readOnly = true;
+                        standardInput.classList.remove('bg-white');
+                        standardInput.classList.add('bg-gray-50');
+                    }
+                    
+                    // 更新补偿金额
+                    updateCompensationAmounts();
+                }
+            }
+        });
+
+        // 删除按钮功能
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-facility')) {
+                const button = e.target.closest('.delete-facility');
+                const row = button.closest('tr');
+                
+                // 确认删除
+                if (confirm('确定要删除这一行吗？')) {
+                    row.remove();
+                    // 更新补偿金额
+                    updateCompensationAmounts();
+                    // 更新序号
+                    updateFacilityRowNumbers();
+                }
+            }
+        });
+
+        // 更新设施行序号
+        function updateFacilityRowNumbers() {
+            const rows = document.querySelectorAll('#facility-compensation-table-body tr');
+            rows.forEach((row, index) => {
+                row.querySelector('td:first-child').textContent = index + 1;
+            });
+        }
+
+        // 添加新设施行功能
+        document.getElementById('add-facility-btn').addEventListener('click', function() {
+            const tableBody = document.getElementById('facility-compensation-table-body');
+            const rowCount = tableBody.querySelectorAll('tr').length;
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'border-b border-gray-200';
+            newRow.innerHTML = `
+                <td class="px-4 py-2">${rowCount + 1}</td>
+                <td class="px-4 py-2">
+                    <select class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" disabled>
+                        <option value="well">水井</option>
+                        <option value="water-tank">水柜</option>
+                        <option value="solar">太阳能热水器</option>
+                        <option value="pool">沼气池</option>
+                        <option value="other">其他</option>
+                    </select>
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" value="0" readonly>
+                </td>
+                <td class="px-4 py-2">
+                    <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="平方米" readonly>
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" min="0" step="0.01" value="0" readonly>
+                </td>
+                <td class="px-4 py-2">
+                    <input type="text" class="form-input w-full bg-gray-50 border border-gray-300 rounded-md py-1 px-2 text-sm" value="0.00" readonly>
+                </td>
+                <td class="px-4 py-2">
+                    <div class="text-sm"></div>
+                </td>
+                <td class="px-4 py-2">
+                    <button type="button" class="edit-facility bg-blue-500 text-white text-xs py-1 px-2 rounded mr-1">编辑</button>
+                    <button type="button" class="delete-facility bg-red-500 text-white text-xs py-1 px-2 rounded">删除</button>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+        });
+
+        // 其他补偿费复选框逻辑
+        const compensationCheckboxes = ['moving-compensation', 'temporary-compensation', 'business-compensation', 'special-compensation'];
+        
+        compensationCheckboxes.forEach(checkboxId => {
+            const checkbox = document.getElementById(checkboxId);
+            const content = document.getElementById(checkboxId + '-content');
+            
+            if (checkbox && content) {
+                checkbox.addEventListener('change', function() {
+                    content.style.display = this.checked ? 'block' : 'none';
+                    updateCompensationAmounts();
+                });
+                
+                // 初始状态
+                content.style.display = checkbox.checked ? 'block' : 'none';
+            }
+        });
+
+        // 临时安置补助费计算
+        const temporaryArea = document.getElementById('temporary-area');
+        const temporaryStandard = document.getElementById('temporary-standard');
+        const temporaryAreaType = document.getElementById('temporary-area-type');
+        
+        function calculateTemporaryCompensation() {
+            const isChecked = document.getElementById('temporary-compensation').checked;
+            if (!isChecked) return 0;
+            
+            const areaType = temporaryAreaType.value;
+            let area;
+            
+            if (areaType === 'certificate') {
+                area = parseFloat(document.getElementById('certificate-area').value) || 0;
+            } else {
+                area = parseFloat(document.getElementById('actual-area').value) || 0;
+            }
+            
+            const standard = parseFloat(temporaryStandard.value) || 0;
+            let monthlyAmount;
+            
+            // 根据设计文档的计算标准
+            if (area <= 2000) {
+                monthlyAmount = 2000;
+            } else {
+                monthlyAmount = area * standard;
+            }
+            
+            // 总费用 = 每月费用 × 6
+            const totalAmount = monthlyAmount * 6;
+            
+            // 更新显示的补偿金额
+            document.getElementById('temporary-amount').value = totalAmount.toFixed(2);
+            
+            // 更新计算公式
+            if (area > 0 && standard > 0) {
+                if (area <= 2000) {
+                    document.getElementById('temporary-formula').textContent = `因为面积(${area.toFixed(4)}㎡) ≤ 2000㎡，所以每月临时安置费 = 2000元；总临时安置费 = 2000 × 6 = ${totalAmount.toFixed(2)}`;
+                } else {
+                    document.getElementById('temporary-formula').textContent = `(${area.toFixed(4)} × ${standard.toFixed(2)}) × 6 = ${totalAmount.toFixed(2)}`;
+                }
+            } else {
+                document.getElementById('temporary-formula').textContent = '';
+            }
+            
+            return totalAmount;
+        }
+        
+        temporaryArea.addEventListener('input', calculateTemporaryCompensation);
+        temporaryStandard.addEventListener('input', calculateTemporaryCompensation);
+        temporaryAreaType.addEventListener('change', calculateTemporaryCompensation);
+
+        // 自改经营性房屋铺面补助费计算
+        const businessLicenseStatus = document.getElementById('business-license-status');
+        
+        function calculateBusinessCompensation() {
+            const isChecked = document.getElementById('business-compensation').checked;
+            if (!isChecked) return 0;
+            
+            const licenseStatus = businessLicenseStatus.value;
+            let amount = 0;
+            let formula = '';
+            
+            // 根据经营证照情况计算补助金额
+            if (licenseStatus === 'has-license') {
+                amount = 30000;
+                formula = '符合持有经营证照条件，补助金额 = 30000元';
+            } else if (licenseStatus === 'no-license') {
+                amount = 15000;
+                formula = '符合连续经营达6个月以上条件，补助金额 = 15000元';
+            }
+            
+            // 更新显示的补偿金额
+            document.getElementById('business-amount').value = amount.toFixed(2);
+            
+            // 更新计算公式
+            document.getElementById('business-formula').textContent = formula;
+            
+            return amount;
+        }
+        
+        businessLicenseStatus.addEventListener('change', calculateBusinessCompensation);
+
+        // 添加事件监听器
+        const inputElements = document.querySelectorAll('.form-input');
+        const elementsToWatch = [
+            houseStructureArea,
+            houseStructureStandard,
+            document.getElementById('homestead-area-input'),
+            document.getElementById('farmland-price'),
+            document.getElementById('homestead-compensation-type-table'),
+            document.getElementById('moving-standard'),
+            document.getElementById('moving-area-type'),
+            document.getElementById('certificate-area'),
+            document.getElementById('actual-area'),
+            document.getElementById('temporary-area'),
+            document.getElementById('temporary-standard'),
+            document.getElementById('business-license-status'),
+            document.getElementById('special-condition')
+        ];
+        
+        elementsToWatch.forEach(element => {
+            if (element) {
+                element.addEventListener('input', updateCompensationAmounts);
+            }
+        });
+
+        // 文件上传逻辑
+        const fileUpload = document.getElementById('file-upload');
+        const dropArea = document.getElementById('drop-area');
+        const fileList = document.getElementById('file-list');
+        const fileItemsContainer = document.getElementById('file-items-container');
+        
+        dropArea.addEventListener('click', () => {
+            fileUpload.click();
+        });
+        
+        // 拖拽上传功能
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        fileUpload.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileList.classList.remove('hidden');
+                
+                // 清空现有文件列表
+                fileItemsContainer.innerHTML = '';
+                
+                // 添加新文件
+                for (let i = 0; i < files.length; i++) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                    
+                    // 根据文件类型选择图标
+                    let fileIcon = 'fa-file-text-o';
+                    if (files[i].type.includes('image/')) {
+                        fileIcon = 'fa-file-image-o';
+                    } else if (files[i].type.includes('pdf')) {
+                        fileIcon = 'fa-file-pdf-o';
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-item-info flex items-center">
+                            <i class="fa ${fileIcon} text-gray-400 mr-2"></i>
+                            <span class="text-sm truncate max-w-xs">${files[i].name}</span>
+                        </div>
+                        <div class="file-item-actions flex items-center">
+                            <button type="button" class="download-file mr-2 text-primary">
+                                <i class="fa fa-download"></i>
+                            </button>
+                            <button type="button" class="delete-file text-red-500">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    fileItemsContainer.appendChild(fileItem);
+                    
+                    // 添加删除文件功能
+                    const deleteBtn = fileItem.querySelector('.delete-file');
+                    deleteBtn.addEventListener('click', function() {
+                        fileItemsContainer.removeChild(fileItem);
+                        
+                        // 如果文件列表为空，隐藏文件列表
+                        if (fileItemsContainer.children.length === 0) {
+                            fileList.classList.add('hidden');
+                        }
+                    });
+                    
+                    // 添加下载文件功能（实际项目中需要实现文件下载逻辑）
+                    const downloadBtn = fileItem.querySelector('.download-file');
+                    downloadBtn.addEventListener('click', function() {
+                        alert('文件下载功能需要后端支持');
+                    });
+                }
+            }
+        }
+
+        // 关闭模态框
+        const closeModal = document.getElementById('close-modal');
+        closeModal.addEventListener('click', () => {
+            // 在实际应用中，这里应该返回到房屋台账页面
+            alert('关闭新增页面');
+        });
+
+        // 取消按钮
+        const cancelBtn = document.getElementById('cancel-btn');
+        cancelBtn.addEventListener('click', () => {
+            // 在实际应用中，这里应该返回到房屋台账页面
+            alert('取消新增操作');
+        });
+
+        // 保存按钮
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', () => {
+            // 在实际应用中，这里应该收集表单数据并提交
+            alert('保存房屋信息');
+        });
+
+        // 初始计算一次补偿金额
+        updateCompensationAmounts();
+    </script>
+</body>
+</html>

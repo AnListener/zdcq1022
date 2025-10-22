@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>费用概览 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                费用概览
+            </h1>
+            <p class="text-gray-600 mt-2">查看融罗高速项目征拆费用总体情况和统计分析</p>
+        </div>
+
+        <!-- 项目选择 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">融罗高速项目费用概览</h2>
+                    <p class="text-gray-600 mt-1">项目周期：2023年1月 - 2025年12月</p>
+                </div>
+                <div class="flex space-x-2">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>按区域查看</option>
+                        <option>融水苗族自治县</option>
+                        <option>罗城仫佬族自治县</option>
+                    </select>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>按时间查看</option>
+                        <option>本月</option>
+                        <option>本季度</option>
+                        <option>本年度</option>
+                        <option>全部</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 费用统计 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-coins text-blue-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">预算总额(万元)</p>
+                        <p class="text-2xl font-bold text-gray-800">32000</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-money-bill-wave text-green-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">已支出(万元)</p>
+                        <p class="text-2xl font-bold text-gray-800">18600</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-pie text-yellow-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">支出占比</p>
+                        <p class="text-2xl font-bold text-gray-800">58.1%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-balance-scale text-purple-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">结余(万元)</p>
+                        <p class="text-2xl font-bold text-gray-800">13400</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 费用构成图表 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">费用构成分析</h2>
+                <div class="flex items-center justify-center h-64">
+                    <div class="text-center">
+                        <i class="fas fa-chart-pie text-5xl text-blue-500 mb-4"></i>
+                        <p class="text-gray-600">费用构成饼图</p>
+                        <p class="text-sm text-gray-500 mt-2">征地费用: 45%</p>
+                        <p class="text-sm text-gray-500">房屋拆迁: 30%</p>
+                        <p class="text-sm text-gray-500">附着物补偿: 15%</p>
+                        <p class="text-sm text-gray-500">其他费用: 10%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">月度支出趋势</h2>
+                <div class="flex items-center justify-center h-64">
+                    <div class="text-center">
+                        <i class="fas fa-chart-bar text-5xl text-green-500 mb-4"></i>
+                        <p class="text-gray-600">月度支出柱状图</p>
+                        <p class="text-sm text-gray-500 mt-2">1月: 800万元</p>
+                        <p class="text-sm text-gray-500">2月: 1200万元</p>
+                        <p class="text-sm text-gray-500">3月: 1500万元</p>
+                        <p class="text-sm text-gray-500">...更多月份</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域费用对比 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">区域费用对比</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">区域</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预算(万元)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">已支出(万元)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出占比</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结余(万元)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">进度</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">融水苗族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10200</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">56.7%</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">7800</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 56.7%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">罗城仫佬族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">14000</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8400</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">60.0%</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5600</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 60.0%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 最近支出记录 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">最近支出记录</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出编号</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">权属人</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用类型</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出时间</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额(万元)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZC-2023-001</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">张三</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">征地补偿</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-15</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">25.6</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已支付
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZC-2023-002</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">李四</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">房屋拆迁补偿</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-18</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">32.8</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已支付
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZC-2023-003</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">王五</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">附着物补偿</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-20</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18.3</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已支付
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZC-2023-004</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">征地补偿</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-22</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">41.5</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已支付
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZC-2023-005</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">临时安置补助</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-25</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5.2</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    已支付
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        显示第 1 到 5 条记录，共 186 条记录
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 rounded-lg bg-blue-500 text-white">1</button>
+                        <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./cost/cost-overview.js" defer></script>
+</body>
+</html>

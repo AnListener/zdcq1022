@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增附着物信息</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        /* 标签页样式 */
+        .tab-active {
+            color: #10B981;
+            border-bottom: 2px solid #10B981;
+        }
+        .tab-inactive {
+            color: #4A5568;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-inactive:hover {
+            color: #718096;
+        }
+        /* 卡片样式 */
+        .form-card {
+            transition: all 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* 输入框样式 */
+        .form-input:focus {
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        /* 表单内容区域滚动 */
+        .form-content {
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+        /* 自定义滚动条 */
+        .form-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .form-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .form-content::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 4px;
+        }
+        .form-content::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- 全屏模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-4 px-4 md:px-0">
+        <!-- 模态框内容 -->
+        <div class="bg-white rounded-lg w-full max-w-5xl max-h-screen overflow-hidden">
+            <!-- 模态框标题栏 -->
+            <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+                <h2 class="text-xl font-bold text-gray-800">新增附着物信息</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 表单内容 -->
+            <div class="p-6 form-content">
+                <!-- 基础信息卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 form-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-green-500 mr-2"></i>
+                        基础信息
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="project-name" class="block text-sm font-medium text-gray-700 mb-1">项目名称</label>
+                            <select id="project-name" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择项目</option>
+                                <option value="project1">融罗高速项目</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="attached-number" class="block text-sm font-medium text-gray-700 mb-1">附着物编号</label>
+                            <input type="text" id="attached-number" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="自动生成">
+                        </div>
+                        <div>
+                            <label for="owner" class="block text-sm font-medium text-gray-700 mb-1">权属人</label>
+                            <input type="text" id="owner" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入权属人姓名">
+                        </div>
+                        <div>
+                            <label for="id-number" class="block text-sm font-medium text-gray-700 mb-1">身份证号</label>
+                            <input type="text" id="id-number" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入身份证号">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                            <input type="tel" id="phone" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入联系电话">
+                        </div>
+                        <div>
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">联系地址</label>
+                            <input type="text" id="address" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入联系地址">
+                        </div>
+                        <div>
+                            <label for="region" class="block text-sm font-medium text-gray-700 mb-1">所属区域</label>
+                            <select id="region" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择所属区域</option>
+                                <option value="rongshui">柳州-融水县-融水镇</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="town" class="block text-sm font-medium text-gray-700 mb-1">乡镇</label>
+                            <select id="town" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择乡镇</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="village" class="block text-sm font-medium text-gray-700 mb-1">村</label>
+                            <select id="village" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择村</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="team" class="block text-sm font-medium text-gray-700 mb-1">组</label>
+                            <select id="team" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择组</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">附着物位置</label>
+                            <input type="text" id="location" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入附着物具体位置">
+                        </div>
+                        <div>
+                            <label for="survey-date" class="block text-sm font-medium text-gray-700 mb-1">测量日期</label>
+                            <input type="date" id="survey-date" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 附着物信息卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 form-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-tree text-green-500 mr-2"></i>
+                        附着物信息
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="attached-type" class="block text-sm font-medium text-gray-700 mb-1">附着物类型</label>
+                            <select id="attached-type" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择附着物类型</option>
+                                <option value="tree">果树</option>
+                                <option value="forest">林木</option>
+                                <option value="fishpond">鱼塘</option>
+                                <option value="well">水井</option>
+                                <option value="fence">围墙</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="specific-type" class="block text-sm font-medium text-gray-700 mb-1">具体类型</label>
+                            <select id="specific-type" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择具体类型</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">数量</label>
+                            <input type="number" id="quantity" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入数量">
+                        </div>
+                        <div>
+                            <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">单位</label>
+                            <select id="unit" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择单位</option>
+                                <option value="株">株</option>
+                                <option value="棵">棵</option>
+                                <option value="个">个</option>
+                                <option value="平方米">平方米</option>
+                                <option value="立方米">立方米</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="size" class="block text-sm font-medium text-gray-700 mb-1">规格/尺寸</label>
+                            <input type="text" id="size" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入规格或尺寸">
+                        </div>
+                        <div>
+                            <label for="age" class="block text-sm font-medium text-gray-700 mb-1">树龄/使用年限</label>
+                            <input type="text" id="age" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入树龄或使用年限">
+                        </div>
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">生长状态</label>
+                            <select id="status" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择生长状态</option>
+                                <option value="good">良好</option>
+                                <option value="normal">一般</option>
+                                <option value="poor">较差</option>
+                                <option value="dying">濒临死亡</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="remark" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                            <textarea id="remark" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" rows="2" placeholder="请输入备注信息"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 补偿费用项标签页 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 form-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>
+                        补偿费用项
+                    </h3>
+                    
+                    <!-- 标签页切换 -->
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="flex space-x-8">
+                            <button id="tab-main-compensation" class="py-3 text-base font-medium tab-active">主体补偿</button>
+                            <button id="tab-additional-compensation" class="py-3 text-base font-medium tab-inactive">附加补偿</button>
+                            <button id="tab-other-compensation" class="py-3 text-base font-medium tab-inactive">其他补偿</button>
+                        </nav>
+                    </div>
+                    
+                    <!-- 标签页内容区域 -->
+                    <div class="tab-content">
+                        <!-- 主体补偿标签页内容 -->
+                        <div id="main-compensation-content" class="block">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label for="compensation-standard" class="block text-sm font-medium text-gray-700 mb-1">补偿标准(元/单位)</label>
+                                    <input type="number" id="compensation-standard" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入补偿标准">
+                                </div>
+                                <div>
+                                    <label for="main-compensation-amount" class="block text-sm font-medium text-gray-700 mb-1">主体补偿金额(元)</label>
+                                    <input type="number" id="main-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="自动计算" readonly>
+                                </div>
+                                <div>
+                                    <label for="main-compensation-remark" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                                    <input type="text" id="main-compensation-remark" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入备注">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 附加补偿标签页内容 -->
+                        <div id="additional-compensation-content" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label for="additional-compensation-type" class="block text-sm font-medium text-gray-700 mb-1">附加补偿类型</label>
+                                    <select id="additional-compensation-type" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                        <option value="">请选择附加补偿类型</option>
+                                        <option value="fruit-loss">果品损失补偿</option>
+                                        <option value="labor">劳动力补偿</option>
+                                        <option value="other">其他附加补偿</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="additional-compensation-amount" class="block text-sm font-medium text-gray-700 mb-1">附加补偿金额(元)</label>
+                                    <input type="number" id="additional-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入附加补偿金额">
+                                </div>
+                                <div>
+                                    <label for="additional-compensation-remark" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                                    <input type="text" id="additional-compensation-remark" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入备注">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 其他补偿标签页内容 -->
+                        <div id="other-compensation-content" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label for="other-compensation-type" class="block text-sm font-medium text-gray-700 mb-1">补偿类型</label>
+                                    <input type="text" id="other-compensation-type" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入补偿类型">
+                                </div>
+                                <div>
+                                    <label for="other-compensation-amount" class="block text-sm font-medium text-gray-700 mb-1">补偿金额(元)</label>
+                                    <input type="number" id="other-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入补偿金额">
+                                </div>
+                                <div>
+                                    <label for="other-compensation-remark" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                                    <input type="text" id="other-compensation-remark" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none" placeholder="请输入备注">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 费用汇总卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 form-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-calculator text-green-500 mr-2"></i>
+                        费用汇总
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="total-compensation-amount" class="block text-sm font-medium text-gray-700 mb-1">总补偿金额(元)</label>
+                            <input type="number" id="total-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none bg-gray-50" placeholder="自动计算" readonly>
+                        </div>
+                        <div>
+                            <label for="payment-status" class="block text-sm font-medium text-gray-700 mb-1">支付状态</label>
+                            <select id="payment-status" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                                <option value="">请选择支付状态</option>
+                                <option value="unpaid">未支付</option>
+                                <option value="partial">部分支付</option>
+                                <option value="paid">已支付</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="payment-date" class="block text-sm font-medium text-gray-700 mb-1">支付日期</label>
+                            <input type="date" id="payment-date" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 附件管理卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 form-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-paperclip text-green-500 mr-2"></i>
+                        附件管理
+                    </h3>
+                    
+                    <!-- 上传区域 -->
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition-colors mb-4">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500 mb-2">点击或拖拽文件至此处上传</p>
+                        <p class="text-xs text-gray-400">支持JPG、PNG、PDF格式，单个文件不超过10MB</p>
+                        <input type="file" class="hidden" id="file-upload" multiple accept=".jpg,.jpeg,.png,.pdf">
+                        <button id="upload-btn" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            选择文件
+                        </button>
+                    </div>
+                    
+                    <!-- 文件列表 -->
+                    <div id="file-list" class="hidden">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">已上传文件</h4>
+                        <div class="space-y-2">
+                            <!-- 文件项将通过JavaScript动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部按钮区域 -->
+            <div class="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-4 sticky bottom-0 z-10">
+                <button id="cancel-btn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    取消
+                </button>
+                <button id="save-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    保存
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 标签页切换逻辑
+        const tabMainCompensation = document.getElementById('tab-main-compensation');
+        const tabAdditionalCompensation = document.getElementById('tab-additional-compensation');
+        const tabOtherCompensation = document.getElementById('tab-other-compensation');
+        
+        const mainCompensationContent = document.getElementById('main-compensation-content');
+        const additionalCompensationContent = document.getElementById('additional-compensation-content');
+        const otherCompensationContent = document.getElementById('other-compensation-content');
+        
+        tabMainCompensation.addEventListener('click', () => {
+            // 切换标签样式
+            tabMainCompensation.classList.add('tab-active');
+            tabMainCompensation.classList.remove('tab-inactive');
+            tabAdditionalCompensation.classList.add('tab-inactive');
+            tabAdditionalCompensation.classList.remove('tab-active');
+            tabOtherCompensation.classList.add('tab-inactive');
+            tabOtherCompensation.classList.remove('tab-active');
+            
+            // 切换内容显示
+            mainCompensationContent.classList.add('block');
+            mainCompensationContent.classList.remove('hidden');
+            additionalCompensationContent.classList.add('hidden');
+            additionalCompensationContent.classList.remove('block');
+            otherCompensationContent.classList.add('hidden');
+            otherCompensationContent.classList.remove('block');
+        });
+        
+        tabAdditionalCompensation.addEventListener('click', () => {
+            // 切换标签样式
+            tabAdditionalCompensation.classList.add('tab-active');
+            tabAdditionalCompensation.classList.remove('tab-inactive');
+            tabMainCompensation.classList.add('tab-inactive');
+            tabMainCompensation.classList.remove('tab-active');
+            tabOtherCompensation.classList.add('tab-inactive');
+            tabOtherCompensation.classList.remove('tab-active');
+            
+            // 切换内容显示
+            additionalCompensationContent.classList.add('block');
+            additionalCompensationContent.classList.remove('hidden');
+            mainCompensationContent.classList.add('hidden');
+            mainCompensationContent.classList.remove('block');
+            otherCompensationContent.classList.add('hidden');
+            otherCompensationContent.classList.remove('block');
+        });
+        
+        tabOtherCompensation.addEventListener('click', () => {
+            // 切换标签样式
+            tabOtherCompensation.classList.add('tab-active');
+            tabOtherCompensation.classList.remove('tab-inactive');
+            tabMainCompensation.classList.add('tab-inactive');
+            tabMainCompensation.classList.remove('tab-active');
+            tabAdditionalCompensation.classList.add('tab-inactive');
+            tabAdditionalCompensation.classList.remove('tab-active');
+            
+            // 切换内容显示
+            otherCompensationContent.classList.add('block');
+            otherCompensationContent.classList.remove('hidden');
+            mainCompensationContent.classList.add('hidden');
+            mainCompensationContent.classList.remove('block');
+            additionalCompensationContent.classList.add('hidden');
+            additionalCompensationContent.classList.remove('block');
+        });
+        
+        // 文件上传逻辑
+        const fileUpload = document.getElementById('file-upload');
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileList = document.getElementById('file-list');
+        
+        uploadBtn.addEventListener('click', () => {
+            fileUpload.click();
+        });
+        
+        fileUpload.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                fileList.classList.remove('hidden');
+                const fileListContainer = fileList.querySelector('.space-y-2');
+                
+                // 清空现有文件列表
+                fileListContainer.innerHTML = '';
+                
+                // 添加新文件
+                for (let i = 0; i < files.length; i++) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded-lg';
+                    fileItem.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-file-alt text-green-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">${files[i].name}</span>
+                        </div>
+                        <button class="text-gray-500 hover:text-red-500 delete-file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    fileListContainer.appendChild(fileItem);
+                }
+                
+                // 添加删除文件事件监听
+                document.querySelectorAll('.delete-file').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.target.closest('.flex.items-center.justify-between').remove();
+                        if (fileListContainer.children.length === 0) {
+                            fileList.classList.add('hidden');
+                        }
+                    });
+                });
+            }
+        });
+        
+        // 关闭模态框
+        const closeModal = document.getElementById('close-modal');
+        closeModal.addEventListener('click', () => {
+            // 在实际应用中，这里应该返回到附着物台账页面
+            alert('关闭新增页面');
+        });
+        
+        // 取消按钮
+        const cancelBtn = document.getElementById('cancel-btn');
+        cancelBtn.addEventListener('click', () => {
+            // 在实际应用中，这里应该返回到附着物台账页面
+            alert('取消新增操作');
+        });
+        
+        // 保存按钮
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', () => {
+            // 在实际应用中，这里应该收集表单数据并提交
+            alert('保存附着物信息');
+        });
+        
+        // 附着物类型与具体类型联动
+        const attachedType = document.getElementById('attached-type');
+        const specificType = document.getElementById('specific-type');
+        const unit = document.getElementById('unit');
+        const compensationStandard = document.getElementById('compensation-standard');
+        
+        attachedType.addEventListener('change', () => {
+            // 清空现有选项
+            specificType.innerHTML = '<option value="">请选择具体类型</option>';
+            
+            // 根据附着物类型添加对应的具体类型选项和默认单位、补偿标准
+            if (attachedType.value === 'tree') {
+                const types = ['荔枝树', '龙眼树', '芒果树', '柑橘树', '桃树', '李树', '其他果树'];
+                types.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    specificType.appendChild(option);
+                });
+                unit.value = '株';
+                compensationStandard.value = 300;
+            } else if (attachedType.value === 'forest') {
+                const types = ['松树', '杉树', '桉树', '竹子', '其他林木'];
+                types.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    specificType.appendChild(option);
+                });
+                unit.value = '棵';
+                compensationStandard.value = 150;
+            } else if (attachedType.value === 'fishpond') {
+                const types = ['鱼塘', '虾塘', '蟹塘', '其他水产养殖池'];
+                types.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    specificType.appendChild(option);
+                });
+                unit.value = '平方米';
+                compensationStandard.value = 200;
+            } else if (attachedType.value === 'well') {
+                const types = ['水井', '机井', '其他水井'];
+                types.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    specificType.appendChild(option);
+                });
+                unit.value = '个';
+                compensationStandard.value = 1500;
+            } else if (attachedType.value === 'fence') {
+                const types = ['砖墙', '水泥墙', '木栅栏', '铁丝网', '其他围墙'];
+                types.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    specificType.appendChild(option);
+                });
+                unit.value = '米';
+                compensationStandard.value = 120;
+            } else {
+                unit.value = '';
+                compensationStandard.value = '';
+            }
+            calculateCompensation();
+        });
+        
+        // 计算补偿金额
+        const quantity = document.getElementById('quantity');
+        const mainCompensationAmount = document.getElementById('main-compensation-amount');
+        const additionalCompensationAmount = document.getElementById('additional-compensation-amount');
+        const otherCompensationAmount = document.getElementById('other-compensation-amount');
+        const totalCompensationAmount = document.getElementById('total-compensation-amount');
+        
+        quantity.addEventListener('input', calculateCompensation);
+        compensationStandard.addEventListener('input', calculateCompensation);
+        additionalCompensationAmount.addEventListener('input', calculateCompensation);
+        otherCompensationAmount.addEventListener('input', calculateCompensation);
+        
+        function calculateCompensation() {
+            // 计算主体补偿金额
+            const qty = parseFloat(quantity.value) || 0;
+            const standard = parseFloat(compensationStandard.value) || 0;
+            const mainAmount = qty * standard;
+            mainCompensationAmount.value = mainAmount.toFixed(2);
+            
+            // 计算附加补偿金额
+            const additionalAmount = parseFloat(additionalCompensationAmount.value) || 0;
+            
+            // 计算其他补偿金额
+            const otherAmount = parseFloat(otherCompensationAmount.value) || 0;
+            
+            // 计算总补偿金额
+            const totalAmount = mainAmount + additionalAmount + otherAmount;
+            totalCompensationAmount.value = totalAmount.toFixed(2);
+        }
+        
+        // 所属区域联动乡镇
+        const region = document.getElementById('region');
+        const town = document.getElementById('town');
+        
+        region.addEventListener('change', () => {
+            // 清空现有选项
+            town.innerHTML = '<option value="">请选择乡镇</option>';
+            
+            // 根据区域添加对应的乡镇选项
+            if (region.value === 'rongshui') {
+                const towns = ['融水镇', '和睦镇', '三防镇', '怀宝镇', '洞头镇'];
+                towns.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    town.appendChild(option);
+                });
+            } else if (region.value === 'luocheng') {
+                const towns = ['东门镇', '龙岸镇', '黄金镇', '小长安镇', '四把镇'];
+                towns.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    town.appendChild(option);
+                });
+            }
+        });
+        
+        // 乡镇联动村
+        town.addEventListener('change', () => {
+            // 清空现有选项
+            const village = document.getElementById('village');
+            village.innerHTML = '<option value="">请选择村</option>';
+            
+            // 这里可以根据乡镇添加对应的村选项
+            // 由于数据量较大，这里仅作为示例
+            if (town.value !== '') {
+                const villages = ['东村', '西村', '南村', '北村', '中村'];
+                villages.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v;
+                    option.textContent = v;
+                    village.appendChild(option);
+                });
+            }
+        });
+        
+        // 村联动组
+        document.getElementById('village').addEventListener('change', () => {
+            // 清空现有选项
+            const team = document.getElementById('team');
+            team.innerHTML = '<option value="">请选择组</option>';
+            
+            // 这里可以根据村添加对应的组选项
+            // 由于数据量较大，这里仅作为示例
+            if (document.getElementById('village').value !== '') {
+                const teams = ['一组', '二组', '三组', '四组', '五组'];
+                teams.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t;
+                    option.textContent = t;
+                    team.appendChild(option);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

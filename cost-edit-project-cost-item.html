@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑项目费用项 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        .area-unit {
+            color: #4b5563;
+            font-weight: 500;
+            margin-left: 2px;
+        }
+        
+        .area-unit-select {
+            background-color: #f9fafb;
+            border-left: none;
+            border-radius: 0 0.25rem 0.25rem 0;
+        }
+        
+        /* 卡片式设计样式 */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        /* Excel样式表格 */
+        .excel-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .excel-table th {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            color: white;
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .excel-table td {
+            padding: 1rem 1.25rem;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        
+        .excel-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .excel-table tr:hover {
+            background-color: #eff6ff;
+        }
+        
+        /* 行政区域标签样式 */
+        .region-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .region-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 新增关联行政区域按钮样式 */
+        .add-region-btn {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            color: white;
+            font-weight: 600;
+            padding: 0.85rem 1.75rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .add-region-btn:hover {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            box-shadow: 0 6px 8px rgba(20, 184, 166, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .add-region-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(20, 184, 166, 0.3);
+        }
+        
+        .add-region-btn i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+        
+        /* 区域选择模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.75rem;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1.75rem;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 1.25rem 1.75rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Excel样式区域选择表格 */
+        .region-table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .region-table th {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: white;
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .region-table td {
+            padding: 1rem 1.25rem;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        
+        .region-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .region-table tr:hover {
+            background-color: #eff6ff;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .region-table tr.selected {
+            background-color: #dbeafe;
+        }
+        
+        .region-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #2563eb;
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+        
+        .region-status.assigned {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .region-status.unassigned {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        /* 输入框美化 */
+        .input-field {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+        }
+        
+        /* 按钮美化 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        
+        /* 统计卡片美化 */
+        .stat-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 统计信息卡片样式 */
+        .stats-card {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        /* 说明区域美化 */
+        .info-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1024px) {
+            .flex-1.overflow-hidden.gap-6 {
+                flex-direction: column;
+            }
+            
+            .w-80 {
+                width: 100%;
+            }
+            
+            .card-header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+            }
+            
+            .p-4.sm\:p-6 {
+                padding: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-2.gap-4.sm\:gap-6 {
+                gap: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-3.gap-4.sm\:gap-6 {
+                gap: 1rem;
+            }
+            
+            .input-field {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .region-tag {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem;
+            }
+            
+            .add-region-btn {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.875rem;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .bg-gradient-to-r.from-teal-500.to-teal-600 {
+                padding: 0.75rem 1rem;
+            }
+            
+            .text-lg.sm\:text-xl.md\:text-2xl {
+                font-size: 1.125rem;
+            }
+            
+            .px-3.py-1\.5.sm\:px-5.sm\:py-2 {
+                padding: 0.5rem 1rem;
+            }
+            
+            .p-4.sm\:p-6 {
+                padding: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-2.gap-4.sm\:gap-6 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-3.gap-4.sm\:gap-6 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .mt-4.sm\:mt-6 {
+                margin-top: 1rem;
+            }
+            
+            .p-4.sm\:p-5 {
+                padding: 0.75rem;
+            }
+            
+            .text-sm.sm\:text-base {
+                font-size: 0.875rem;
+            }
+            
+            .add-region-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .px-6.py-4 {
+                padding: 0.75rem 1rem;
+            }
+            
+            table.excel-table {
+                font-size: 0.75rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .p-4.sm\:p-6 {
+                padding: 0.75rem;
+            }
+            
+            .space-y-4.sm\:space-y-6 {
+                gap: 1rem;
+            }
+            
+            .hidden.sm\:table-cell {
+                display: none;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .stat-item {
+                padding: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.125rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .bg-gradient-to-r.from-teal-500.to-teal-600 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .text-lg.sm\:text-xl.md\:text-2xl {
+                font-size: 1rem;
+            }
+            
+            .px-3.py-1\.5.sm\:px-5.sm\:py-2 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .mr-1.sm\:mr-2 {
+                margin-right: 0.5rem;
+            }
+            
+            .p-4.sm\:p-6 {
+                padding: 0.75rem;
+            }
+            
+            .mb-1.sm\:mb-2 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .mt-1.sm\:mt-2 {
+                margin-top: 0.5rem;
+            }
+            
+            .text-sm {
+                font-size: 0.75rem;
+            }
+            
+            .text-xs {
+                font-size: 0.625rem;
+            }
+            
+            .add-region-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            .px-6.py-4 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            table.excel-table {
+                font-size: 0.625rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .p-4.sm\:p-6 {
+                padding: 0.5rem;
+            }
+            
+            .space-y-4.sm\:space-y-6 > div {
+                padding: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            .stats-card {
+                padding: 0.5rem;
+            }
+            
+            .stat-item {
+                padding: 0.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 全屏容器 -->
+    <div class="fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- 顶部导航栏 -->
+        <div class="bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between shadow-lg">
+            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-edit text-white mr-2 sm:mr-3"></i>
+                编辑项目费用项
+            </h1>
+            <button id="close-edit" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg sm:rounded-xl transition-all duration-300 flex items-center backdrop-blur-sm">
+                <i class="fas fa-times mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">关闭</span>
+            </button>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="flex-1 overflow-auto p-4 sm:p-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- 主内容区域 -->
+                <div class="flex flex-col lg:flex-row flex-1 overflow-hidden gap-4 sm:gap-6">
+                    <!-- 左侧表单区域 -->
+                    <div class="flex-1">
+                        <!-- 项目费用项基本信息卡片 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title flex items-center">
+                                    <i class="fas fa-info-circle text-teal-500 mr-2"></i>
+                                    项目费用项基本信息
+                                </h2>
+                            </div>
+                            
+                            <!-- 表单内容 -->
+                            <div class="p-4 sm:p-6 bg-gray-50">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">项目编号 <span class="text-red-500">*</span></label>
+                                        <input type="text" id="project-id" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 input-field bg-white" value="XM-2023-001" readonly>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">项目名称 <span class="text-red-500">*</span></label>
+                                        <input type="text" id="project-name" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 input-field bg-white" value="融罗高速">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">关联集团费用项 <span class="text-red-500">*</span></label>
+                                        <select id="group-cost-item" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 input-field bg-white">
+                                            <option value="征地补偿费">征地补偿费</option>
+                                            <option value="房屋拆迁费">房屋拆迁费</option>
+                                            <option value="附着物补偿费">附着物补偿费</option>
+                                            <option value="临时安置费">临时安置费</option>
+                                            <option value="其他补偿费">其他补偿费</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">状态 <span class="text-red-500">*</span></label>
+                                        <select id="status" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 input-field bg-white">
+                                            <option value="启用" selected>启用</option>
+                                            <option value="停用">停用</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">项目描述</label>
+                                        <textarea id="project-description" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 input-field bg-white" rows="3 sm:rows-4" placeholder="请输入项目描述">融罗高速项目征地补偿费用分配</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 资金分配卡片 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title flex items-center">
+                                    <i class="fas fa-money-bill-wave text-blue-500 mr-2"></i>
+                                    资金分配
+                                </h2>
+                            </div>
+                            
+                            <div class="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                                    <div class="bg-white p-4 sm:p-5 rounded-lg sm:rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">分配资金（万元） <span class="text-red-500">*</span></label>
+                                        <input type="number" id="allocated-fund" step="0.01" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field" value="3200">
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 sm:p-5 rounded-lg sm:rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">已支出（万元）</label>
+                                        <input type="number" id="spent-fund" step="0.01" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field bg-gray-100" value="1860" readonly>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 sm:p-5 rounded-lg sm:rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1 sm:mb-2">预警阈值（%）</label>
+                                        <input type="number" id="warning-threshold" min="0" max="100" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field" value="80">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 关联行政区域卡片 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                    <h2 class="card-title flex items-center">
+                                        <i class="fas fa-map-marked-alt text-teal-500 mr-2"></i>
+                                        关联行政区域
+                                    </h2>
+                                    <div class="text-xs sm:text-sm text-gray-600 bg-white px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow-sm">
+                                        已关联 <span id="region-count" class="font-bold text-teal-600">2</span> 个行政区域
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 sm:p-6 bg-gradient-to-br from-teal-50 to-cyan-50">
+                                <!-- 统计信息 -->
+                                <div class="stats-card">
+                                    <h4 class="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>资金分配统计
+                                    </h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="allocated-fund-total">3200.00</div>
+                                            <div class="stat-label">已分配资金总额(万元)</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="total-fund">3200.00</div>
+                                            <div class="stat-label">总分配资金(万元)</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="allocation-rate">100.00</div>
+                                            <div class="stat-label">资金分配率(%)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 新增关联行政区域按钮 -->
+                                <div class="mb-4 sm:mb-6 text-center">
+                                    <button id="add-region-main-btn" class="add-region-btn px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg">
+                                        <i class="fas fa-plus-circle mr-2 sm:mr-3"></i>新增关联行政区域
+                                    </button>
+                                </div>
+                                
+                                <!-- 当前已关联的行政区域标签 -->
+                                <div class="mb-4 sm:mb-6 p-4 sm:p-5 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-200">
+                                    <div class="text-sm sm:text-base font-semibold text-gray-700 mb-3 sm:mb-4 flex items-center">
+                                        <i class="fas fa-tags text-teal-500 mr-2"></i>已关联的行政区域：
+                                    </div>
+                                    <div id="region-tags-container" class="flex flex-wrap">
+                                        <span class="region-tag bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800">
+                                            <i class="fas fa-map-marker-alt mr-1 sm:mr-2"></i>融水县
+                                        </span>
+                                        <span class="region-tag bg-gradient-to-r from-green-100 to-green-200 text-green-800">
+                                            <i class="fas fa-map-marker-alt mr-1 sm:mr-2"></i>罗城县
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- 区域分配表格 -->
+                                <div class="overflow-x-auto rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
+                                    <table class="excel-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-xs sm:text-sm">行政区域</th>
+                                                <th class="text-xs sm:text-sm">分配资金(万元)</th>
+                                                <th class="text-xs sm:text-sm">设计面积</th>
+                                                <th class="hidden sm:table-cell text-xs sm:text-sm">附着物数量</th>
+                                                <th class="hidden md:table-cell text-xs sm:text-sm">关联补偿标准</th>
+                                                <th class="text-xs sm:text-sm">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="region-assignment-table">
+                                            <tr>
+                                                <td class="text-xs sm:text-sm">
+                                                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-name input-field">
+                                                        <option value="融水县" selected>融水县</option>
+                                                        <option value="罗城县">罗城县</option>
+                                                        <option value="其他区域">其他区域</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-fund input-field" value="2000">
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <div class="flex">
+                                                        <input type="number" class="flex-1 px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-l-md sm:rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-area input-field" value="80000">
+                                                        <select class="area-unit-select px-1 py-1 sm:px-2 sm:py-2 border border-gray-300 rounded-r-md sm:rounded-r-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                                            <option value="亩">亩</option>
+                                                            <option value="㎡" selected>㎡</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td class="hidden sm:table-cell text-xs sm:text-sm">
+                                                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-attachments input-field" value="1200">
+                                                </td>
+                                                <td class="hidden md:table-cell text-xs sm:text-sm">
+                                                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-standard input-field">
+                                                        <option value="住宅用地补偿标准" selected>住宅用地补偿标准</option>
+                                                        <option value="商业用地补偿标准">商业用地补偿标准</option>
+                                                        <option value="其他补偿标准">其他补偿标准</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <button class="text-red-600 hover:text-red-900 remove-region-btn">
+                                                        <i class="fas fa-trash text-xs sm:text-sm mr-0.5 sm:mr-1"></i>
+                                                        <span class="hidden sm:inline">移除</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-xs sm:text-sm">
+                                                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-name input-field">
+                                                        <option value="融水县">融水县</option>
+                                                        <option value="罗城县" selected>罗城县</option>
+                                                        <option value="其他区域">其他区域</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-fund input-field" value="1200">
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <div class="flex">
+                                                        <input type="number" class="flex-1 px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-l-md sm:rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-area input-field" value="40000">
+                                                        <select class="area-unit-select px-1 py-1 sm:px-2 sm:py-2 border border-gray-300 rounded-r-md sm:rounded-r-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                                            <option value="亩">亩</option>
+                                                            <option value="㎡" selected>㎡</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td class="hidden sm:table-cell text-xs sm:text-sm">
+                                                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-attachments input-field" value="800">
+                                                </td>
+                                                <td class="hidden md:table-cell text-xs sm:text-sm">
+                                                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-standard input-field">
+                                                        <option value="住宅用地补偿标准">住宅用地补偿标准</option>
+                                                        <option value="商业用地补偿标准" selected>商业用地补偿标准</option>
+                                                        <option value="其他补偿标准">其他补偿标准</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-xs sm:text-sm">
+                                                    <button class="text-red-600 hover:text-red-900 remove-region-btn">
+                                                        <i class="fas fa-trash text-xs sm:text-sm mr-0.5 sm:mr-1"></i>
+                                                        <span class="hidden sm:inline">移除</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 添加区域按钮 -->
+                                <div class="mt-4 sm:mt-6 text-center">
+                                    <button id="add-region-btn" class="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 flex items-center mx-auto shadow-md hover:shadow-lg text-sm sm:text-base">
+                                        <i class="fas fa-plus mr-1 sm:mr-2"></i>添加行政区域
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按钮区域 -->
+                        <div class="flex flex-col sm:flex-row justify-between pt-4 sm:pt-6 gap-3">
+                            <div>
+                                <button id="cancel-btn" class="btn btn-secondary w-full sm:w-auto">
+                                    <i class="fas fa-times mr-1 sm:mr-2"></i>取消
+                                </button>
+                            </div>
+                            <div class="flex space-x-3 sm:space-x-4">
+                                <button id="save-btn" class="btn btn-primary w-full sm:w-auto">
+                                    <i class="fas fa-save mr-1 sm:mr-2"></i>保存
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧说明区域 -->
+                    <div class="w-full lg:w-80">
+                        <div class="info-card card">
+                            <div class="card-header">
+                                <h3 class="card-title flex items-center">
+                                    <i class="fas fa-question-circle text-blue-500 mr-2"></i>填写说明
+                                </h3>
+                            </div>
+                            
+                            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                                <div class="p-3 sm:p-4 bg-blue-50 rounded-lg sm:rounded-xl border border-blue-100">
+                                    <h4 class="font-bold text-blue-800 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                        <i class="fas fa-file-alt text-blue-500 mr-1 sm:mr-2"></i>项目基本信息
+                                    </h4>
+                                    <p class="text-xs sm:text-sm text-gray-700">请填写项目的基本信息，包括项目编号、项目名称、关联的集团费用项和状态等。</p>
+                                </div>
+                                
+                                <div class="p-3 sm:p-4 bg-indigo-50 rounded-lg sm:rounded-xl border border-indigo-100">
+                                    <h4 class="font-bold text-indigo-800 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                        <i class="fas fa-money-check-alt text-indigo-500 mr-1 sm:mr-2"></i>资金分配
+                                    </h4>
+                                    <p class="text-xs sm:text-sm text-gray-700">设置项目的资金分配情况，包括总分配资金、已支出金额和资金控制策略等。</p>
+                                </div>
+                                
+                                <div class="p-3 sm:p-4 bg-teal-50 rounded-lg sm:rounded-xl border border-teal-100">
+                                    <h4 class="font-bold text-teal-800 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                        <i class="fas fa-map-marker-alt text-teal-500 mr-1 sm:mr-2"></i>关联行政区域
+                                    </h4>
+                                    <p class="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3">在此步骤中，您可以为项目关联多个行政区域，并为每个区域分配资金、设计面积和附着物数量，同时关联相应的补偿标准。</p>
+                                    <div class="mt-2 sm:mt-3 p-2 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-md sm:rounded-lg text-xs text-yellow-700">
+                                        <p class="font-bold mb-1 sm:mb-2 flex items-center">
+                                            <i class="fas fa-lightbulb mr-1"></i>操作说明：
+                                        </p>
+                                        <ul class="list-disc pl-4 sm:pl-5 space-y-1">
+                                            <li class="text-xs">点击"添加行政区域"按钮可新增区域</li>
+                                            <li class="text-xs">选择行政区域并填写相关分配信息</li>
+                                            <li class="text-xs">每个区域可关联不同的补偿标准</li>
+                                            <li class="text-xs">点击"移除"按钮可删除不需要的区域</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-5">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-exclamation-triangle text-orange-500 text-lg sm:text-xl mt-0.5 mr-2"></i>
+                                        <div>
+                                            <h4 class="font-bold text-orange-800 mb-1 sm:mb-2 text-sm sm:text-base">注意事项</h4>
+                                            <ul class="text-xs sm:text-sm text-orange-700 space-y-1">
+                                                <li class="flex items-start">
+                                                    <span class="text-red-500 mr-1">•</span>
+                                                    <span>带 <span class="font-bold text-red-600">*</span> 的为必填项，请务必填写完整</span>
+                                                </li>
+                                                <li class="flex items-start">
+                                                    <span class="text-red-500 mr-1">•</span>
+                                                    <span>资金分配总额应与总分配资金保持一致</span>
+                                                </li>
+                                                <li class="flex items-start">
+                                                    <span class="text-red-500 mr-1">•</span>
+                                                    <span>每个行政区域只能添加一次，重复添加将被忽略</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 项目征拆范围内的行政区域清单（模拟数据）
+        const projectRegions = [
+            { id: 1, name: "融水县", status: "已关联", assigned: true },
+            { id: 2, name: "罗城县", status: "已关联", assigned: true },
+            { id: 3, name: "三江县", status: "未关联", assigned: false },
+            { id: 4, name: "柳城县", status: "未关联", assigned: false },
+            { id: 5, name: "鹿寨县", status: "未关联", assigned: false }
+        ];
+        
+        // 已选择的区域
+        let selectedRegions = [];
+        
+        // 更新已关联区域计数
+        function updateRegionCount() {
+            const regionCount = document.querySelectorAll('#region-assignment-table tr').length;
+            document.getElementById('region-count').textContent = regionCount;
+            
+            // 更新区域标签
+            updateRegionTags();
+        }
+        
+        // 更新区域标签显示
+        function updateRegionTags() {
+            const regionNames = Array.from(document.querySelectorAll('.region-name'))
+                .map(select => select.value)
+                .filter((value, index, self) => self.indexOf(value) === index); // 去重
+            
+            const container = document.getElementById('region-tags-container');
+            container.innerHTML = '';
+            
+            regionNames.forEach(region => {
+                const tag = document.createElement('span');
+                tag.className = 'region-tag bg-blue-100 text-blue-800';
+                tag.innerHTML = '<i class="fas fa-map-marker-alt mr-1"></i>' + region;
+                container.appendChild(tag);
+            });
+        }
+        
+        // 保存按钮事件
+        document.getElementById('save-btn').addEventListener('click', function() {
+            alert('项目费用项保存成功！');
+            // 这里应该添加实际的保存逻辑
+            window.location.href = 'project-cost-items.html';
+        });
+        
+        // 关闭编辑页面
+        document.getElementById('close-edit').addEventListener('click', function() {
+            if (confirm('确定要关闭编辑页面吗？未保存的更改将会丢失。')) {
+                window.location.href = 'project-cost-items.html';
+            }
+        });
+        
+        // 取消按钮事件
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            if (confirm('确定要取消编辑吗？未保存的更改将会丢失。')) {
+                window.location.href = 'project-cost-items.html';
+            }
+        });
+        
+        // 显示区域选择模态框
+        document.getElementById('add-region-main-btn').addEventListener('click', function() {
+            showRegionSelectionModal();
+        });
+        
+        // 显示区域选择模态框
+        function showRegionSelectionModal() {
+            // 创建模态框HTML
+            const modalHTML = `
+                <div id="region-selection-modal" class="modal" style="display: block;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="text-lg sm:text-xl font-bold flex items-center">
+                                <i class="fas fa-map-marked-alt mr-2"></i>选择行政区域
+                            </h3>
+                            <button id="close-modal" class="text-white hover:text-gray-200 text-lg sm:text-xl">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+                                <i class="fas fa-info-circle text-blue-500 mr-1"></i>请选择要关联的行政区域（仅显示项目征拆范围内的未关联区域）
+                            </p>
+                            <div class="overflow-x-auto rounded-lg sm:rounded-xl shadow">
+                                <table class="region-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="40" class="text-center text-xs sm:text-sm">选择</th>
+                                            <th class="text-center text-xs sm:text-sm">行政区域</th>
+                                            <th width="100" class="text-center text-xs sm:text-sm">状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="region-table-body">
+                                        ${projectRegions
+                                            .map(region => `
+                                                <tr data-id="${region.id}" data-name="${region.name}" class="${region.assigned ? 'bg-gray-100' : 'hover:bg-blue-50'} transition-colors duration-150">
+                                                    <td class="text-center">
+                                                        <input type="checkbox" class="region-checkbox" ${region.assigned ? 'disabled' : ''} data-id="${region.id}" data-name="${region.name}">
+                                                    </td>
+                                                    <td class="font-medium text-xs sm:text-sm">${region.name}</td>
+                                                    <td class="text-center">
+                                                        <span class="region-status ${region.assigned ? 'assigned' : 'unassigned'} font-semibold text-xs sm:text-sm">
+                                                            ${region.assigned ? '已关联' : '未关联'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="cancel-selection" class="px-3 py-1.5 sm:px-5 sm:py-2.5 border border-gray-300 rounded-lg sm:rounded-xl text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center text-sm sm:text-base">
+                                <i class="fas fa-times mr-1 sm:mr-2"></i>取消
+                            </button>
+                            <button id="confirm-selection" class="px-3 py-1.5 sm:px-5 sm:py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg sm:rounded-xl hover:from-teal-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center shadow-md text-sm sm:text-base" disabled>
+                                <i class="fas fa-check mr-1 sm:mr-2"></i>确定添加
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加模态框到页面
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 绑定事件
+            document.getElementById('close-modal').addEventListener('click', closeRegionSelectionModal);
+            document.getElementById('cancel-selection').addEventListener('click', closeRegionSelectionModal);
+            document.getElementById('confirm-selection').addEventListener('click', addSelectedRegions);
+            
+            // 区域选择事件
+            document.querySelectorAll('.region-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    
+                    if (this.checked) {
+                        row.classList.add('selected');
+                        selectedRegions.push({
+                            id: parseInt(this.dataset.id),
+                            name: this.dataset.name
+                        });
+                    } else {
+                        row.classList.remove('selected');
+                        selectedRegions = selectedRegions.filter(region => region.id !== parseInt(this.dataset.id));
+                    }
+                    
+                    // 更新确定按钮状态
+                    document.getElementById('confirm-selection').disabled = selectedRegions.length === 0;
+                });
+            });
+        }
+        
+        // 关闭区域选择模态框
+        function closeRegionSelectionModal() {
+            const modal = document.getElementById('region-selection-modal');
+            if (modal) {
+                modal.remove();
+            }
+            selectedRegions = [];
+        }
+        
+        // 添加选中的区域
+        function addSelectedRegions() {
+            if (selectedRegions.length === 0) return;
+            
+            const tableBody = document.getElementById('region-assignment-table');
+            
+            selectedRegions.forEach(region => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td class="text-xs sm:text-sm">
+                        <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-name input-field">
+                            <option value="${region.name}" selected>${region.name}</option>
+                            <option value="其他区域">其他区域</option>
+                        </select>
+                    </td>
+                    <td class="text-xs sm:text-sm">
+                        <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-fund input-field" value="0">
+                    </td>
+                    <td class="text-xs sm:text-sm">
+                        <div class="flex">
+                            <input type="number" class="flex-1 px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-l-md sm:rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-area input-field" value="0">
+                            <select class="area-unit-select px-1 py-1 sm:px-2 sm:py-2 border border-gray-300 rounded-r-md sm:rounded-r-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="亩">亩</option>
+                                <option value="㎡" selected>㎡</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="hidden sm:table-cell text-xs sm:text-sm">
+                        <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-attachments input-field" value="0">
+                    </td>
+                    <td class="hidden md:table-cell text-xs sm:text-sm">
+                        <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-standard input-field">
+                            <option value="住宅用地补偿标准">住宅用地补偿标准</option>
+                            <option value="商业用地补偿标准">商业用地补偿标准</option>
+                            <option value="其他补偿标准" selected>其他补偿标准</option>
+                        </select>
+                    </td>
+                    <td class="text-xs sm:text-sm">
+                        <button class="text-red-500 hover:text-red-700 remove-region-btn transition-colors duration-200 flex items-center">
+                            <i class="fas fa-trash-alt text-xs sm:text-sm mr-0.5 sm:mr-1"></i>
+                            <span class="hidden sm:inline">移除</span>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(newRow);
+            });
+            
+            updateRegionCount();
+            closeRegionSelectionModal();
+            
+            // 滚动到最后一行
+            const lastRow = tableBody.lastElementChild;
+            if (lastRow) {
+                lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // 添加区域按钮事件（原有按钮保持功能）
+        document.getElementById('add-region-btn').addEventListener('click', function() {
+            const tableBody = document.getElementById('region-assignment-table');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td class="text-xs sm:text-sm">
+                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-name input-field">
+                        <option value="融水县">融水县</option>
+                        <option value="罗城县">罗城县</option>
+                        <option value="其他区域" selected>其他区域</option>
+                    </select>
+                </td>
+                <td class="text-xs sm:text-sm">
+                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-fund input-field" value="0">
+                </td>
+                <td class="text-xs sm:text-sm">
+                    <div class="flex">
+                        <input type="number" class="flex-1 px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-l-md sm:rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-area input-field" value="0">
+                        <select class="area-unit-select px-1 py-1 sm:px-2 sm:py-2 border border-gray-300 rounded-r-md sm:rounded-r-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="亩">亩</option>
+                            <option value="㎡" selected>㎡</option>
+                        </select>
+                    </div>
+                </td>
+                <td class="hidden sm:table-cell text-xs sm:text-sm">
+                    <input type="number" class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-attachments input-field" value="0">
+                </td>
+                <td class="hidden md:table-cell text-xs sm:text-sm">
+                    <select class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 region-standard input-field">
+                        <option value="住宅用地补偿标准">住宅用地补偿标准</option>
+                        <option value="商业用地补偿标准">商业用地补偿标准</option>
+                        <option value="其他补偿标准" selected>其他补偿标准</option>
+                    </select>
+                </td>
+                <td class="text-xs sm:text-sm">
+                    <button class="text-red-500 hover:text-red-700 remove-region-btn transition-colors duration-200 flex items-center">
+                        <i class="fas fa-trash-alt text-xs sm:text-sm mr-0.5 sm:mr-1"></i>
+                        <span class="hidden sm:inline">移除</span>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+            updateRegionCount();
+        });
+        
+        // 移除区域按钮事件（使用事件委托）
+        document.getElementById('region-assignment-table').addEventListener('click', function(e) {
+            if (e.target.closest('.remove-region-btn')) {
+                if (confirm('确定要移除该行政区域吗？')) {
+                    const row = e.target.closest('tr');
+                    if (row) {
+                        row.remove();
+                        updateRegionCount();
+                        updateAllocationStats();
+                    }
+                }
+            }
+        });
+        
+        // 更新资金分配统计
+        function updateAllocationStats() {
+            const totalFund = parseFloat(document.getElementById('allocated-fund').value) || 0;
+            const allocatedFunds = Array.from(document.querySelectorAll('.region-fund'))
+                .map(input => parseFloat(input.value) || 0)
+                .reduce((sum, value) => sum + value, 0);
+            
+            document.getElementById('allocated-fund-total').textContent = allocatedFunds.toFixed(2);
+            document.getElementById('total-fund').textContent = totalFund.toFixed(2);
+            
+            const allocationRate = totalFund > 0 ? (allocatedFunds / totalFund * 100) : 0;
+            document.getElementById('allocation-rate').textContent = allocationRate.toFixed(2);
+        }
+        
+        // 监听分配资金变化
+        document.getElementById('allocated-fund').addEventListener('input', updateAllocationStats);
+        
+        // 监听区域资金输入变化（使用事件委托）
+        document.getElementById('region-assignment-table').addEventListener('input', function(e) {
+            if (e.target.classList.contains('region-fund') || 
+                e.target.classList.contains('region-name')) {
+                updateAllocationStats();
+                updateRegionTags();
+            }
+        });
+        
+        // 初始化步骤显示
+        updateStepDisplay();
+        updateAllocationStats();
+        
+        // 添加单位选择联动功能
+        document.getElementById('region-assignment-table').addEventListener('change', function(e) {
+            if (e.target.classList.contains('area-unit-select')) {
+                const selectedUnit = e.target.value;
+                document.querySelectorAll('.area-unit-select').forEach(select => {
+                    select.value = selectedUnit;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

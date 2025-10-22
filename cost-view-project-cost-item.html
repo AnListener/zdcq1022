@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目费用项详情 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .area-unit {
+            color: #4b5563;
+            font-weight: 500;
+            margin-left: 2px;
+        }
+        
+        /* 卡片式设计样式 */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        /* Excel样式表格 */
+        .excel-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .excel-table th {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            color: white;
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .excel-table td {
+            padding: 1rem 1.25rem;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        
+        .excel-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .excel-table tr:hover {
+            background-color: #eff6ff;
+        }
+        
+        /* 项目标签样式 */
+        .project-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.125rem;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        /* 统计信息卡片样式 */
+        .stats-card {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1024px) {
+            .card-header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+            }
+            
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .project-tag {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .px-6.py-4 {
+                padding: 0.75rem 1rem;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .card-title {
+                font-size: 0.875rem;
+            }
+            
+            .excel-table {
+                font-size: 0.75rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .hidden.sm\:table-cell {
+                display: none;
+            }
+            
+            .stats-card {
+                padding: 0.75rem;
+            }
+            
+            .stat-item {
+                padding: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.125rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .px-6.py-4 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .text-xl {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            .card-header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .card-title {
+                font-size: 0.875rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            
+            .project-tag {
+                padding: 0.15rem 0.35rem;
+                font-size: 0.65rem;
+                margin: 0.1rem;
+            }
+            
+            .stats-card {
+                padding: 0.5rem;
+            }
+            
+            .stat-item {
+                padding: 0.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 全屏容器 -->
+    <div class="fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- 顶部导航栏 -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-info-circle text-teal-500 mr-2"></i>
+                项目费用项详情
+            </h1>
+            <button id="close-detail" class="btn btn-secondary">
+                <i class="fas fa-times mr-1"></i>关闭
+            </button>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="flex-1 overflow-auto p-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- 统计信息卡片 -->
+                <div class="stats-card">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>资金分配统计
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="stat-item">
+                            <div class="stat-value">3200</div>
+                            <div class="stat-label">分配资金(万元)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1860</div>
+                            <div class="stat-label">已支出(万元)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1340</div>
+                            <div class="stat-label">剩余资金(万元)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 基本信息卡片 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title flex items-center">
+                            <i class="fas fa-file-alt text-teal-500 mr-2"></i>基本信息
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <tbody>
+                                <tr>
+                                    <td class="font-medium text-gray-700 w-1/6">项目编号</td>
+                                    <td class="text-gray-900 w-1/3">XM-2023-001</td>
+                                    <td class="font-medium text-gray-700 w-1/6">项目名称</td>
+                                    <td class="text-gray-900 w-1/3">融罗高速</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-medium text-gray-700">关联集团费用项</td>
+                                    <td class="text-gray-900">征地补偿费</td>
+                                    <td class="font-medium text-gray-700">状态</td>
+                                    <td>
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-medium text-gray-700">项目描述</td>
+                                    <td colspan="3" class="text-gray-900">融罗高速项目征地补偿费用分配</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 行政区域分配详情卡片 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title flex items-center">
+                            <i class="fas fa-map-marker-alt text-teal-500 mr-2"></i>行政区域分配详情
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th width="150">行政区域</th>
+                                    <th width="150">分配资金(万元)</th>
+                                    <th width="150">设计面积</th>
+                                    <th width="120" class="hidden sm:table-cell">附着物数量</th>
+                                    <th width="200" class="hidden md:table-cell">关联补偿标准</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>融水县</td>
+                                    <td>2000</td>
+                                    <td>80000<span class="area-unit">㎡</span></td>
+                                    <td class="hidden sm:table-cell">1200</td>
+                                    <td class="hidden md:table-cell">
+                                        <div class="flex flex-wrap">
+                                            <span class="project-tag bg-blue-100 text-blue-800">住宅用地补偿标准</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>罗城县</td>
+                                    <td>1200</td>
+                                    <td>40000<span class="area-unit">㎡</span></td>
+                                    <td class="hidden sm:table-cell">800</td>
+                                    <td class="hidden md:table-cell">
+                                        <div class="flex flex-wrap">
+                                            <span class="project-tag bg-green-100 text-green-800">商业用地补偿标准</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 操作历史记录卡片 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title flex items-center">
+                            <i class="fas fa-history text-teal-500 mr-2"></i>操作历史记录
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th width="200">操作时间</th>
+                                    <th width="120">操作类型</th>
+                                    <th width="120" class="hidden sm:table-cell">操作人</th>
+                                    <th>备注</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2023-05-15 14:30:22</td>
+                                    <td>创建</td>
+                                    <td class="hidden sm:table-cell">张三</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>2023-06-20 09:15:45</td>
+                                    <td>修改</td>
+                                    <td class="hidden sm:table-cell">李四</td>
+                                    <td>调整资金分配</td>
+                                </tr>
+                                <tr>
+                                    <td>2023-08-12 16:42:18</td>
+                                    <td>启用</td>
+                                    <td class="hidden sm:table-cell">王五</td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(window.location.href);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 关闭详情页面
+        document.getElementById('close-detail').addEventListener('click', function() {
+            // 返回上一页
+            window.history.back();
+        });
+
+        // 页面加载时获取ID参数
+        document.addEventListener('DOMContentLoaded', function() {
+            const id = getUrlParameter('id');
+            console.log('查看项目费用项ID:', id);
+            // 这里可以根据ID加载对应的项目费用项详情数据
+        });
+    </script>
+</body>
+</html>

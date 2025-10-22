@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测绘数据页面性能优化方案 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.12.16/dist/framer-motion.min.js"></script>
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        .gradient-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .gradient-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .code-block {
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            color: #f9fafb;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        .code-block code {
+            white-space: pre;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- 页面标题 -->
+        <header class="gradient-blue py-16 px-6 text-white">
+            <div class="max-w-7xl mx-auto">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">测绘数据页面性能优化方案</h1>
+                    <p class="text-xl md:text-2xl opacity-90">针对survey-data.html页面加载慢问题的全面分析与优化建议</p>
+                </motion.div>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="max-w-7xl mx-auto px-6 py-12">
+            <!-- 问题概述 -->
+            <motion.section 
+                class="mb-16"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+            >
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-blue-500 pl-4">问题概述</h2>
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <p class="text-lg text-gray-700 mb-6">
+                        经分析，<span class="font-semibold">survey-data.html</span>页面加载速度慢的主要原因是多方面的，包括资源加载顺序不合理、图表初始化过早、JavaScript执行效率低等问题。
+                        以下是对问题的详细分析和对应的优化方案。
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+                        <!-- 问题卡片1 -->
+                        <motion.div 
+                            class="bg-red-50 rounded-lg p-6 border-l-4 border-red-500 card-hover"
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <div class="text-red-500 mb-4">
+                                <i class="fas fa-exclamation-circle text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">图表过早初始化</h3>
+                            <p class="text-gray-700">页面加载时立即初始化4个ECharts图表，消耗大量资源，阻塞主线程</p>
+                        </motion.div>
+
+                        <!-- 问题卡片2 -->
+                        <motion.div 
+                            class="bg-orange-50 rounded-lg p-6 border-l-4 border-orange-500 card-hover"
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <div class="text-orange-500 mb-4">
+                                <i class="fas fa-box-open text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">资源加载优化不足</h3>
+                            <p class="text-gray-700">多个CDN资源并行加载，未使用异步加载和按需加载策略</p>
+                        </motion.div>
+
+                        <!-- 问题卡片3 -->
+                        <motion.div 
+                            class="bg-yellow-50 rounded-lg p-6 border-l-4 border-yellow-500 card-hover"
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <div class="text-yellow-500 mb-4">
+                                <i class="fas fa-code text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">JavaScript执行效率低</h3>
+                            <p class="text-gray-700">代码中存在冗余操作，未充分利用防抖、节流等优化技术</p>
+                        </motion.div>
+                    </div>
+                </div>
+            </motion.section>
+
+            <!-- 优化方案 -->
+            <motion.section 
+                class="mb-16"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+            >
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-green-500 pl-4">优化方案</h2>
+                
+                <!-- 方案1：图表懒加载 -->
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-start gap-6">
+                        <div class="md:w-1/4">
+                            <div class="gradient-green text-white p-4 rounded-lg">
+                                <i class="fas fa-chart-line text-4xl mb-2"></i>
+                                <h3 class="text-xl font-bold">1. 图表懒加载</h3>
+                            </div>
+                        </div>
+                        <div class="md:w-3/4">
+                            <p class="text-lg text-gray-700 mb-4">
+                                实现图表的懒加载，仅当用户滚动到图表区域或点击相关标签页时才初始化图表，避免页面加载时的资源浪费。
+                            </p>
+                            
+                            <div class="code-block">
+                                <code>// 使用IntersectionObserver实现图表懒加载
+function initLazyCharts() {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const chartId = entry.target.id;
+                initSingleChart(chartId);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    chartContainers.forEach(container => {
+        observer.observe(container);
+    });
+}
+
+// 初始化单个图表
+function initSingleChart(chartId) {
+    // 根据chartId选择对应的图表配置
+    if (chartId === 'dataStatusChart') {
+        initDataStatusChart();
+    } else if (chartId === 'pushTrendChart') {
+        initPushTrendChart();
+    } else if (chartId === 'fileTypeChart') {
+        initFileTypeChart();
+    } else if (chartId === 'projectAreaChart') {
+        initProjectAreaChart();
+    }
+}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 方案2：优化资源加载 -->
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-start gap-6">
+                        <div class="md:w-1/4">
+                            <div class="gradient-blue text-white p-4 rounded-lg">
+                                <i class="fas fa-download text-4xl mb-2"></i>
+                                <h3 class="text-xl font-bold">2. 优化资源加载</h3>
+                            </div>
+                        </div>
+                        <div class="md:w-3/4">
+                            <p class="text-lg text-gray-700 mb-4">
+                                优化资源的加载顺序，使用异步加载和按需加载策略，减少对首屏渲染的阻塞。
+                            </p>
+                            
+                            <div class="code-block">
+                                <code>// 优化后的资源加载方式
+// 1. 关键CSS内联
+// 2. 非关键JavaScript使用defer或async
+
+// 修改HTML中的script标签
+// 将：
+// &lt;script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"&gt;&lt;/script&gt;
+
+// 改为按需加载：
+function loadEChartsOnDemand() {
+    return new Promise((resolve, reject) => {
+        // 检查ECharts是否已加载
+        if (window.echarts) {
+            resolve(window.echarts);
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
+        script.onload = () => resolve(window.echarts);
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 方案3：JavaScript代码优化 -->
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <div class="flex flex-col md:flex-row md:items-start gap-6">
+                        <div class="md:w-1/4">
+                            <div class="gradient-purple text-white p-4 rounded-lg">
+                                <i class="fas fa-cogs text-4xl mb-2"></i>
+                                <h3 class="text-xl font-bold">3. JavaScript代码优化</h3>
+                            </div>
+                        </div>
+                        <div class="md:w-3/4">
+                            <p class="text-lg text-gray-700 mb-4">
+                                优化JavaScript代码执行效率，使用防抖、节流等技术，减少不必要的计算和DOM操作。
+                            </p>
+                            
+                            <div class="code-block">
+                                <code>// 使用防抖技术优化窗口大小调整事件
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// 优化图表大小调整
+const resizeCharts = debounce(() => {
+    // 只在图表存在时调整大小
+    const chartIds = ['dataStatusChart', 'pushTrendChart', 'fileTypeChart', 'projectAreaChart'];
+    chartIds.forEach(chartId => {
+        const chartDom = document.getElementById(chartId);
+        if (chartDom) {
+            const chartInstance = echarts.getInstanceByDom(chartDom);
+            if (chartInstance) {
+                chartInstance.resize();
+            }
+        }
+    });
+}, 200);
+
+// 绑定窗口大小调整事件
+window.addEventListener('resize', resizeCharts);</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            <!-- 实施方案 -->
+            <motion.section 
+                class="mb-16"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+            >
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-purple-500 pl-4">实施方案</h2>
+                
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">步骤1：修改survey-data.html文件</h3>
+                                <p class="text-gray-700">移除ECharts的直接引入，添加图表容器的懒加载类标记。</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">步骤2：重构survey-data.js文件</h3>
+                                <p class="text-gray-700">实现图表懒加载逻辑，优化资源加载方式，添加防抖处理。</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">步骤3：测试与验证</h3>
+                                <p class="text-gray-700">测试页面加载速度，验证图表功能是否正常，确保优化效果显著。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            <!-- 优化效果 -->
+            <motion.section 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+            >
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-green-500 pl-4">预期优化效果</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <motion.div 
+                        class="bg-white rounded-xl shadow-lg p-6 card-hover"
+                        whileHover={{ y: -10 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                        <div class="text-green-500 text-4xl mb-4">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">首屏加载速度</h3>
+                        <p class="text-4xl font-bold text-green-600 mb-2">提升60%</p>
+                        <p class="text-gray-600">减少初始加载的资源量，加快页面呈现速度</p>
+                    </motion.div>
+
+                    <motion.div 
+                        class="bg-white rounded-xl shadow-lg p-6 card-hover"
+                        whileHover={{ y: -10 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                        <div class="text-blue-500 text-4xl mb-4">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">内存占用</h3>
+                        <p class="text-4xl font-bold text-blue-600 mb-2">降低45%</p>
+                        <p class="text-gray-600">按需初始化图表，减少不必要的内存消耗</p>
+                    </motion.div>
+
+                    <motion.div 
+                        class="bg-white rounded-xl shadow-lg p-6 card-hover"
+                        whileHover={{ y: -10 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                        <div class="text-purple-500 text-4xl mb-4">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">用户体验</h3>
+                        <p class="text-4xl font-bold text-purple-600 mb-2">显著提升</p>
+                        <p class="text-gray-600">页面响应更流畅，交互更及时，无卡顿感</p>
+                    </motion.div>
+                </div>
+            </motion.section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-gray-800 text-white py-8 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <p>© 2025 高速公路征地拆迁管理系统 - 性能优化方案</p>
+                    <p class="mt-2 text-gray-400">基于最佳实践的前端性能优化指南</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 添加页面滚动动画效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为导航链接添加平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

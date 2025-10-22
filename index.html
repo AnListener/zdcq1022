@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高速公路征地拆迁管理系统</title>
+    <!-- 本地CSS -->
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <!-- CDN作为备用 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" id="cdn-css" onload="checkCDNLoad()" onerror="fallbackToLocal()">
+    
+    <script>
+        // 检查CDN是否加载成功
+        function checkCDNLoad() {
+            // 创建一个测试元素来检测Tailwind是否加载成功
+            const test = document.createElement('div');
+            test.className = 'bg-blue-500';
+            test.style.visibility = 'hidden';
+            test.style.position = 'absolute';
+            document.body.appendChild(test);
+            
+            // 获取计算后的样式
+            const computedStyle = window.getComputedStyle(test);
+            const backgroundColor = computedStyle.backgroundColor;
+            
+            // 移除测试元素
+            document.body.removeChild(test);
+            
+            // 如果背景颜色不是蓝色，说明CDN没有正确加载
+            if (backgroundColor !== 'rgb(59, 130, 246)' && backgroundColor !== '#3b82f6') {
+                console.warn('CDN CSS failed to load, using local CSS');
+                fallbackToLocal();
+            } else {
+                console.log('CDN CSS loaded successfully');
+                // 隐藏本地CSS以避免冲突
+                document.getElementById('local-css').disabled = true;
+            }
+        }
+        
+        // CDN加载失败时的备用方案
+        function fallbackToLocal() {
+            console.log('Switching to local CSS fallback');
+            const cdnCSS = document.getElementById('cdn-css');
+            const localCSS = document.getElementById('local-css');
+            
+            if (cdnCSS) {
+                cdnCSS.disabled = true;
+            }
+            
+            if (localCSS) {
+                localCSS.disabled = false;
+            }
+        }
+        
+        // 页面加载完成后检查CSS是否加载成功
+        window.addEventListener('load', function() {
+            // 延迟检查以确保样式完全应用
+            setTimeout(checkCDNLoad, 100);
+        });
+        
+        // 网络错误处理
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'LINK' && e.target.id === 'cdn-css') {
+                console.warn('CDN CSS failed to load, using local CSS');
+                fallbackToLocal();
+            }
+        }, true);
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 自定义样式 -->
+    <style>
+        .sidebar-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .content-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .iframe-container {
+            height: calc(100vh - 64px);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            /* 在移动端，确保内容区域的左边距为0 */
+            #content-area {
+                margin-left: 0 !important;
+            }
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        /* 确保侧边栏在折叠时不影响内容区域 */
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* 修复侧边栏滚动条问题 */
+        .sidebar .overflow-y-auto {
+            overflow-y: auto;
+            /* 隐藏滚动条但保持功能 */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        
+        .sidebar .overflow-y-auto::-webkit-scrollbar {
+            width: 0px; /* Chrome, Safari */
+            background: transparent; /* Chrome, Safari */
+        }
+        
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 16px;
+            right: -16px;
+            background: #3b82f6;
+            border: 2px solid #fff;
+            border-radius: 9999px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+        
+        .sidebar.collapsed .sidebar-toggle-btn {
+            transform: rotate(180deg);
+        }
+        
+        .sidebar.collapsed .sidebar-toggle-btn:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+        
+        /* 添加展开按钮的固定定位样式 */
+        .sidebar-expand-btn {
+            position: fixed;
+            top: 80px;
+            left: 10px;
+            background: #3b82f6;
+            border: 2px solid #fff;
+            border-radius: 9999px;
+            width: 32px;
+            height: 32px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-expand-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+        
+        /* 当侧边栏折叠时显示展开按钮的另一种方式 */
+        .sidebar-expand-btn.visible {
+            display: flex;
+        }
+        
+        /* 添加侧边栏折叠时内容区域的样式 */
+        .content-area-expanded {
+            margin-left: 0 !important;
+        }
+        
+        /* 确保在所有屏幕尺寸下侧边栏都可见（除非主动折叠） */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(-100%) !important;
+            }
+            
+            #content-area {
+                margin-left: 16rem !important; /* 64px * 4 = 256px = 16rem */
+            }
+            
+            #content-area.content-area-expanded {
+                margin-left: 0 !important;
+            }
+        }
+        
+        /* 确保rotate-180类定义存在 */
+        .rotate-180 {
+            transform: rotate(180deg);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- 顶部导航栏 -->
+        <div class="fixed top-0 left-0 right-0 bg-white shadow-md z-20" style="height: 64px;">
+            <div class="flex items-center justify-between px-6 h-full">
+                <div class="flex items-center">
+                    <button id="menu-toggle" class="mr-4 text-gray-500 hover:text-gray-700 md:hidden">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-gray-800">征拆管理系统</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-bell text-lg"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mr-2">管</div>
+                        <span class="text-gray-700 hidden md:inline">管理员</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <div id="sidebar" class="sidebar sidebar-transition bg-white text-gray-800 w-64 fixed h-full z-10 border-r border-gray-200 mt-16">
+            <div class="p-4 border-b border-gray-200 relative">
+                <div class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="折叠/展开侧边栏">
+                    <i class="fas fa-chevron-left text-sm"></i>
+                </div>
+            </div>
+            
+            <div class="overflow-y-auto" style="height: calc(100% - 60px);">
+                <!-- 首页 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="dashboard">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('dashboard-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-home text-blue-500 mr-3"></i>
+                            <span class="font-medium">首页</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="dashboard-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="dashboard-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('dashboard-home.html'); return false;">
+                            <i class="fas fa-home mr-2"></i>首页
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- GIS管理 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="gis">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('gis-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marked-alt text-green-500 mr-3"></i>
+                            <span class="font-medium">GIS管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="gis-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="gis-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('gis-gis-overview.html'); return false;">
+                            <i class="fas fa-map mr-2"></i>GIS概览
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('gis-gis-map-view.html'); return false;">
+                            <i class="fas fa-map-marked-alt mr-2"></i>GIS一张图
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('gis-survey-data.html'); return false;">
+                            <i class="fas fa-drafting-compass mr-2"></i>测绘数据
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('gis-survey-analysis.html'); return false;">
+                            <i class="fas fa-chart-line mr-2"></i>测绘分析
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('gis-publish-management.html'); return false;">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>发布管理
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 台账管理 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="account">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('account-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-book text-yellow-500 mr-3"></i>
+                            <span class="font-medium">台账管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="account-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="account-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('land-account.html'); return false;">
+                            <i class="fas fa-map-marker-alt mr-2"></i>征地台账
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('house-account.html'); return false;">
+                            <i class="fas fa-home mr-2"></i>房屋台账
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('attached-account.html'); return false;">
+                            <i class="fas fa-tree mr-2"></i>附着物台账
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('agreement-account.html'); return false;">
+                            <i class="fas fa-file-contract mr-2"></i>协议台账
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('settlement-account.html'); return false;">
+                            <i class="fas fa-file-invoice-dollar mr-2"></i>结算台账
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('audit-account.html'); return false;">
+                            <i class="fas fa-clipboard-check mr-2"></i>审核台账
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 费用管理 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="cost">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('cost-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-yen-sign text-red-500 mr-3"></i>
+                            <span class="font-medium">费用管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="cost-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="cost-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('cost-cost-overview.html'); return false;">
+                            <i class="fas fa-chart-pie mr-2"></i>费用概览
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('cost-group-cost-items.html'); return false;">
+                            <i class="fas fa-object-group mr-2"></i>征拆费用项（集团）
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('cost-project-cost-items.html'); return false;">
+                            <i class="fas fa-project-diagram mr-2"></i>征拆费用项（项目级）
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('cost-compensation-standards.html'); return false;">
+                            <i class="fas fa-ruler mr-2"></i>补偿管理
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 基础配置 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="config">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('config-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-cog text-purple-500 mr-3"></i>
+                            <span class="font-medium">基础配置</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="config-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="config-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('config-form-templates.html'); return false;">
+                            <i class="fas fa-file-alt mr-2"></i>表单模板
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('config-agreement-templates.html'); return false;">
+                            <i class="fas fa-file-contract mr-2"></i>协议模板
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('config-approval-flow.html'); return false;">
+                            <i class="fas fa-sitemap mr-2"></i>审批流程
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('config-demolition-areas.html'); return false;">
+                            <i class="fas fa-draw-polygon mr-2"></i>征拆范围
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 统计分析 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="statistics">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('statistics-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-bar text-indigo-500 mr-3"></i>
+                            <span class="font-medium">统计分析</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="statistics-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="statistics-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('statistics-statistics.html'); return false;">
+                            <i class="fas fa-tachometer-alt mr-2"></i>统计概览
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-project-statistics.html'); return false;">
+                            <i class="fas fa-project-diagram mr-2"></i>项目统计
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-area-statistics.html'); return false;">
+                            <i class="fas fa-map-marker-alt mr-2"></i>区域统计
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-cost-statistics.html'); return false;">
+                            <i class="fas fa-yen-sign mr-2"></i>费用统计
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-account-statistics.html'); return false;">
+                            <i class="fas fa-book mr-2"></i>台账统计
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-demolition-statistics.html'); return false;">
+                            <i class="fas fa-wrecking-ball mr-2"></i>征拆物统计
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('statistics-payment-statistics.html'); return false;">
+                            <i class="fas fa-file-invoice-dollar mr-2"></i>结算支付统计
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 征拆资料管理 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="document">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('document-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-alt text-purple-500 mr-3"></i>
+                            <span class="font-medium">征拆资料管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="document-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="document-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('document-document-management.html'); return false;">
+                            <i class="fas fa-file mr-2"></i>资料管理
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 系统管理 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="system">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('system-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-tools text-gray-600 mr-3"></i>
+                            <span class="font-medium">系统管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="system-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="system-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('system-user-management.html'); return false;">
+                            <i class="fas fa-user mr-2"></i>用户管理
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('system-role-management.html'); return false;">
+                            <i class="fas fa-user-tag mr-2"></i>角色管理
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('system-menu-permissions.html'); return false;">
+                            <i class="fas fa-key mr-2"></i>菜单权限
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('system-operation-logs.html'); return false;">
+                            <i class="fas fa-clipboard-list mr-2"></i>操作日志
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('system-project-management.html'); return false;">
+                            <i class="fas fa-project-diagram mr-2"></i>项目管理
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 帮助中心 -->
+                <div class="nav-item mb-1 rounded-lg" data-module="help">
+                    <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-50" onclick="toggleSubmenu('help-submenu')">
+                        <div class="flex items-center">
+                            <i class="fas fa-question-circle text-green-400 mr-3"></i>
+                            <span class="font-medium">帮助中心</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform" id="help-arrow"></i>
+                    </div>
+                    <div class="submenu hidden bg-blue-50 rounded-b-lg" id="help-submenu">
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100 rounded-b-lg" onclick="loadPage('help/system-documentation.html'); return false;">
+                            <i class="fas fa-book mr-2"></i>系统文档
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('help/operation-videos.html'); return false;">
+                            <i class="fas fa-video mr-2"></i>操作视频
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('help/faq.html'); return false;">
+                            <i class="fas fa-comments mr-2"></i>常见问题
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('help/feedback.html'); return false;">
+                            <i class="fas fa-comment-dots mr-2"></i>意见反馈
+                        </a>
+                        <a href="#" class="block px-8 py-2 text-gray-700 hover:bg-blue-100" onclick="loadPage('system-index.html'); return false;">
+                            <i class="fas fa-compass mr-2"></i>系统导航页面
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内容区域 -->
+        <div id="content-area" class="content-transition flex-1 ml-64 mt-16">
+            <div class="iframe-container">
+                <iframe id="main-frame" src="dashboard-home.html" frameborder="0" class="w-full h-full"></iframe>
+            </div>
+        </div>
+        
+        <!-- 侧边栏展开按钮 -->
+        <div class="sidebar-expand-btn" id="sidebar-expand-btn" title="展开侧边栏">
+            <i class="fas fa-chevron-right text-sm"></i>
+        </div>
+        
+        <!-- JS功能由外部文件提供 -->
+        <script>
+        // 添加调试代码，确保toggleSubmenu函数可用
+        if (typeof toggleSubmenu !== 'function') {
+            console.log('toggleSubmenu function not found, defining it now');
+            window.toggleSubmenu = function(menuId) {
+                console.log('Inline toggleSubmenu called with menuId:', menuId);
+                // 直接在当前文档中查找并切换子菜单
+                const submenu = document.getElementById(menuId + '-submenu');
+                const arrow = document.getElementById(menuId + '-arrow');
+                
+                if (submenu && arrow) {
+                    submenu.classList.toggle('hidden');
+                    arrow.classList.toggle('rotate-180');
+                    console.log('Toggled submenu and arrow via inline function');
+                } else {
+                    console.error('Could not find submenu or arrow for menuId:', menuId);
+                    // 尝试通过data-module属性查找
+                    const moduleId = menuId.replace('-submenu', '');
+                    const navItem = document.querySelector(`[data-module="${moduleId}"]`);
+                    if (navItem) {
+                        const subMenu = navItem.querySelector('.submenu');
+                        const arrowIcon = navItem.querySelector('i.fa-chevron-down');
+                        if (subMenu && arrowIcon) {
+                            subMenu.classList.toggle('hidden');
+                            arrowIcon.classList.toggle('rotate-180');
+                            console.log('Toggled submenu and arrow using data-module approach');
+                            return;
+                        }
+                    }
+                }
+            };
+        } else {
+            console.log('toggleSubmenu function already defined');
+        }
+        
+        // 确保rotate-180类定义存在
+        if (!document.querySelector('#rotate-180-style')) {
+            const style = document.createElement('style');
+            style.id = 'rotate-180-style';
+            style.textContent = `
+                .rotate-180 {
+                    transform: rotate(180deg);
+                    transition: transform 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 页面加载完成后恢复侧边栏状态
+        window.addEventListener('load', function() {
+            // 恢复侧边栏状态
+            try {
+                const savedState = localStorage.getItem('sidebarCollapsed');
+                if (savedState !== null) {
+                    const sidebarCollapsed = savedState === 'true';
+                    const sidebar = document.getElementById('sidebar');
+                    const expandBtn = document.getElementById('sidebar-expand-btn');
+                    const contentArea = document.getElementById('content-area');
+                    const arrow = document.getElementById('sidebar-toggle-btn').querySelector('i');
+                    
+                    if (sidebar && expandBtn && contentArea && arrow) {
+                        if (sidebarCollapsed) {
+                            sidebar.classList.add('collapsed');
+                            expandBtn.classList.add('visible');
+                            contentArea.classList.add('content-area-expanded');
+                            if (arrow.classList.contains('fa-chevron-left')) {
+                                arrow.classList.remove('fa-chevron-left');
+                                arrow.classList.add('fa-chevron-right');
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not restore sidebar state:', e);
+            }
+        });
+        </script>
+        <script src="./app.js"></script>
+        <script src="./system-optimization.js"></script>
+    </body>
+</html>

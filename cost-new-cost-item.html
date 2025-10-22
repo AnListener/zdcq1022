@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增费用项 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .area-unit {
+            color: #4b5563;
+            font-weight: 500;
+            margin-left: 2px;
+        }
+        
+        .area-unit-select {
+            background-color: #f9fafb;
+            border-left: none;
+            border-radius: 0 0.25rem 0.25rem 0;
+        }
+        
+        /* 表单美化样式 */
+        .form-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-section-header {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #0ea5e9;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        /* 项目标签样式 */
+        .project-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .project-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 添加项目按钮样式 */
+        .add-project-btn {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            color: white;
+            font-weight: 600;
+            padding: 0.85rem 1.75rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .add-project-btn:hover {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            box-shadow: 0 6px 8px rgba(20, 184, 166, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .add-project-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(20, 184, 166, 0.3);
+        }
+        
+        .add-project-btn i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+        
+        /* 项目选择模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.75rem;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1.75rem;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 1.25rem 1.75rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Excel样式表格 */
+        .excel-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .excel-table th {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            color: white;
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .excel-table td {
+            padding: 1rem 1.25rem;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        
+        .excel-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .excel-table tr:hover {
+            background-color: #eff6ff;
+        }
+        
+        .excel-table tr.selected {
+            background-color: #dbeafe;
+        }
+        
+        .project-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #2563eb;
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+        
+        .project-status.assigned {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .project-status.unassigned {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        /* 输入框美化 */
+        .input-field {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+        }
+        
+        /* 按钮美化 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        
+        /* 统计卡片美化 */
+        .stat-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 统计信息卡片样式 */
+        .stats-card {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        /* 说明区域美化 */
+        .info-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1024px) {
+            .flex-1.overflow-hidden.gap-6 {
+                flex-direction: column;
+            }
+            
+            .w-80 {
+                width: 100%;
+            }
+            
+            .px-6.py-5 {
+                padding: 0.75rem 1rem;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+            }
+            
+            .p-8 {
+                padding: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-2.gap-8 {
+                gap: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-3.gap-6 {
+                gap: 1rem;
+            }
+            
+            .input-field {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .project-tag {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .bg-gradient-to-r.from-indigo-500.to-indigo-600 {
+                padding: 0.75rem 1rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+            
+            .px-5.py-2 {
+                padding: 0.5rem 1rem;
+            }
+            
+            .p-8 {
+                padding: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-2.gap-8 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .grid.grid-cols-1.md\:grid-cols-3.gap-6 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .mt-10 {
+                margin-top: 1.5rem;
+            }
+            
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem;
+            }
+            
+            .add-project-btn {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.875rem;
+            }
+            
+            .px-8.py-4 {
+                padding: 0.75rem 1.25rem;
+            }
+            
+            table.excel-table {
+                font-size: 0.75rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .p-5 {
+                padding: 0.75rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.5rem;
+            }
+            
+            .space-y-6 {
+                gap: 1rem;
+            }
+            
+            .hidden.sm\:table-cell {
+                display: none;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .stat-item {
+                padding: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.125rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .bg-gradient-to-r.from-indigo-500.to-indigo-600 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.125rem;
+            }
+            
+            .px-5.py-2 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .px-6.py-3 {
+                padding: 0.5rem 1rem;
+            }
+            
+            .p-8 {
+                padding: 0.75rem;
+            }
+            
+            .mb-2 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .mt-1 {
+                margin-top: 0.25rem;
+            }
+            
+            .text-sm {
+                font-size: 0.75rem;
+            }
+            
+            .text-xs {
+                font-size: 0.625rem;
+            }
+            
+            .add-project-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+            }
+            
+            .px-8.py-4 {
+                padding: 0.5rem 1rem;
+            }
+            
+            .mr-3 {
+                margin-right: 0.5rem;
+            }
+            
+            table.excel-table {
+                font-size: 0.625rem;
+            }
+            
+            .excel-table th,
+            .excel-table td {
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .p-5 {
+                padding: 0.5rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+            
+            .space-y-6 > div {
+                padding: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            .stats-card {
+                padding: 0.5rem;
+            }
+            
+            .stat-item {
+                padding: 0.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 全屏容器 -->
+    <div class="fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- 顶部导航栏 -->
+        <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4 flex items-center justify-between shadow-lg">
+            <h1 class="text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-plus-circle text-white mr-3"></i>
+                新增费用项
+            </h1>
+            <button id="close-new" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-5 py-2 rounded-xl transition-all duration-300 flex items-center backdrop-blur-sm">
+                <i class="fas fa-times mr-2"></i>关闭
+            </button>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="flex-1 overflow-auto p-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- 主内容区域 -->
+                <div class="flex flex-1 overflow-hidden gap-6">
+                    <!-- 左侧表单区域 -->
+                    <div class="flex-1 bg-white rounded-xl shadow-lg overflow-hidden form-card">
+                        <div class="px-6 py-5 border-b border-gray-200 form-section-header">
+                            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                                费用项基本信息
+                            </h2>
+                        </div>
+                        
+                        <!-- 表单内容 -->
+                        <div class="p-8 bg-gray-50">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">费用项名称 <span class="text-red-500">*</span></label>
+                                    <input type="text" id="cost-item-name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white" placeholder="请输入费用项名称">
+                                    <p class="mt-1 text-xs text-gray-500">例如：征地补偿费用</p>
+                                </div>                        
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">设计总费用（万元） <span class="text-red-500">*</span></label>
+                                    <input type="number" id="design-total-cost" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white" placeholder="请输入设计总费用">
+                                    <p class="mt-1 text-xs text-gray-500">单位：万元</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">工可报审稿总费用（万元） <span class="text-red-500">*</span></label>
+                                    <input type="number" id="review-total-cost" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white" placeholder="请输入工可报审稿总费用">
+                                    <p class="mt-1 text-xs text-gray-500">单位：万元</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">总设计面积 <span class="text-red-500">*</span></label>
+                                    <div class="flex">
+                                        <input type="number" id="total-area" class="flex-1 px-4 py-3 border border-gray-300 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white" placeholder="请输入总设计面积">
+                                        <select id="area-unit" class="px-4 py-3 border border-gray-300 rounded-r-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="亩">亩</option>
+                                            <option value="㎡">㎡</option>
+                                        </select>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">单位：<span id="area-unit-display">亩</span></p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">状态 <span class="text-red-500">*</span></label>
+                                    <select id="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white">
+                                        <option value="启用">启用</option>
+                                        <option value="停用">停用</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">费用项描述</label>
+                                    <textarea id="cost-item-description" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 input-field bg-white" rows="4" placeholder="请输入费用项描述"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- 费用配置 -->
+                            <div class="mt-10 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl" id="step2-content">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                                    <i class="fas fa-cog text-blue-500 mr-2"></i>
+                                    费用配置
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">预算总额（万元）</label>
+                                        <input type="number" id="budget-total" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field bg-white" placeholder="请输入预算总额">
+                                        <p class="mt-1 text-xs text-gray-500">单位：万元</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">已支出金额（万元）</label>
+                                        <input type="number" id="spent-amount" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field bg-gray-100" placeholder="请输入已支出金额" readonly>
+                                        <p class="mt-1 text-xs text-gray-500">单位：万元</p>
+                                    </div>                            
+                                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">预警阈值（%）</label>
+                                        <input type="number" id="warning-threshold" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 input-field bg-white" placeholder="请输入预警阈值">
+                                        <p class="mt-1 text-xs text-gray-500">当支出达到预算的百分比时触发预警</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 关联项目 -->
+                            <div class="mt-10 p-6 bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-2xl" id="step3-content">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                        <i class="fas fa-project-diagram text-purple-500 mr-2"></i>
+                                        关联项目
+                                    </h3>
+                                    <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded-full shadow-sm">
+                                        已关联 <span id="project-count" class="font-bold text-purple-600">0</span> 个项目
+                                    </div>
+                                </div>
+                                
+                                <!-- 统计信息 -->
+                                <div class="stats-card">
+                                    <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>资金分配统计
+                                    </h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="allocated-fund-total">0.00</div>
+                                            <div class="stat-label">已分配资金总额(万元)</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="design-total-display">0.00</div>
+                                            <div class="stat-label">设计总费用(万元)</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="allocation-rate">0.00</div>
+                                            <div class="stat-label">资金分配率(%)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 新增关联项目按钮 -->
+                                <div class="mb-6 text-center">
+                                    <button id="add-project-main-btn" class="add-project-btn px-8 py-4 text-lg">
+                                        <i class="fas fa-plus-circle mr-3"></i>新增关联项目
+                                    </button>
+                                </div>
+                                
+                                <!-- 当前已关联的项目标签 -->
+                                <div class="mb-6 p-5 bg-white rounded-2xl shadow-sm border border-gray-200">
+                                    <div class="text-base font-semibold text-gray-700 mb-4 flex items-center">
+                                        <i class="fas fa-tags text-purple-500 mr-2"></i>已关联的项目：
+                                    </div>
+                                    <div id="project-tags-container" class="flex flex-wrap">
+                                        <!-- 项目标签将通过JavaScript动态添加 -->
+                                    </div>
+                                </div>
+                                
+                                <!-- 项目分配表格 -->
+                                <div class="overflow-x-auto rounded-2xl shadow-lg border border-gray-200">
+                                    <table class="excel-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="150">项目编号</th>
+                                                <th width="180">项目名称</th>
+                                                <th width="150">分配资金(万元)</th>
+                                                <th width="150">设计面积</th>
+                                                <th width="100">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="project-assignment-table">
+                                            <!-- 项目行将通过JavaScript动态添加 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-10 flex justify-between pt-6 border-t border-gray-200">
+                                <div>
+                                    <button id="cancel-btn" class="btn-secondary bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-6 py-3 rounded-xl flex items-center shadow-sm">
+                                        <i class="fas fa-times mr-2"></i>取消
+                                    </button>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button id="save-btn" class="btn-primary bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center shadow-md">
+                                        <i class="fas fa-save mr-2"></i>保存
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧说明区域 -->
+                    <div class="w-80 bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl p-6 flex-shrink-0 info-card border border-gray-200">
+                        <h3 class="font-bold text-gray-800 text-xl mb-6 flex items-center">
+                            <i class="fas fa-question-circle text-blue-500 mr-2"></i>填写说明
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                <h4 class="font-bold text-blue-800 mb-3 flex items-center">
+                                    <i class="fas fa-file-alt text-blue-500 mr-2"></i>费用项基本信息
+                                </h4>
+                                <p class="text-sm text-gray-700">应简洁明了地描述费用项的内容，如"征地补偿费用"。带 <span class="text-red-500">*</span> 的为必填项，请务必填写完整。</p>
+                            </div>                                    
+                            <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                                <h4 class="font-bold text-indigo-800 mb-3 flex items-center">
+                                    <i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>费用金额
+                                </h4>
+                                <p class="text-sm text-gray-700">填写设计总费用和工可报审稿总费用，单位为万元，支持小数点后两位。资金分配总额应与设计总费用保持一致。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                                <h4 class="font-bold text-purple-800 mb-3 flex items-center">
+                                    <i class="fas fa-project-diagram text-purple-500 mr-2"></i>关联项目
+                                </h4>
+                                <p class="text-sm text-gray-700 mb-3">为费用项关联具体的项目，并分配相应的资金和设计面积。每个项目只能关联一次。</p>
+                                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700">
+                                    <p class="font-bold mb-2 flex items-center">
+                                        <i class="fas fa-lightbulb mr-1"></i>操作说明：
+                                    </p>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>点击"新增关联项目"按钮可选择项目</li>
+                                        <li>为每个项目分配资金和设计面积</li>
+                                        <li>点击"移除"按钮可删除不需要的项目</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5">
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-0.5 mr-3"></i>
+                                    <div>
+                                        <h4 class="font-bold text-orange-800 mb-2">注意事项</h4>
+                                        <ul class="text-sm text-orange-700 space-y-1">
+                                            <li class="flex items-start">
+                                                <span class="text-red-500 mr-1">•</span>
+                                                <span>带 <span class="font-bold text-red-600">*</span> 的为必填项，请务必填写完整</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="text-red-500 mr-1">•</span>
+                                                <span>资金分配总额应与设计总费用保持一致</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="text-red-500 mr-1">•</span>
+                                                <span>每个项目只能关联一次，重复关联将被忽略</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 项目清单（模拟数据）
+        const projectList = [
+            { id: 1, code: "XM-2023-001", name: "融罗高速项目", status: "未关联", assigned: false },
+            { id: 2, code: "XM-2023-002", name: "大凭高速项目", status: "未关联", assigned: false },
+            { id: 3, code: "XM-2023-003", name: "天峨高速项目", status: "未关联", assigned: false },
+            { id: 4, code: "XM-2023-004", name: "平天高速项目", status: "未关联", assigned: false },
+            { id: 5, code: "XM-2023-005", name: "桂柳高速项目", status: "未关联", assigned: false }
+        ];
+        
+        // 已选择的项目
+        let selectedProjects = [];
+        
+        // 更新已关联项目计数
+        function updateProjectCount() {
+            const projectCount = document.querySelectorAll('#project-assignment-table tr').length;
+            document.getElementById('project-count').textContent = projectCount;
+            
+            // 更新项目标签
+            updateProjectTags();
+        }
+        
+        // 更新项目标签显示
+        function updateProjectTags() {
+            const projectNames = Array.from(document.querySelectorAll('.project-name'))
+                .map(input => input.value)
+                .filter((value, index, self) => self.indexOf(value) === index); // 去重
+            
+            const container = document.getElementById('project-tags-container');
+            container.innerHTML = '';
+            
+            projectNames.forEach(project => {
+                const tag = document.createElement('span');
+                tag.className = 'project-tag bg-purple-100 text-purple-800';
+                tag.innerHTML = '<i class="fas fa-project-diagram mr-1"></i>' + project;
+                container.appendChild(tag);
+            });
+        }
+        
+        // 保存按钮事件
+        document.getElementById('save-btn').addEventListener('click', function() {
+            alert('费用项保存成功！');
+            // 这里应该添加实际的保存逻辑
+            window.location.href = 'group-cost-items.html';
+        });
+        
+        // 关闭新增页面
+        document.getElementById('close-new').addEventListener('click', function() {
+            if (confirm('确定要关闭新增页面吗？未保存的更改将会丢失。')) {
+                window.location.href = 'group-cost-items.html';
+            }
+        });
+        
+        // 取消按钮事件
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            if (confirm('确定要取消新增费用项吗？')) {
+                window.location.href = 'group-cost-items.html';
+            }
+        });
+        
+        // 显示项目选择模态框
+        document.getElementById('add-project-main-btn').addEventListener('click', function() {
+            showProjectSelectionModal();
+        });
+        
+        // 显示项目选择模态框
+        function showProjectSelectionModal() {
+            // 创建模态框HTML
+            const modalHTML = `
+                <div id="project-selection-modal" class="modal" style="display: block;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="text-xl font-bold flex items-center">
+                                <i class="fas fa-project-diagram mr-2"></i>选择项目
+                            </h3>
+                            <button id="close-modal" class="text-white hover:text-gray-200 text-xl">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-base text-gray-700 mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>请选择要关联的项目（仅显示未关联的项目）
+                            </p>
+                            <div class="overflow-x-auto rounded-xl shadow">
+                                <table class="excel-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="60" class="text-center">选择</th>
+                                            <th>项目编号</th>
+                                            <th>项目名称</th>
+                                            <th width="140" class="text-center">状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="project-table-body">
+                                        ${projectList
+                                            .filter(project => !project.assigned)
+                                            .map(project => `
+                                                <tr data-id="${project.id}" data-code="${project.code}" data-name="${project.name}" class="${project.assigned ? 'bg-gray-100' : 'hover:bg-blue-50'} transition-colors duration-150">
+                                                    <td class="text-center">
+                                                        <input type="checkbox" class="project-checkbox" ${project.assigned ? 'disabled' : ''} data-id="${project.id}" data-code="${project.code}" data-name="${project.name}">
+                                                    </td>
+                                                    <td class="font-medium">${project.code}</td>
+                                                    <td>${project.name}</td>
+                                                    <td class="text-center">
+                                                        <span class="project-status ${project.assigned ? 'assigned' : 'unassigned'} font-semibold">
+                                                            ${project.assigned ? '已关联' : '未关联'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="cancel-selection" class="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-times mr-2"></i>取消
+                            </button>
+                            <button id="confirm-selection" class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center shadow-md" disabled>
+                                <i class="fas fa-check mr-2"></i>确定添加
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加模态框到页面
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 绑定事件
+            document.getElementById('close-modal').addEventListener('click', closeProjectSelectionModal);
+            document.getElementById('cancel-selection').addEventListener('click', closeProjectSelectionModal);
+            document.getElementById('confirm-selection').addEventListener('click', addSelectedProjects);
+            
+            // 项目选择事件
+            document.querySelectorAll('.project-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    
+                    if (this.checked) {
+                        row.classList.add('selected');
+                        selectedProjects.push({
+                            id: parseInt(this.dataset.id),
+                            code: this.dataset.code,
+                            name: this.dataset.name
+                        });
+                    } else {
+                        row.classList.remove('selected');
+                        selectedProjects = selectedProjects.filter(project => project.id !== parseInt(this.dataset.id));
+                    }
+                    
+                    // 更新确定按钮状态
+                    document.getElementById('confirm-selection').disabled = selectedProjects.length === 0;
+                });
+            });
+        }
+        
+        // 关闭项目选择模态框
+        function closeProjectSelectionModal() {
+            const modal = document.getElementById('project-selection-modal');
+            if (modal) {
+                modal.remove();
+            }
+            selectedProjects = [];
+        }
+        
+        // 添加选中的项目
+        function addSelectedProjects() {
+            if (selectedProjects.length === 0) return;
+            
+            const tableBody = document.getElementById('project-assignment-table');
+            
+            selectedProjects.forEach(project => {
+                const newRow = document.createElement('tr');
+                newRow.className = 'hover:bg-gray-50 transition-colors duration-150';
+                newRow.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 project-code input-field bg-gray-100" value="${project.code}" readonly>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 project-name input-field" value="${project.name}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <input type="number" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 project-fund input-field" value="0">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div class="flex">
+                            <input type="number" class="flex-1 w-24 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 project-area input-field" value="0">
+                            <select class="area-unit-select px-2 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="亩">亩</option>
+                                <option value="㎡">㎡</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-red-500 hover:text-red-700 remove-project-btn transition-colors duration-200 flex items-center">
+                            <i class="fas fa-trash-alt mr-1"></i>移除
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(newRow);
+            });
+            
+            updateProjectCount();
+            updateAllocationStats();
+            closeProjectSelectionModal();
+            
+            // 滚动到最后一行
+            const lastRow = tableBody.lastElementChild;
+            if (lastRow) {
+                lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // 移除项目按钮事件（使用事件委托）
+        document.getElementById('project-assignment-table').addEventListener('click', function(e) {
+            if (e.target.closest('.remove-project-btn')) {
+                if (confirm('确定要移除该项目吗？')) {
+                    const row = e.target.closest('tr');
+                    if (row) {
+                        row.remove();
+                        updateProjectCount();
+                        updateAllocationStats();
+                    }
+                }
+            }
+        });
+        
+        // 更新资金分配统计
+        function updateAllocationStats() {
+            const designTotal = parseFloat(document.getElementById('design-total-cost').value) || 0;
+            const allocatedFunds = Array.from(document.querySelectorAll('.project-fund'))
+                .map(input => parseFloat(input.value) || 0)
+                .reduce((sum, value) => sum + value, 0);
+            
+            document.getElementById('allocated-fund-total').textContent = allocatedFunds.toFixed(2);
+            document.getElementById('design-total-display').textContent = designTotal.toFixed(2);
+            
+            const allocationRate = designTotal > 0 ? (allocatedFunds / designTotal * 100) : 0;
+            document.getElementById('allocation-rate').textContent = allocationRate.toFixed(2);
+        }
+        
+        // 监听设计总费用变化
+        document.getElementById('design-total-cost').addEventListener('input', updateAllocationStats);
+        
+        // 监听项目资金输入变化（使用事件委托）
+        document.getElementById('project-assignment-table').addEventListener('input', function(e) {
+            if (e.target.classList.contains('project-fund') || 
+                e.target.classList.contains('project-name')) {
+                updateAllocationStats();
+                updateProjectTags();
+            }
+        });
+        
+        // 初始化步骤显示
+        updateStepDisplay();
+        updateAllocationStats();
+        updateProjectCount();
+        
+        // 添加单位选择联动功能
+        document.getElementById('area-unit').addEventListener('change', function() {
+            const selectedUnit = this.value;
+            document.getElementById('area-unit-display').textContent = selectedUnit;
+            document.querySelectorAll('.area-unit-select').forEach(select => {
+                select.value = selectedUnit;
+            });
+        });
+        
+        // 项目面积单位联动
+        document.getElementById('project-assignment-table').addEventListener('change', function(e) {
+            if (e.target.classList.contains('area-unit-select')) {
+                const selectedUnit = e.target.value;
+                document.getElementById('area-unit').value = selectedUnit;
+                document.getElementById('area-unit-display').textContent = selectedUnit;
+                document.querySelectorAll('.area-unit-select').forEach(select => {
+                    select.value = selectedUnit;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

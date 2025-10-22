@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS概览 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6 h-full">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-map text-purple-500 mr-2"></i>
+                GIS管理概览
+            </h1>
+            <p class="text-gray-600 mt-2">综合GIS管理平台，包含地图展示、数据分析等功能</p>
+        </div>
+
+        <!-- GIS功能导航 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- GIS一张图 -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">GIS一张图</h3>
+                        <p class="text-blue-100 text-sm">综合展示所有GIS信息</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-map-marked-alt text-2xl"></i>
+                    </div>
+                </div>
+                <a href="gis-map-view.html" class="mt-4 inline-block bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors">
+                    进入查看
+                </a>
+            </div>
+
+            <!-- 测绘数据管理 -->
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">测绘数据</h3>
+                        <p class="text-green-100 text-sm">管理测绘数据和分析</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-drafting-compass text-2xl"></i>
+                    </div>
+                </div>
+                <a href="survey-data.html" class="mt-4 inline-block bg-white text-green-600 px-4 py-2 rounded-lg font-medium hover:bg-green-50 transition-colors">
+                    进入查看
+                </a>
+            </div>
+
+            <!-- 发布管理 -->
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">发布管理</h3>
+                        <p class="text-purple-100 text-sm">GIS数据发布和共享</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                    </div>
+                </div>
+                <a href="publish-management.html" class="mt-4 inline-block bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition-colors">
+                    进入查看
+                </a>
+            </div>
+
+            <!-- 数据优化 -->
+            <div class="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl shadow-lg p-6 text-white transform transition-all hover:scale-105">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">数据优化</h3>
+                        <p class="text-yellow-100 text-sm">优化测绘数据分析</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                </div>
+                <a href="survey-data-optimization.html" class="mt-4 inline-block bg-white text-yellow-600 px-4 py-2 rounded-lg font-medium hover:bg-yellow-50 transition-colors">
+                    进入查看
+                </a>
+            </div>
+        </div>
+
+        <!-- GIS地图展示区域 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-gray-800">征地拆迁GIS地图概览</h2>
+                <div class="flex space-x-2">
+                    <a href="gis-map-view.html" class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-expand mr-1"></i> 全屏查看
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 模拟地图展示 -->
+            <div class="relative h-96 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg overflow-hidden border border-gray-200">
+                <!-- 模拟地图背景 -->
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-100 to-green-100">
+                    <!-- 模拟道路网络 -->
+                    <div class="absolute top-1/4 left-0 right-0 h-1 bg-gray-700"></div>
+                    <div class="absolute top-1/2 left-0 right-0 h-2 bg-gray-800"></div>
+                    <div class="absolute top-3/4 left-0 right-0 h-1 bg-gray-700"></div>
+                    <div class="absolute top-0 bottom-0 left-1/4 w-1 bg-gray-700"></div>
+                    <div class="absolute top-0 bottom-0 left-1/2 w-2 bg-gray-800"></div>
+                    <div class="absolute top-0 bottom-0 left-3/4 w-1 bg-gray-700"></div>
+                    
+                    <!-- 模拟河流 -->
+                    <div class="absolute top-1/5 left-1/6 w-2/3 h-1 bg-blue-400 rounded-full"></div>
+                    
+                    <!-- 模拟征地范围 -->
+                    <div class="absolute top-1/4 left-1/5 w-20 h-16 border-2 border-yellow-500 bg-yellow-200 bg-opacity-50"></div>
+                    <div class="absolute top-1/3 left-2/5 w-24 h-20 border-2 border-yellow-500 bg-yellow-200 bg-opacity-50"></div>
+                    <div class="absolute bottom-1/4 right-1/4 w-28 h-24 border-2 border-yellow-500 bg-yellow-200 bg-opacity-50"></div>
+                    
+                    <!-- 模拟建筑物 -->
+                    <div class="absolute top-1/3 left-1/6 w-6 h-10 bg-red-400"></div>
+                    <div class="absolute top-2/5 left-2/5 w-8 h-12 bg-red-500"></div>
+                    <div class="absolute bottom-1/3 right-1/3 w-10 h-14 bg-red-600"></div>
+                    
+                    <!-- 模拟标记点 -->
+                    <div class="absolute top-1/3 left-1/4 w-4 h-4 bg-blue-500 rounded-full"></div>
+                    <div class="absolute top-2/5 right-1/3 w-4 h-4 bg-red-500 rounded-full"></div>
+                    <div class="absolute bottom-1/4 left-1/3 w-4 h-4 bg-green-500 rounded-full"></div>
+                    
+                    <!-- 模拟项目标注 -->
+                    <div class="absolute top-1/4 left-1/5 transform -translate-x-1/2 -translate-y-1/2">
+                        <div class="bg-white bg-opacity-90 rounded-lg shadow-md p-2 text-xs">
+                            <div class="font-bold text-gray-800">广州南站扩建项目</div>
+                            <div class="text-gray-600">征地: 125亩</div>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute top-1/3 right-1/4 transform translate-x-1/2 -translate-y-1/2">
+                        <div class="bg-white bg-opacity-90 rounded-lg shadow-md p-2 text-xs">
+                            <div class="font-bold text-gray-800">白云机场连接线</div>
+                            <div class="text-gray-600">征地: 210亩</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 地图控件 -->
+                <div class="absolute top-4 right-4 bg-white rounded-lg shadow-md p-2">
+                    <div class="flex flex-col space-y-2">
+                        <button class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-compass"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 图例 -->
+                <div class="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg shadow-md p-3">
+                    <h4 class="font-semibold text-gray-800 mb-2">图例</h4>
+                    <ul class="space-y-1 text-sm">
+                        <li class="flex items-center">
+                            <div class="w-4 h-4 bg-yellow-200 border-2 border-yellow-500 mr-2"></div>
+                            <span>征地范围</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-4 h-4 bg-red-500 mr-2"></div>
+                            <span>建筑物</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-4 h-1 bg-gray-700 mr-2"></div>
+                            <span>道路</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="w-4 h-1 bg-blue-400 rounded-full mr-2"></div>
+                            <span>河流</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 比例尺 -->
+                <div class="absolute bottom-4 right-4 bg-white bg-opacity-90 rounded-lg shadow-md p-2 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-16 h-1 bg-black mr-2"></div>
+                        <span>1:5000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目统计信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">项目总数</p>
+                        <h3 class="text-3xl font-bold mt-2">24</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-project-diagram text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">已完成</p>
+                        <h3 class="text-3xl font-bold mt-2">18</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">进行中</p>
+                        <h3 class="text-3xl font-bold mt-2">5</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-sync-alt text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">未开始</p>
+                        <h3 class="text-3xl font-bold mt-2">1</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./gis/gis-overview.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问题反馈 - 辅助功能 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-comment-dots text-green-500 mr-2"></i>
+                问题反馈
+            </h1>
+            <p class="text-gray-600 mt-2">反馈系统使用过程中遇到的问题和建议</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 左侧信息 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">反馈须知</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-500 text-xs"></i>
+                            </div>
+                            <p class="text-gray-600 text-sm">请详细描述您遇到的问题，包括操作步骤、错误信息等</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                                <i class="fas fa-clock text-blue-500 text-xs"></i>
+                            </div>
+                            <p class="text-gray-600 text-sm">我们将在1-2个工作日内回复您的反馈</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                                <i class="fas fa-envelope text-blue-500 text-xs"></i>
+                            </div>
+                            <p class="text-gray-600 text-sm">处理结果将通过系统消息和邮件通知您</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">联系方式</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-phone-alt text-blue-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">技术支持热线</h3>
+                                <p class="text-gray-600 text-sm">400-123-4567</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-envelope text-green-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">邮件支持</h3>
+                                <p class="text-gray-600 text-sm">support@highway.gov.cn</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-comments text-yellow-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">在线客服</h3>
+                                <p class="text-gray-600 text-sm">工作日 8:30-17:30</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧表单 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-6">提交反馈</h2>
+                    <form>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入您的姓名" value="张三">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入联系电话" value="13800138000">
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                            <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入邮箱地址" value="zhangsan@highway.gov.cn">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">反馈类型</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>请选择反馈类型</option>
+                                <option>功能建议</option>
+                                <option>系统错误</option>
+                                <option>操作问题</option>
+                                <option>性能问题</option>
+                                <option>界面优化</option>
+                                <option>其他问题</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">所属模块</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>请选择所属模块</option>
+                                <option>GIS管理</option>
+                                <option>台账管理</option>
+                                <option>费用管理</option>
+                                <option>基础配置</option>
+                                <option>统计分析</option>
+                                <option>系统管理</option>
+                                <option>其他</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">问题描述</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="5" placeholder="请详细描述您遇到的问题，包括操作步骤、错误信息等"></textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">上传截图</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors">
+                                <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                                <p class="text-gray-600">点击上传问题截图，或拖拽图片到此处</p>
+                                <p class="text-gray-400 text-sm mt-1">支持JPG、PNG格式，最大10MB</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center mb-6">
+                            <input type="checkbox" class="h-4 w-4 text-blue-600 rounded">
+                            <label class="ml-2 text-sm text-gray-700">我希望收到处理进度的通知</label>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg mr-4 text-gray-700 hover:bg-gray-50">重置</button>
+                            <button type="submit" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-paper-plane mr-1"></i> 提交反馈
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 历史反馈 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">历史反馈</h2>
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between">
+                                <h3 class="font-medium text-gray-800">台账导入功能异常</h3>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">处理中</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-2">提交于 2023-06-15 14:30</p>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between">
+                                <h3 class="font-medium text-gray-800">GIS地图加载缓慢</h3>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">已解决</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-2">提交于 2023-06-10 09:15</p>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between">
+                                <h3 class="font-medium text-gray-800">费用统计报表导出格式问题</h3>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">已解决</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-2">提交于 2023-06-05 16:45</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./help/feedback.js" defer></script>
+</body>
+</html>

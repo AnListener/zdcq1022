@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征地记录详情</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF',
+                        secondary: '#3B82F6',
+                        accent: '#8B5CF6',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Microsoft YaHei', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .excel-border {
+                border: 1px solid #D1D5DB;
+            }
+            .excel-header-bg {
+                background-color: #F3F4F6;
+            }
+            .excel-alt-row {
+                background-color: #F9FAFB;
+            }
+            .excel-cell-padding {
+                padding: 6px 10px;
+            }
+            .excel-header-text {
+                font-weight: 600;
+                color: #1F2937;
+            }
+            .excel-title {
+                font-size: 1.25rem;
+                font-weight: bold;
+                text-align: center;
+            }
+            .excel-subtitle {
+                font-size: 0.875rem;
+                text-align: center;
+                color: #4B5563;
+            }
+            .excel-footer {
+                font-weight: bold;
+                background-color: #F3F4F6;
+            }
+        }
+    </style>
+    <style>
+        .template-option {
+            transition: all 0.3s ease;
+        }
+        
+        .template-option:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .template-option.active {
+            border-color: #3B82F6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        #print-modal {
+            z-index: 1000;
+        }
+        
+        /* 主内容区全屏模态框样式 */
+        .content-fullscreen-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .content-fullscreen-modal.show {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 min-h-screen">
+    <!-- 报表模板选择和预览全屏模态框 -->
+    <div id="print-modal" class="absolute inset-0 bg-white z-50 hidden flex flex-col">
+        <!-- 模态框头部 -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-800">选择报表模板</h3>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- 模态框内容 -->
+        <div class="flex-1 overflow-auto">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <!-- 模板选择区域 -->
+                <div class="mb-8">
+                    <h4 class="text-lg font-semibold mb-6 text-gray-800">请选择报表模板</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="border-2 border-gray-300 rounded-lg p-6 cursor-pointer template-option active shadow-sm hover:shadow-md transition-shadow" data-template="template1">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-invoice text-blue-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-gray-900 text-lg">发放单</h5>
+                                    <p class="text-sm text-gray-500">补偿发放单据</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-4">用于补偿款项发放的单据格式</p>
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-full h-32 flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-gray-400 text-3xl"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="border-2 border-gray-300 rounded-lg p-6 cursor-pointer template-option shadow-sm hover:shadow-md transition-shadow" data-template="template2">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-table text-green-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-gray-900 text-lg">发放明细表</h5>
+                                    <p class="text-sm text-gray-500">明细表格</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-4">详细的补偿发放明细表格</p>
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-full h-32 flex items-center justify-center">
+                                <i class="fas fa-table text-gray-400 text-3xl"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="border-2 border-gray-300 rounded-lg p-6 cursor-pointer template-option shadow-sm hover:shadow-md transition-shadow" data-template="template3">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-contract text-purple-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-gray-900 text-lg">协议模板</h5>
+                                    <p class="text-sm text-gray-500">协议格式</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-4">征地补偿协议标准格式</p>
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-full h-32 flex items-center justify-center">
+                                <i class="fas fa-file-contract text-gray-400 text-3xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 预览区域 -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-6 text-gray-800">报表预览</h4>
+                    <div class="border border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[400px]">
+                        <div id="preview-content" class="flex items-center justify-center h-full">
+                            <div class="text-center text-gray-500">
+                                <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-6">
+                                    <i class="fas fa-file-alt text-gray-400 text-3xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-lg">请选择一个模板以查看预览</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 模态框底部 -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div class="max-w-6xl mx-auto flex justify-end space-x-4">
+                <button id="cancel-print" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 text-base">
+                    取消
+                </button>
+                <button id="confirm-print" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-base" disabled>
+                    确认打印
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div id="main-content" class="p-6 max-w-6xl mx-auto">
+        <!-- 页面标题 -->
+        <div class="mb-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-file-invoice mr-2 text-blue-500"></i>
+                征地记录详情
+            </h1>
+            <div class="flex space-x-2">
+                <button id="print-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
+                    <i class="fas fa-print mr-2"></i>
+                    打印
+                </button>
+                <button id="close-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center">
+                    <i class="fas fa-times mr-2"></i>
+                    关闭
+                </button>
+            </div>
+        </div>
+
+        <!-- 征地记录信息 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- 基础信息 -->
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">基础信息</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">项目名称</div>
+                        <div class="excel-cell-padding">G15沈海高速改扩建工程</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">地块编号</div>
+                        <div class="excel-cell-padding">LD2025001</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">地块位置</div>
+                        <div class="excel-cell-padding">广东省广州市白云区</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">征地面积(亩)</div>
+                        <div class="excel-cell-padding">15.6</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">征地类型</div>
+                        <div class="excel-cell-padding">农用地</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">权属单位</div>
+                        <div class="excel-cell-padding">白云区农业合作社</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 地块信息 -->
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">地块信息</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full excel-border">
+                        <thead>
+                            <tr class="excel-header-bg">
+                                <th class="excel-cell-padding excel-header-text text-left">地块编号</th>
+                                <th class="excel-cell-padding excel-header-text text-left">地块位置</th>
+                                <th class="excel-cell-padding excel-header-text text-left">地块面积(亩)</th>
+                                <th class="excel-cell-padding excel-header-text text-left">土地性质</th>
+                                <th class="excel-cell-padding excel-header-text text-left">权属人</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="excel-cell-padding excel-border">DK2025001-01</td>
+                                <td class="excel-cell-padding excel-border">广州市白云区太和镇</td>
+                                <td class="excel-cell-padding excel-border">8.2</td>
+                                <td class="excel-cell-padding excel-border">耕地</td>
+                                <td class="excel-cell-padding excel-border">张三</td>
+                            </tr>
+                            <tr class="excel-alt-row">
+                                <td class="excel-cell-padding excel-border">DK2025001-02</td>
+                                <td class="excel-cell-padding excel-border">广州市白云区太和镇</td>
+                                <td class="excel-cell-padding excel-border">7.4</td>
+                                <td class="excel-cell-padding excel-border">林地</td>
+                                <td class="excel-cell-padding excel-border">李四</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 补偿费用项 -->
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">补偿费用项</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full excel-border">
+                        <thead>
+                            <tr class="excel-header-bg">
+                                <th class="excel-cell-padding excel-header-text text-left">费用类型</th>
+                                <th class="excel-cell-padding excel-header-text text-left">补偿标准</th>
+                                <th class="excel-cell-padding excel-header-text text-left">数量</th>
+                                <th class="excel-cell-padding excel-header-text text-left">单位</th>
+                                <th class="excel-cell-padding excel-header-text text-left">单价(元)</th>
+                                <th class="excel-cell-padding excel-header-text text-left">金额(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="excel-cell-padding excel-border">土地补偿费</td>
+                                <td class="excel-cell-padding excel-border">按年产值6倍计算</td>
+                                <td class="excel-cell-padding excel-border">15.6</td>
+                                <td class="excel-cell-padding excel-border">亩</td>
+                                <td class="excel-cell-padding excel-border">45,000</td>
+                                <td class="excel-cell-padding excel-border">702,000</td>
+                            </tr>
+                            <tr class="excel-alt-row">
+                                <td class="excel-cell-padding excel-border">安置补助费</td>
+                                <td class="excel-cell-padding excel-border">按年产值4倍计算</td>
+                                <td class="excel-cell-padding excel-border">15.6</td>
+                                <td class="excel-cell-padding excel-border">亩</td>
+                                <td class="excel-cell-padding excel-border">30,000</td>
+                                <td class="excel-cell-padding excel-border">468,000</td>
+                            </tr>
+                            <tr>
+                                <td class="excel-cell-padding excel-border">青苗补偿费</td>
+                                <td class="excel-cell-padding excel-border">按作物种类补偿</td>
+                                <td class="excel-cell-padding excel-border">15.6</td>
+                                <td class="excel-cell-padding excel-border">亩</td>
+                                <td class="excel-cell-padding excel-border">5,000</td>
+                                <td class="excel-cell-padding excel-border">78,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 费用汇总 -->
+            <div class="p-6">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">费用汇总</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">费用项目</div>
+                        <div class="excel-cell-padding">补偿费用合计</div>
+                    </div>
+                    <div class="excel-border rounded">
+                        <div class="excel-header-bg excel-cell-padding excel-header-text">金额(元)</div>
+                        <div class="excel-cell-padding excel-footer">1,248,000</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-gray-700"><span class="font-semibold">备注：</span>以上费用已通过相关部门审核，将于30个工作日内发放至权属人指定账户。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 打印按钮事件
+        document.getElementById('print-btn').addEventListener('click', function() {
+            // 显示报表模板选择模态框
+            document.getElementById('print-modal').classList.remove('hidden');
+            document.getElementById('print-modal').classList.add('flex');
+        });
+
+        // 关闭模态框事件
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('print-modal').classList.add('hidden');
+            document.getElementById('print-modal').classList.remove('flex');
+        });
+
+        // 取消打印事件
+        document.getElementById('cancel-print').addEventListener('click', function() {
+            document.getElementById('print-modal').classList.add('hidden');
+            document.getElementById('print-modal').classList.remove('flex');
+        });
+
+        // 模板选择事件
+        document.querySelectorAll('.template-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除所有选项的active类
+                document.querySelectorAll('.template-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                
+                // 为当前选项添加active类
+                this.classList.add('active');
+                
+                // 启用确认打印按钮
+                document.getElementById('confirm-print').disabled = false;
+                
+                // 更新预览内容（这里只是示例，实际应用中应该根据选择的模板加载对应的内容）
+                const template = this.getAttribute('data-template');
+                const previewContent = document.getElementById('preview-content');
+                previewContent.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-file-alt text-blue-500 text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">模板预览</h3>
+                        <p class="text-gray-600">您选择了模板: ${template === 'template1' ? '发放单' : template === 'template2' ? '发放明细表' : '协议模板'}</p>
+                        <p class="text-gray-500 mt-4">实际应用中，这里将显示所选模板的预览内容</p>
+                    </div>
+                `;
+            });
+        });
+
+        // 确认打印事件
+        document.getElementById('confirm-print').addEventListener('click', function() {
+            alert('打印功能已触发，请在实际应用中实现具体的打印逻辑。');
+            // 在实际应用中，这里应该根据选择的模板生成并打印相应的报表
+        });
+
+        // 关闭页面事件
+        document.getElementById('close-btn').addEventListener('click', function() {
+            // 如果在iframe中，通知父页面关闭当前标签页
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({action: 'closeTab', url: window.location.href}, '*');
+            } else {
+                // 如果不在iframe中，返回上一页
+                window.history.back();
+            }
+        });
+    </script>
+</body>
+</html>

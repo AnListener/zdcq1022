@@ -1,0 +1,329 @@
+/* 本地Font Awesome图标CSS - 确保原型界面图标正常显示 */
+/* 这是一个简化版本，包含项目中常用的图标 */
+
+/* 基础图标样式 */
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 常用图标类 */
+.fa-home:before { content: "\f015"; }
+.fa-user:before { content: "\f007"; }
+.fa-users:before { content: "\f0c0"; }
+.fa-cog:before { content: "\f013"; }
+.fa-wrench:before { content: "\f0ad"; }
+.fa-file:before { content: "\f15b"; }
+.fa-file-text:before { content: "\f15c"; }
+.fa-file-pdf:before { content: "\f1c1"; }
+.fa-file-image:before { content: "\f1c5"; }
+.fa-file-archive:before { content: "\f1c6"; }
+.fa-file-excel:before { content: "\f1c3"; }
+.fa-file-word:before { content: "\f1c2"; }
+.fa-file-powerpoint:before { content: "\f1c4"; }
+.fa-file-audio:before { content: "\f1c7"; }
+.fa-file-video:before { content: "\f1c8"; }
+.fa-file-code:before { content: "\f1c9"; }
+.fa-save:before { content: "\f0c7"; }
+.fa-edit:before { content: "\f044"; }
+.fa-trash:before { content: "\f1f8"; }
+.fa-plus:before { content: "\f067"; }
+.fa-minus:before { content: "\f068"; }
+.fa-search:before { content: "\f002"; }
+.fa-download:before { content: "\f019"; }
+.fa-upload:before { content: "\f093"; }
+.fa-cloud-upload:before { content: "\f0ee"; }
+.fa-cloud-download:before { content: "\f0ed"; }
+.fa-arrow-up:before { content: "\f062"; }
+.fa-arrow-down:before { content: "\f063"; }
+.fa-arrow-left:before { content: "\f060"; }
+.fa-arrow-right:before { content: "\f061"; }
+.fa-chevron-up:before { content: "\f077"; }
+.fa-chevron-down:before { content: "\f078"; }
+.fa-chevron-left:before { content: "\f053"; }
+.fa-chevron-right:before { content: "\f054"; }
+.fa-times:before { content: "\f00d"; }
+.fa-check:before { content: "\f00c"; }
+.fa-check-circle:before { content: "\f058"; }
+.fa-exclamation-triangle:before { content: "\f071"; }
+.fa-info-circle:before { content: "\f05a"; }
+.fa-question-circle:before { content: "\f059"; }
+.fa-bell:before { content: "\f0f3"; }
+.fa-bell-o:before { content: "\f0a2"; }
+.fa-envelope:before { content: "\f0e0"; }
+.fa-phone:before { content: "\f095"; }
+.fa-map-marker:before { content: "\f041"; }
+.fa-map:before { content: "\f279"; }
+.fa-building:before { content: "\f1ad"; }
+.fa-building-o:before { content: "\f0f7"; }
+.fa-home:before { content: "\f015"; }
+.fa-tree:before { content: "\f1bb"; }
+.fa-database:before { content: "\f1c0"; }
+.fa-cloud:before { content: "\f0c2"; }
+.fa-bar-chart:before { content: "\f080"; }
+.fa-pie-chart:before { content: "\f200"; }
+.fa-line-chart:before { content: "\f201"; }
+.fa-table:before { content: "\f0ce"; }
+.fa-list:before { content: "\f03a"; }
+.fa-list-ul:before { content: "\f0ca"; }
+.fa-list-ol:before { content: "\f0cb"; }
+.fa-th:before { content: "\f00a"; }
+.fa-th-large:before { content: "\f009"; }
+.fa-th-list:before { content: "\f00b"; }
+.fa-filter:before { content: "\f0b0"; }
+.fa-sort:before { content: "\f0dc"; }
+.fa-sort-asc:before { content: "\f0de"; }
+.fa-sort-desc:before { content: "\f0dd"; }
+.fa-print:before { content: "\f02f"; }
+.fa-share:before { content: "\f064"; }
+.fa-reply:before { content: "\f112"; }
+.fa-reply-all:before { content: "\f122"; }
+.fa-retweet:before { content: "\f079"; }
+.fa-history:before { content: "\f1da"; }
+.fa-refresh:before { content: "\f021"; }
+.fa-repeat:before { content: "\f01e"; }
+.fa-undo:before { content: "\f0e2"; }
+.fa-redo:before { content: "\f01e"; }
+.fa-random:before { content: "\f074"; }
+.fa-exchange:before { content: "\f0ec"; }
+.fa-compress:before { content: "\f066"; }
+.fa-expand:before { content: "\f065"; }
+.fa-play:before { content: "\f04b"; }
+.fa-pause:before { content: "\f04c"; }
+.fa-stop:before { content: "\f04d"; }
+.fa-forward:before { content: "\f04e"; }
+.fa-backward:before { content: "\f04a"; }
+.fa-fast-forward:before { content: "\f050"; }
+.fa-fast-backward:before { content: "\f049"; }
+.fa-step-forward:before { content: "\f051"; }
+.fa-step-backward:before { content: "\f048"; }
+.fa-eject:before { content: "\f052"; }
+.fa-chevron-circle-left:before { content: "\f137"; }
+.fa-chevron-circle-right:before { content: "\f138"; }
+.fa-chevron-circle-up:before { content: "\f139"; }
+.fa-chevron-circle-down:before { content: "\f13a"; }
+.fa-toggle-left:before { content: "\f191"; }
+.fa-toggle-right:before { content: "\f152"; }
+.fa-toggle-up:before { content: "\f151"; }
+.fa-toggle-down:before { content: "\f150"; }
+.fa-angle-double-left:before { content: "\f100"; }
+.fa-angle-double-right:before { content: "\f101"; }
+.fa-angle-double-up:before { content: "\f102"; }
+.fa-angle-double-down:before { content: "\f103"; }
+.fa-angle-left:before { content: "\f104"; }
+.fa-angle-right:before { content: "\f105"; }
+.fa-angle-up:before { content: "\f106"; }
+.fa-angle-down:before { content: "\f107"; }
+.fa-desktop:before { content: "\f108"; }
+.fa-laptop:before { content: "\f109"; }
+.fa-tablet:before { content: "\f10a"; }
+.fa-mobile:before { content: "\f10b"; }
+.fa-circle:before { content: "\f111"; }
+.fa-dot-circle-o:before { content: "\f192"; }
+.fa-wheelchair:before { content: "\f193"; }
+.fa-vimeo-square:before { content: "\f194"; }
+.fa-try:before { content: "\f195"; }
+.fa-plus-square-o:before { content: "\f196"; }
+.fa-space-shuttle:before { content: "\f197"; }
+.fa-slack:before { content: "\f198"; }
+.fa-envelope-square:before { content: "\f199"; }
+.fa-wordpress:before { content: "\f19a"; }
+.fa-openid:before { content: "\f19b"; }
+.fa-bank:before { content: "\f19c"; }
+.fa-graduation-cap:before { content: "\f19d"; }
+.fa-yahoo:before { content: "\f19e"; }
+.fa-google:before { content: "\f1a0"; }
+.fa-reddit:before { content: "\f1a1"; }
+.fa-reddit-square:before { content: "\f1a2"; }
+.fa-stumbleupon-circle:before { content: "\f1a3"; }
+.fa-stumbleupon:before { content: "\f1a4"; }
+.fa-delicious:before { content: "\f1a5"; }
+.fa-digg:before { content: "\f1a6"; }
+.fa-pied-piper-pp:before { content: "\f1a7"; }
+.fa-pied-piper-alt:before { content: "\f1a8"; }
+.fa-drupal:before { content: "\f1a9"; }
+.fa-joomla:before { content: "\f1aa"; }
+.fa-language:before { content: "\f1ab"; }
+.fa-fax:before { content: "\f1ac"; }
+.fa-building:before { content: "\f1ad"; }
+.fa-child:before { content: "\f1ae"; }
+.fa-paw:before { content: "\f1b0"; }
+.fa-spoon:before { content: "\f1b1"; }
+.fa-cube:before { content: "\f1b2"; }
+.fa-cubes:before { content: "\f1b3"; }
+.fa-behance:before { content: "\f1b4"; }
+.fa-behance-square:before { content: "\f1b5"; }
+.fa-steam:before { content: "\f1b6"; }
+.fa-steam-square:before { content: "\f1b7"; }
+.fa-recycle:before { content: "\f1b8"; }
+.fa-automobile:before { content: "\f1b9"; }
+.fa-cab:before { content: "\f1ba"; }
+.fa-tree:before { content: "\f1bb"; }
+.fa-spotify:before { content: "\f1bc"; }
+.fa-deviantart:before { content: "\f1bd"; }
+.fa-soundcloud:before { content: "\f1be"; }
+.fa-database:before { content: "\f1c0"; }
+.fa-file-pdf-o:before { content: "\f1c1"; }
+.fa-file-word-o:before { content: "\f1c2"; }
+.fa-file-excel-o:before { content: "\f1c3"; }
+.fa-file-powerpoint-o:before { content: "\f1c4"; }
+.fa-file-photo-o:before { content: "\f1c5"; }
+.fa-file-zip-o:before { content: "\f1c6"; }
+.fa-file-sound-o:before { content: "\f1c7"; }
+.fa-file-movie-o:before { content: "\f1c8"; }
+.fa-file-code-o:before { content: "\f1c9"; }
+.fa-vine:before { content: "\f1ca"; }
+.fa-codepen:before { content: "\f1cb"; }
+.fa-jsfiddle:before { content: "\f1cc"; }
+.fa-life-bouy:before { content: "\f1cd"; }
+.fa-circle-o-notch:before { content: "\f1ce"; }
+.fa-ra:before { content: "\f1d0"; }
+.fa-ge:before { content: "\f1d1"; }
+.fa-gittip:before { content: "\f1d4"; }
+.fa-sun-o:before { content: "\f185"; }
+.fa-moon-o:before { content: "\f186"; }
+.fa-archive:before { content: "\f187"; }
+.fa-bug:before { content: "\f188"; }
+.fa-vk:before { content: "\f189"; }
+.fa-weibo:before { content: "\f18a"; }
+.fa-renren:before { content: "\f18b"; }
+.fa-pagelines:before { content: "\f18c"; }
+.fa-stack-exchange:before { content: "\f18d"; }
+.fa-arrow-circle-o-right:before { content: "\f18e"; }
+.fa-arrow-circle-o-left:before { content: "\f190"; }
+
+/* 图标大小 */
+.fa-lg {
+  font-size: 1.33333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+.fa-2x { font-size: 2em; }
+.fa-3x { font-size: 3em; }
+.fa-4x { font-size: 4em; }
+.fa-5x { font-size: 5em; }
+
+/* 图标固定宽度 */
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
+
+/* 图标列表 */
+.fa-ul {
+  padding-left: 0;
+  margin-left: 2.14285714em;
+  list-style-type: none;
+}
+.fa-ul > li { position: relative; }
+.fa-li {
+  position: absolute;
+  left: -2.14285714em;
+  width: 2.14285714em;
+  top: 0.14285714em;
+  text-align: center;
+}
+.fa-li.fa-lg {
+  left: -1.85714286em;
+}
+
+/* 图标边框 */
+.fa-border {
+  padding: .2em .25em .15em;
+  border: solid 0.08em #eeeeee;
+  border-radius: .1em;
+}
+
+/* 图标旋转 */
+.fa-spin {
+  -webkit-animation: fa-spin 2s infinite linear;
+  animation: fa-spin 2s infinite linear;
+}
+@-webkit-keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+
+/* 图标翻转 */
+.fa-rotate-90 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.fa-rotate-180 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.fa-rotate-270 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+.fa-flip-horizontal {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)";
+  -webkit-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+}
+.fa-flip-vertical {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)";
+  -webkit-transform: scale(1, -1);
+  -ms-transform: scale(1, -1);
+  transform: scale(1, -1);
+}
+
+/* 图标堆叠 */
+.fa-stack {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+}
+.fa-stack-1x, .fa-stack-2x {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.fa-stack-1x { line-height: inherit; }
+.fa-stack-2x { font-size: 2em; }
+.fa-inverse { color: #ffffff; }
+
+/* 基础字体定义 */
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('./fontawesome-webfont.eot?v=4.7.0');
+  src: url('./fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+       url('./fontawesome-webfont.woff2?v=4.7.0') format('woff2'),
+       url('./fontawesome-webfont.woff?v=4.7.0') format('woff'),
+       url('./fontawesome-webfont.ttf?v=4.7.0') format('truetype'),
+       url('./fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}

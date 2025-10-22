@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征地信息</title>
+    <!-- 本地CSS -->
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <!-- CDN作为备用 -->
+    <script src="https://cdn.tailwindcss.com" id="tailwind-cdn" onload="checkTailwindLoad()" onerror="fallbackToLocalTailwind()"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" id="font-awesome-css" onload="checkFontAwesomeLoad()" onerror="fallbackToLocalStorage()">
+    
+    <script>
+        // 检查Tailwind是否加载成功
+        function checkTailwindLoad() {
+            // 创建一个测试元素来检测Tailwind是否加载成功
+            const test = document.createElement('div');
+            test.className = 'bg-blue-500';
+            test.style.visibility = 'hidden';
+            test.style.position = 'absolute';
+            document.body.appendChild(test);
+            
+            // 获取计算后的样式
+            const computedStyle = window.getComputedStyle(test);
+            const backgroundColor = computedStyle.backgroundColor;
+            
+            // 移除测试元素
+            document.body.removeChild(test);
+            
+            // 如果背景颜色不是蓝色，说明CDN没有正确加载
+            if (backgroundColor !== 'rgb(59, 130, 246)' && backgroundColor !== '#3b82f6') {
+                console.warn('Tailwind CSS failed to load from CDN');
+                fallbackToLocalTailwind();
+            } else {
+                console.log('Tailwind CSS loaded successfully');
+                // 隐藏本地CSS以避免冲突
+                document.getElementById('local-css').disabled = true;
+            }
+        }
+        
+        // Tailwind加载失败时的备用方案
+        function fallbackToLocalTailwind() {
+            console.log('Switching to local CSS fallback for Tailwind');
+            const localCSS = document.getElementById('local-css');
+            
+            if (localCSS) {
+                localCSS.disabled = false;
+            }
+        }
+        
+        // 检查Font Awesome是否加载成功
+        function checkFontAwesomeLoad() {
+            // 创建一个测试元素来检测Font Awesome是否加载成功
+            const test = document.createElement('i');
+            test.className = 'fas fa-home';
+            test.style.visibility = 'hidden';
+            test.style.position = 'absolute';
+            document.body.appendChild(test);
+            
+            // 获取计算后的样式
+            const computedStyle = window.getComputedStyle(test);
+            const fontFamily = computedStyle.fontFamily;
+            
+            // 移除测试元素
+            document.body.removeChild(test);
+            
+            // 如果字体族不包含Font Awesome，说明CDN没有正确加载
+            if (!fontFamily.includes('Font Awesome')) {
+                console.warn('Font Awesome failed to load from CDN');
+                fallbackToLocalStorage();
+            } else {
+                console.log('Font Awesome loaded successfully');
+            }
+        }
+        
+        // Font Awesome加载失败时的备用方案
+        function fallbackToLocalStorage() {
+            console.log('Using localStorage for icons');
+            // 这里可以添加本地SVG图标或CSS图标
+        }
+        
+        // 页面加载完成后检查CSS是否加载成功
+        window.addEventListener('load', function() {
+            // 延迟检查以确保样式完全应用
+            setTimeout(checkTailwindLoad, 100);
+            setTimeout(checkFontAwesomeLoad, 100);
+        });
+        
+        // 网络错误处理
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT' && e.target.id === 'tailwind-cdn') {
+                console.warn('Tailwind CSS failed to load, using local CSS');
+                fallbackToLocalTailwind();
+            } else if (e.target.tagName === 'LINK' && e.target.id === 'font-awesome-css') {
+                console.warn('Font Awesome failed to load, using localStorage');
+                fallbackToLocalStorage();
+            }
+        }, true);
+    </script>
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#eff6ff',
+                        border: '#e5e7eb'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            }
+            .card-shadow-hover {
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    <style>
+        /* 标签页样式 */
+        .tab-active {
+            color: #3b82f6;
+            font-weight: 500;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .tab-button {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: #3b82f6;
+            border-radius: 2px;
+        }
+        
+        /* 输入框聚焦样式 */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 500;
+        }
+        
+        /* 卡片悬停效果 */
+        .form-card {
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .form-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 页面容器样式 */
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+<!-- 页面内容容器 -->
+<div class="page-container">
+    <!-- 页面头部 -->
+    <div class="bg-primary text-white p-4 flex justify-between items-center shadow-sm" id="form-header">
+        <h1 class="text-xl font-semibold">新增征地信息</h1>
+        <button class="text-white hover:text-gray-200 transition-colors" id="cancel-btn">
+            <i class="fa fa-arrow-left text-xl mr-1"></i> 返回
+        </button>
+    </div>
+    
+    <!-- 表单内容区域 - 可滚动 -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
+        <div class="max-w-6xl mx-auto space-y-6">
+            <!-- 基础信息卡片 -->
+            <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa fa-id-card text-primary mr-2"></i>基础信息
+                </h2>
+                         
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">项目名称</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm bg-gray-50" value="融罗高速项目" readonly>
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">所属区域 <span class="text-red-500">*</span></label>
+                                <select class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" id="region-select" required>
+                                    <option value="rongshui" selected>融水苗族自治县</option>
+                                    <option value="luocheng">罗城仫佬族自治县</option>
+                                    <option value="yufeng">鱼峰区</option>
+                                    <option value="chengzhong">城中区</option>
+                                    <option value="liubei">柳北区</option>
+                                </select>
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">权属单位/人 <span class="text-red-500">*</span></label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入权属单位或个人姓名" required>
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">权属人类型 <span class="text-red-500">*</span></label>
+                                <select class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" required>
+                                    <option value="">请选择权属人类型</option>
+                                    <option value="personal">个人</option>
+                                    <option value="collective">集体</option>
+                                </select>
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                                <input type="tel" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入联系电话">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">家庭住址</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入家庭住址">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">身份证号</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入身份证号">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">银行账号</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入银行账号">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">开户行</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" placeholder="请输入开户行">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">录入日期</label>
+                                <input type="date" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm" value="2023-09-25">
+                            </div>
+                             
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">录入人</label>
+                                <input type="text" class="form-input w-full border border-gray-300 rounded-md py-2 px-3 text-sm bg-gray-50" value="当前用户" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 地块信息卡片 -->
+                    <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-map-marker text-primary mr-2"></i>地块信息
+                        </h2>
+                         
+                        <div class="excel-container">
+                            <table class="excel-table">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>地块编号 <span class="required-mark">*</span></th>
+                                        <th>地类 <span class="required-mark">*</span></th>
+                                        <th>面积(亩) <span class="required-mark">*</span></th>
+                                        <th>青苗补偿费</th>
+                                        <th>征地奖励</th>
+                                        <th>备注</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="land-info-table-body">
+                                    <tr>
+                                        <td class="sequential-number">1</td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" required></td>
+                                        <td>
+                                            <input type="text" class="land-type-display" value="集体农用地" readonly data-land-type="arable">
+                                        </td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" required></td>
+                                        <td><input type="checkbox" class="crop-compensation-checkbox"></td>
+                                        <td><input type="checkbox" class="land-reward-checkbox"></td>
+                                        <td><input type="text" placeholder="请输入备注信息"></td>
+                                        <td class="action-buttons">
+                                            <button type="button" class="text-red-500 hover:text-red-700 delete-row mr-2">删除</button>
+                                            <button type="button" class="save-land-row px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs">保存</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                         
+                        <div class="mt-4 flex justify-end">
+                            <button type="button" id="add-land-row" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors text-sm">
+                                <i class="fas fa-plus mr-1"></i> 新增地块
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 补偿费用项卡片 -->
+                    <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-file-text text-primary mr-2"></i>补偿费用项
+                        </h2>
+                        
+                        <!-- 操作按钮区域 -->
+                        <div class="flex justify-end mb-4">
+                            <button type="button" id="preview-button" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors text-sm">
+                                <i class="fas fa-eye mr-1"></i> 预览
+                            </button>
+                        </div>
+                        
+                        <!-- 标签页导航 -->
+                        <div class="flex border-b border-gray-200 mb-6 space-x-8">
+                            <button type="button" class="tab-button active py-2 px-1" data-tab="land-compensation">
+                                土地补偿及安置费用
+                            </button>
+                            <button type="button" class="tab-button py-2 px-1" data-tab="crop-compensation">
+                                青苗、地上附着物补偿费
+                            </button>
+                            <button type="button" class="tab-button py-2 px-1" data-tab="land-reward">
+                                征地奖励
+                            </button>
+                        </div>
+                        
+                        <!-- 表格样式 -->
+                        <style>
+                            .excel-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 14px;
+                            }
+                            
+                            .excel-table th {
+                                background-color: #f8f9fa;
+                                border: 1px solid #dee2e6;
+                                padding: 8px 12px;
+                                text-align: left;
+                                font-weight: 600;
+                                color: #495057;
+                            }
+                            
+                            .excel-table td {
+                                border: 1px solid #dee2e6;
+                                padding: 8px 12px;
+                            }
+                            
+                            .excel-table input,
+                            .excel-table select {
+                                width: 100%;
+                                border: 1px solid #ced4da;
+                                border-radius: 2px;
+                                padding: 6px 8px;
+                                font-size: 14px;
+                                box-sizing: border-box;
+                            }
+                            
+                            .excel-table input:focus,
+                            .excel-table select:focus {
+                                outline: none;
+                                border-color: #3b82f6;
+                                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+                            }
+                            
+                            .excel-container {
+                                overflow-x: auto;
+                            }
+                            
+                            .required-mark {
+                                color: #dc2626;
+                            }
+                            
+                            .action-buttons {
+                                white-space: nowrap;
+                            }
+                            
+                            .save-land-row {
+                                margin-left: 5px;
+                            }
+                        </style>
+                        
+                        <!-- 标签页内容 -->
+                        <div class="tab-content" id="land-compensation">
+                            <div class="excel-container">
+                                <table class="excel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>序号 <span class="required-mark">*</span></th>
+                                            <th>地块编号 <span class="required-mark">*</span></th>
+                                            <th>面积(亩) <span class="required-mark">*</span></th>
+                                            <th>地类</th>
+                                            <th>补偿标准</th>
+                                            <th>补偿金额(元)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="land-compensation-body">
+                                        <tr>
+                                            <td><input type="number" min="1" step="1" value="1" required readonly></td>
+                                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" readonly></td>
+                                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="compensation-area" required readonly></td>
+                                            <td><input type="text" class="land-type-display" readonly></td>
+                                            <td><input type="text" placeholder="补偿标准" class="compensation-standard" readonly></td>
+                                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="compensation-amount" readonly></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        </div>
+                        
+                        <div class="tab-content hidden" id="crop-compensation">
+                            <div class="excel-container">
+                                <table class="excel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>序号 <span class="required-mark">*</span></th>
+                                            <th>地块编号 <span class="required-mark">*</span></th>
+                                            <th>青苗种类</th>
+                                            <th>规格</th>
+                                            <th>面积或数量</th>
+                                            <th>补偿标准</th>
+                                            <th>青苗补偿金额(元)</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="crop-compensation-body">
+                                        <tr>
+                                            <td><input type="number" min="1" step="1" value="1" required readonly></td>
+                                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" readonly></td>
+                                            <td><input type="text" placeholder="请输入青苗种类" class="crop-type" readonly></td>
+                                            <td><input type="text" placeholder="请输入规格" class="crop-spec" readonly></td>
+                                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="crop-area" readonly></td>
+                                            <td><input type="text" placeholder="补偿标准" class="crop-standard" readonly></td>
+                                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="crop-amount" readonly></td>
+                                            <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                             
+                            <div class="mt-4 flex justify-end">
+                                <button type="button" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors text-sm add-compensation-item" data-type="crop">
+                                    <i class="fas fa-plus mr-1"></i> 新增补偿项
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content hidden" id="land-reward">
+                            <div class="excel-container">
+                                <table class="excel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>序号 <span class="required-mark">*</span></th>
+                                            <th>地块编号 <span class="required-mark">*</span></th>
+                                            <th>面积(亩)</th>
+                                            <th>奖励标准</th>
+                                            <th>奖励金额(元)</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reward-compensation-body">
+                                        <tr>
+                                            <td><input type="number" min="1" step="1" value="1" required readonly></td>
+                                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" readonly></td>
+                                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="reward-area" readonly></td>
+                                            <td><button type="button" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm select-reward-standard" disabled>选择标准</button></td>
+                                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="reward-amount" readonly></td>
+                                            <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 费用汇总卡片 -->
+                    <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-calculator text-primary mr-2"></i>费用汇总
+                        </h2>
+                         
+                        <div class="excel-container">
+                            <table class="excel-table">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>费用类型</th>
+                                        <th>金额(元)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>总补偿金额</td>
+                                        <td><input type="number" step="0.01" id="total-compensation" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none font-medium text-purple-600" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>土地补偿及安置费用</td>
+                                        <td><input type="number" step="0.01" id="land-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>青苗补偿费</td>
+                                        <td><input type="number" step="0.01" id="crop-compensation-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>征地奖励</td>
+                                        <td><input type="number" step="0.01" id="land-reward-amount" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" value="0.00" readonly></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 附件管理卡片 -->
+                    <div class="bg-white rounded-lg border border-border p-5 card-shadow hover:card-shadow-hover transition-shadow duration-300">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-paperclip text-red-500 mr-2"></i>
+                            附件管理
+                        </h2>
+                         
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                            <input type="file" id="file-upload" class="hidden" multiple>
+                            <label for="file-upload" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
+                                <p class="text-xs text-gray-400">支持JPG、PNG、PDF等格式，单个文件不超过10MB</p>
+                            </label>
+                        </div>
+                         
+                        <!-- 已上传文件列表（初始隐藏） -->
+                        <div id="uploaded-files" class="hidden mt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">已上传文件</h3>
+                            <div class="excel-container">
+                                <table class="excel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>序号</th>
+                                            <th>文件名</th>
+                                            <th>大小</th>
+                                            <th>上传时间</th>
+                                            <th>上传人</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="uploaded-files-body">
+                                        <!-- 示例文件项 -->
+                                        <tr>
+                                            <td>1</td>
+                                            <td class="flex items-center">
+                                                <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                                <span class="text-sm text-gray-700">征地补偿协议.pdf</span>
+                                            </td>
+                                            <td>2.5MB</td>
+                                            <td>2023-09-25 14:30</td>
+                                            <td>当前用户</td>
+                                            <td>
+                                                <div class="flex space-x-2">
+                                                    <button type="button" class="text-blue-500 hover:text-blue-700">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button type="button" class="text-red-500 hover:text-red-700 delete-file">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 表单底部按钮区 -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-4 sticky bottom-0 z-10">
+                <button type="button" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors" id="cancel-form-btn">
+                    取消
+                </button>
+                <button type="button" class="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md transition-colors" id="save-form-btn">
+                    保存
+                </button>
+            </div>
+        </div>
+            </div>
+        </div>
+    
+        <!-- 补偿标准选择模态框 -->
+        <div id="crop-standard-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800">选择青苗补偿标准</h3>
+                    <button id="close-crop-standard-modal" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-auto p-6">
+                    <div class="excel-container">
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>补偿对象名称</th>
+                                    <th>规格</th>
+                                    <th>补偿标准(元/亩)</th>
+                                    <th>计量单位</th>
+                                    <th>补偿类别</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crop-standard-list">
+                                <!-- 示例数据 -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>水稻</td>
+                                    <td>一季稻</td>
+                                    <td>28000.00</td>
+                                    <td>亩</td>
+                                    <td>青苗补偿</td>
+                                    <td><button type="button" class="select-crop-standard-item px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm" data-standard="28000.00" data-name="水稻" data-spec="一季稻">选择</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>玉米</td>
+                                    <td>春玉米</td>
+                                    <td>15000.00</td>
+                                    <td>亩</td>
+                                    <td>青苗补偿</td>
+                                    <td><button type="button" class="select-crop-standard-item px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm" data-standard="15000.00" data-name="玉米" data-spec="春玉米">选择</button></td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>蔬菜</td>
+                                    <td>大棚蔬菜</td>
+                                    <td>35000.00</td>
+                                    <td>亩</td>
+                                    <td>青苗补偿</td>
+                                    <td><button type="button" class="select-crop-standard-item px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm" data-standard="35000.00" data-name="蔬菜" data-spec="大棚蔬菜">选择</button></td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>果树</td>
+                                    <td>柑橘类</td>
+                                    <td>42000.00</td>
+                                    <td>亩</td>
+                                    <td>青苗补偿</td>
+                                    <td><button type="button" class="select-crop-standard-item px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm" data-standard="42000.00" data-name="果树" data-spec="柑橘类">选择</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+                    <button id="cancel-crop-standard" type="button" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors mr-2">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // 标签页切换
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // 获取URL参数
+            function getUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    mode: params.get('mode') || 'add',
+                    recordId: params.get('recordId') || ''
+                };
+            }
+            
+            // 根据模式调整页面内容
+            function adjustPageForMode() {
+                const params = getUrlParams();
+                const mode = params.mode;
+                const recordId = params.recordId;
+                
+                // 根据模式设置页面标题
+                const titleElement = document.querySelector('title');
+                const headerElement = document.querySelector('#form-header');
+                
+                if (titleElement && headerElement) {
+                    if (mode === 'edit') {
+                        titleElement.textContent = '编辑征地信息';
+                        headerElement.innerHTML = '<h1 class="text-xl font-semibold">编辑征地信息</h1>';
+                        
+                        // 在编辑模式下确保保存按钮显示
+                        const saveBtn = document.getElementById('save-form-btn');
+                        if (saveBtn) {
+                            saveBtn.style.display = 'block';
+                        }
+                    } else if (mode === 'view') {
+                        titleElement.textContent = '查看征地信息';
+                        headerElement.innerHTML = '<h1 class="text-xl font-semibold">查看征地信息</h1>';
+                        
+                        // 在查看模式下禁用所有输入框
+                        const formInputs = document.querySelectorAll('input, select, textarea, button:not(#cancel-btn)');
+                        formInputs.forEach(input => {
+                            if (input.id !== 'cancel-btn') {
+                                input.disabled = true;
+                            }
+                        });
+                        
+                        // 隐藏保存按钮
+                        const saveBtn = document.getElementById('save-form-btn');
+                        if (saveBtn) {
+                            saveBtn.style.display = 'none';
+                        }
+                    } else {
+                        // 新增模式
+                        titleElement.textContent = '新增征地信息';
+                        headerElement.innerHTML = '<h1 class="text-xl font-semibold">新增征地信息</h1>';
+                        
+                        // 确保所有输入框都启用
+                        const formInputs = document.querySelectorAll('input, select, textarea, button');
+                        formInputs.forEach(input => {
+                            input.disabled = false;
+                        });
+                        
+                        // 确保保存按钮显示
+                        const saveBtn = document.getElementById('save-form-btn');
+                        if (saveBtn) {
+                            saveBtn.style.display = 'block';
+                        }
+                    }
+                }
+                
+                // 如果是编辑或查看模式且有记录ID，则填充数据
+                if ((mode === 'edit' || mode === 'view') && recordId) {
+                    fillFormData(recordId, mode);
+                }
+                
+                // 如果是新增模式，确保地块信息表格是空的（除了初始行）
+                if (mode === 'add' || mode === 'new') {
+                    // 清空地块信息表格，只保留初始行
+                    const landTableBody = document.getElementById('land-info-table-body');
+                    if (landTableBody) {
+                        // 保留第一行，删除其他行
+                        while (landTableBody.children.length > 1) {
+                            landTableBody.removeChild(landTableBody.lastChild);
+                        }
+                        
+                        // 重置第一行的输入框
+                        if (landTableBody.children.length > 0) {
+                            const firstRow = landTableBody.children[0];
+                            const landNumberInput = firstRow.querySelector('td:nth-child(2) input[type="text"]');
+                            const areaInput = firstRow.querySelector('td:nth-child(4) input[type="number"]');
+                            const landTypeDisplay = firstRow.querySelector('.land-type-display');
+                            const remarksInput = firstRow.querySelector('td:nth-child(7) input[type="text"]');
+                            
+                            if (landNumberInput) landNumberInput.value = '';
+                            if (areaInput) areaInput.value = '';
+                            if (landTypeDisplay) {
+                                landTypeDisplay.value = '集体农用地';
+                                landTypeDisplay.setAttribute('data-land-type', 'arable');
+                            }
+                            if (remarksInput) remarksInput.value = '';
+                        }
+                    }
+                    
+                    // 清空补偿费用项表格
+                    const landCompensationBody = document.getElementById('land-compensation-body');
+                    if (landCompensationBody) {
+                        landCompensationBody.innerHTML = '';
+                    }
+                    
+                    const cropCompensationBody = document.getElementById('crop-compensation-body');
+                    if (cropCompensationBody) {
+                        cropCompensationBody.innerHTML = '';
+                    }
+                    
+                    const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                    if (rewardCompensationBody) {
+                        rewardCompensationBody.innerHTML = '';
+                    }
+                    
+                    // 重置费用汇总
+                    document.getElementById('total-compensation').value = '0.00';
+                    document.getElementById('land-compensation-amount').value = '0.00';
+                    document.getElementById('crop-compensation-amount').value = '0.00';
+                    document.getElementById('land-reward-amount').value = '0.00';
+                }
+            }
+            
+            // 填充表单数据函数
+            function fillFormData(recordId, mode) {
+                // 在实际应用中，这里会根据recordId从服务器获取数据
+                // 这里我们使用模拟数据来演示功能
+                
+                // 查找对应的行数据（在实际应用中，这里会从服务器获取数据）
+                if (mode === 'edit' || mode === 'view') {
+                    // 设置表单字段的值（模拟数据）
+                    const regionSelect = document.querySelector('select[required]');
+                    if (regionSelect) {
+                        regionSelect.value = 'rongshui';
+                    }
+                    
+                    // 填充权属人姓名
+                    const ownerInput = document.querySelector('input[placeholder="请输入权属单位或个人姓名"]');
+                    if (ownerInput) {
+                        ownerInput.value = '张三';
+                    }
+                    
+                    // 填充权属人类型
+                    const ownerTypeSelect = document.querySelectorAll('select[required]')[1]; // 第二个select是权属人类型
+                    if (ownerTypeSelect) {
+                        ownerTypeSelect.value = 'personal';
+                    }
+                    
+                    // 填充联系电话
+                    const phoneInput = document.querySelector('input[placeholder="请输入联系电话"]');
+                    if (phoneInput) {
+                        phoneInput.value = '13800138000';
+                    }
+                    
+                    // 填充家庭住址
+                    const addressInput = document.querySelector('input[placeholder="请输入家庭住址"]');
+                    if (addressInput) {
+                        addressInput.value = '融水县某某街道123号';
+                    }
+                    
+                    // 填充身份证号
+                    const idCardInput = document.querySelector('input[placeholder="请输入身份证号"]');
+                    if (idCardInput) {
+                        idCardInput.value = '450225199001011234';
+                    }
+                    
+                    // 填充银行账号
+                    const bankAccountInput = document.querySelector('input[placeholder="请输入银行账号"]');
+                    if (bankAccountInput) {
+                        bankAccountInput.value = '6222021234567890123';
+                    }
+                    
+                    // 填充开户行
+                    const bankNameInput = document.querySelector('input[placeholder="请输入开户行"]');
+                    if (bankNameInput) {
+                        bankNameInput.value = '中国工商银行融水支行';
+                    }
+                    
+                    // 填充地块信息
+                    const landTableBody = document.getElementById('land-info-table-body');
+                    if (landTableBody) {
+                        // 清空现有行
+                        landTableBody.innerHTML = '';
+                        
+                        // 添加模拟的地块数据
+                        const landData = [
+                            { id: 'TD-2023-001', type: 'arable', typeName: '集体农用地', area: '3.5000', remarks: '水田' },
+                            { id: 'TD-2023-002', type: 'orchard', typeName: '集体园地', area: '2.8000', remarks: '果园' }
+                        ];
+                        
+                        landData.forEach((land, index) => {
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                                <td class="sequential-number">${index + 1}</td>
+                                <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${land.id}" required></td>
+                                <td>
+                                    <input type="text" class="land-type-display" value="${land.typeName}" readonly data-land-type="${land.type}">
+                                </td>
+                                <td><input type="number" step="0.0001" placeholder="保留四位小数" value="${land.area}" required></td>
+                                <td><input type="checkbox" class="crop-compensation-checkbox"></td>
+                                <td><input type="checkbox" class="land-reward-checkbox"></td>
+                                <td><input type="text" placeholder="请输入备注信息" value="${land.remarks}"></td>
+                                <td class="action-buttons">
+                                    <button type="button" class="text-red-500 hover:text-red-700 delete-row mr-2">删除</button>
+                                    <button type="button" class="save-land-row px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs">保存</button>
+                                </td>
+                            `;
+                            landTableBody.appendChild(newRow);
+                            
+                            // 添加删除事件
+                            newRow.querySelector('.delete-row').addEventListener('click', function() {
+                                newRow.remove();
+                                updateSequentialNumbers();
+                            });
+                            
+                            // 添加保存事件
+                            newRow.querySelector('.save-land-row').addEventListener('click', function() {
+                                syncLandInfoToCompensation(newRow, true); // 保存时同步到补偿费用项
+                            });
+                            
+                            // 添加地类双击事件
+                            const landTypeDisplay = newRow.querySelector('.land-type-display');
+                            landTypeDisplay.addEventListener('dblclick', function() {
+                                alert('该地块为测绘成果，不可修改。如要修改，请先同步修改测绘成果，重新推送地块信息。');
+                            });
+                            
+                            // 添加复选框事件
+                            const cropCheckbox = newRow.querySelector('.crop-compensation-checkbox');
+                            const rewardCheckbox = newRow.querySelector('.land-reward-checkbox');
+                            
+                            cropCheckbox.addEventListener('change', function() {
+                                toggleCropCompensationEditable(newRow);
+                            });
+                            
+                            rewardCheckbox.addEventListener('change', function() {
+                                toggleLandRewardEditable(newRow);
+                            });
+                            
+                            // 添加地块编号和面积输入事件，同步到补偿费用项
+                            const landNumberInput = newRow.querySelector('td:nth-child(2) input[type="text"]');
+                            const landAreaInput = newRow.querySelector('td:nth-child(4) input[type="number"]');
+                            const landTypeDisplayInput = newRow.querySelector('.land-type-display');
+                            
+                            if (landNumberInput) {
+                                landNumberInput.addEventListener('input', function() {
+                                    syncLandInfoToCompensation(newRow);
+                                });
+                            }
+                            
+                            if (landAreaInput) {
+                                landAreaInput.addEventListener('input', function() {
+                                    syncLandInfoToCompensation(newRow);
+                                });
+                            }
+                            
+                            if (landTypeDisplayInput) {
+                                landTypeDisplayInput.addEventListener('input', function() {
+                                    syncLandInfoToCompensation(newRow);
+                                });
+                            }
+                            
+                            // 初始同步地块信息到补偿费用项
+                            setTimeout(function() {
+                                syncLandInfoToCompensation(newRow);
+                            }, 100);
+                        });
+                    }
+                    
+                    // 填充补偿费用项数据
+                    fillCompensationData();
+                }
+            }
+            
+            // 填充补偿费用项数据
+            function fillCompensationData() {
+                // 填充土地补偿费用项
+                const landCompensationBody = document.getElementById('land-compensation-body');
+                if (landCompensationBody) {
+                    landCompensationBody.innerHTML = '';
+                    const landData = [
+                        { id: 'TD-2023-001', type: '集体农用地', area: '3.5000', standard: '6.50', amount: '227500.00' },
+                        { id: 'TD-2023-002', type: '集体园地', area: '2.8000', standard: '5.80', amount: '162400.00' }
+                    ];
+                    
+                    landData.forEach((land, index) => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td><input type="number" min="1" step="1" value="${index + 1}" required readonly></td>
+                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${land.id}" readonly></td>
+                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="compensation-area" value="${land.area}" readonly></td>
+                            <td><input type="text" class="land-type-display" value="${land.type}" readonly></td>
+                            <td><button type="button" class="px-3 py-1 bg-blue-200 text-blue-700 rounded text-sm select-compensation-standard">${land.standard}元/亩</button></td>
+                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="compensation-amount" value="${land.amount}" readonly></td>
+                        `;
+                        landCompensationBody.appendChild(newRow);
+                    });
+                }
+                
+                // 填充青苗补偿费用项
+                const cropCompensationBody = document.getElementById('crop-compensation-body');
+                if (cropCompensationBody) {
+                    cropCompensationBody.innerHTML = '';
+                    const cropData = [
+                        { id: 'TD-2023-001', type: '水稻', spec: '一季稻', area: '3.5000', standard: '2.80', amount: '98000.00' }
+                    ];
+                    
+                    cropData.forEach((crop, index) => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td><input type="number" min="1" step="1" value="${index + 1}" required readonly></td>
+                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${crop.id}" readonly></td>
+                            <td><input type="text" placeholder="请输入青苗种类" class="crop-type" value="${crop.type}" readonly></td>
+                            <td><input type="text" placeholder="请输入规格" class="crop-spec" value="${crop.spec}" readonly></td>
+                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="crop-area" value="${crop.area}" readonly></td>
+                            <td><button type="button" class="px-3 py-1 bg-blue-200 text-blue-700 rounded text-sm select-crop-standard">${crop.standard}元/亩</button></td>
+                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="crop-amount" value="${crop.amount}" readonly></td>
+                            <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                        `;
+                        cropCompensationBody.appendChild(newRow);
+                        
+                        // 添加删除事件
+                        newRow.querySelector('.delete-compensation-item').addEventListener('click', function() {
+                            newRow.remove();
+                            updateCompensationSequentialNumbers();
+                        });
+                    });
+                }
+                
+                // 填充征地奖励费用项
+                const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                if (rewardCompensationBody) {
+                    rewardCompensationBody.innerHTML = '';
+                    const rewardData = [
+                        { id: 'TD-2023-001', area: '3.5000', standard: '1.20', amount: '42000.00' },
+                        { id: 'TD-2023-002', area: '2.8000', standard: '1.20', amount: '33600.00' }
+                    ];
+                    
+                    rewardData.forEach((reward, index) => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td><input type="number" min="1" step="1" value="${index + 1}" required readonly></td>
+                            <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${reward.id}" readonly></td>
+                            <td><input type="number" step="0.0001" placeholder="保留四位小数" class="reward-area" value="${reward.area}" readonly></td>
+                            <td><button type="button" class="px-3 py-1 bg-blue-200 text-blue-700 rounded text-sm select-reward-standard">${reward.standard}元/亩</button></td>
+                            <td><input type="number" step="0.01" placeholder="保留两位小数" class="reward-amount" value="${reward.amount}" readonly></td>
+                            <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                        `;
+                        rewardCompensationBody.appendChild(newRow);
+                        
+                        // 添加删除事件
+                        newRow.querySelector('.delete-compensation-item').addEventListener('click', function() {
+                            newRow.remove();
+                            updateCompensationSequentialNumbers();
+                        });
+                    });
+                }
+                
+                // 更新费用汇总
+                document.getElementById('land-compensation-amount').value = '389900.00';
+                document.getElementById('crop-compensation-amount').value = '98000.00';
+                document.getElementById('land-reward-amount').value = '75600.00';
+                document.getElementById('total-compensation').value = '563500.00';
+            }
+            
+            // 更新补偿费用项序号
+            function updateCompensationSequentialNumbers() {
+                // 更新土地补偿费用项序号
+                const landCompensationBody = document.getElementById('land-compensation-body');
+                if (landCompensationBody) {
+                    const landRows = landCompensationBody.querySelectorAll('tr');
+                    landRows.forEach((row, index) => {
+                        const numberInput = row.querySelector('input[type="number"][min="1"]');
+                        if (numberInput) {
+                            numberInput.value = index + 1;
+                        }
+                    });
+                }
+                
+                // 更新青苗补偿费用项序号
+                const cropCompensationBody = document.getElementById('crop-compensation-body');
+                if (cropCompensationBody) {
+                    const cropRows = cropCompensationBody.querySelectorAll('tr');
+                    cropRows.forEach((row, index) => {
+                        const numberInput = row.querySelector('input[type="number"][min="1"]');
+                        if (numberInput) {
+                            numberInput.value = index + 1;
+                        }
+                    });
+                }
+                
+                // 更新征地奖励费用项序号
+                const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                if (rewardCompensationBody) {
+                    const rewardRows = rewardCompensationBody.querySelectorAll('tr');
+                    rewardRows.forEach((row, index) => {
+                        const numberInput = row.querySelector('input[type="number"][min="1"]');
+                        if (numberInput) {
+                            numberInput.value = index + 1;
+                        }
+                    });
+                }
+            }
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 移除所有活动状态
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    
+                    // 添加当前活动状态
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.remove('hidden');
+                    
+                    // 根据标签页显示或隐藏新增补偿项按钮
+                    const landCompensationAddButton = document.querySelector('.add-compensation-item[data-type="land"]');
+                    const cropCompensationAddButton = document.querySelector('.add-compensation-item[data-type="crop"]');
+                    const rewardCompensationAddButton = document.querySelector('.add-compensation-item[data-type="reward"]');
+                    
+                    if (tabId === 'crop-compensation') {
+                        // 只在青苗、地上附着物补偿费标签页显示新增按钮
+                        if (cropCompensationAddButton) {
+                            cropCompensationAddButton.parentElement.classList.remove('hidden');
+                        }
+                        // 隐藏其他标签页的新增按钮
+                        if (landCompensationAddButton) {
+                            landCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                        if (rewardCompensationAddButton) {
+                            rewardCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                    } else if (tabId === 'land-compensation') {
+                        // 在土地补偿及安置费用标签页显示新增按钮
+                        if (landCompensationAddButton) {
+                            landCompensationAddButton.parentElement.classList.remove('hidden');
+                        }
+                        // 隐藏其他标签页的新增按钮
+                        if (cropCompensationAddButton) {
+                            cropCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                        if (rewardCompensationAddButton) {
+                            rewardCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                    } else if (tabId === 'land-reward') {
+                        // 在征地奖励标签页显示新增按钮
+                        if (rewardCompensationAddButton) {
+                            rewardCompensationAddButton.parentElement.classList.remove('hidden');
+                        }
+                        // 隐藏其他标签页的新增按钮
+                        if (landCompensationAddButton) {
+                            landCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                        if (cropCompensationAddButton) {
+                            cropCompensationAddButton.parentElement.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // 页面加载完成后调整页面内容
+            document.addEventListener('DOMContentLoaded', function() {
+                adjustPageForMode();
+                
+                // 为初始地块行的复选框添加事件监听器
+                const initialCropCheckbox = document.querySelector('#land-info-table-body tr .crop-compensation-checkbox');
+                const initialRewardCheckbox = document.querySelector('#land-info-table-body tr .land-reward-checkbox');
+                const initialLandRow = document.querySelector('#land-info-table-body tr');
+                
+                if (initialCropCheckbox && initialLandRow) {
+                    initialCropCheckbox.addEventListener('change', function() {
+                        toggleCropCompensationEditable(initialLandRow);
+                    });
+                }
+                
+                if (initialRewardCheckbox && initialLandRow) {
+                    initialRewardCheckbox.addEventListener('change', function() {
+                        toggleLandRewardEditable(initialLandRow);
+                    });
+                }
+                
+                // 为初始地块行添加保存事件
+                if (initialLandRow) {
+                    const saveButton = initialLandRow.querySelector('.save-land-row');
+                    if (saveButton) {
+                        saveButton.addEventListener('click', function() {
+                            syncLandInfoToCompensation(initialLandRow, true); // 保存时同步到补偿费用项
+                        });
+                    }
+                    
+                    // 添加地类双击事件
+                    const landTypeDisplay = initialLandRow.querySelector('.land-type-display');
+                    if (landTypeDisplay) {
+                        landTypeDisplay.addEventListener('dblclick', function() {
+                            alert('该地块为测绘成果，不可修改。如要修改，请先同步修改测绘成果，重新推送地块信息。');
+                        });
+                    }
+                }
+                
+                // 设置新增补偿项按钮的初始状态
+                // 默认显示土地补偿及安置费用标签页的新增按钮，隐藏其他标签页的新增按钮
+                const landCompensationAddButton = document.querySelector('.add-compensation-item[data-type="land"]');
+                const cropCompensationAddButton = document.querySelector('.add-compensation-item[data-type="crop"]');
+                const rewardCompensationAddButton = document.querySelector('.add-compensation-item[data-type="reward"]');
+                
+                // 隐藏青苗和征地奖励标签页的新增按钮
+                if (cropCompensationAddButton) {
+                    cropCompensationAddButton.parentElement.classList.add('hidden');
+                }
+                if (rewardCompensationAddButton) {
+                    rewardCompensationAddButton.parentElement.classList.add('hidden');
+                }
+                
+                // 补偿标准模态框相关事件
+                const cropStandardModal = document.getElementById('crop-standard-modal');
+                const closeCropStandardModal = document.getElementById('close-crop-standard-modal');
+                const cancelCropStandard = document.getElementById('cancel-crop-standard');
+                
+                // 关闭模态框事件
+                if (closeCropStandardModal) {
+                    closeCropStandardModal.addEventListener('click', function() {
+                        cropStandardModal.classList.add('hidden');
+                    });
+                }
+                
+                if (cancelCropStandard) {
+                    cancelCropStandard.addEventListener('click', function() {
+                        cropStandardModal.classList.add('hidden');
+                    });
+                }
+                
+                // 点击模态框背景关闭
+                if (cropStandardModal) {
+                    cropStandardModal.addEventListener('click', function(e) {
+                        if (e.target === cropStandardModal) {
+                            cropStandardModal.classList.add('hidden');
+                        }
+                    });
+                }
+                
+                // 选择青苗补偿标准项事件委托
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('select-crop-standard-item')) {
+                        const button = e.target;
+                        const standard = button.getAttribute('data-standard');
+                        const name = button.getAttribute('data-name');
+                        const spec = button.getAttribute('data-spec');
+                        
+                        // 获取当前激活的青苗补偿行
+                        const cropCompensationBody = document.getElementById('crop-compensation-body');
+                        const rows = cropCompensationBody.querySelectorAll('tr');
+                        let activeRow = null;
+                        
+                        // 查找第一个可编辑的行（未置灰的行）
+                        for (let i = 0; i < rows.length; i++) {
+                            const cropTypeInput = rows[i].querySelector('.crop-type');
+                            if (cropTypeInput && !cropTypeInput.hasAttribute('readonly')) {
+                                activeRow = rows[i];
+                                break;
+                            }
+                        }
+                        
+                        if (activeRow) {
+                            // 填充青苗种类和规格
+                            const cropTypeInput = activeRow.querySelector('.crop-type');
+                            const cropSpecInput = activeRow.querySelector('.crop-spec');
+                            const standardButton = activeRow.querySelector('.select-crop-standard');
+                            
+                            if (cropTypeInput) cropTypeInput.value = name;
+                            if (cropSpecInput) cropSpecInput.value = spec;
+                            if (standardButton) {
+                                standardButton.textContent = parseFloat(standard).toFixed(2) + '元/亩';
+                                standardButton.classList.add('bg-blue-200');
+                            }
+                            
+                            // 计算补偿金额
+                            const areaInput = activeRow.querySelector('.crop-area');
+                            const amountInput = activeRow.querySelector('.crop-amount');
+                            if (areaInput && areaInput.value && !isNaN(areaInput.value)) {
+                                const amount = parseFloat(areaInput.value) * parseFloat(standard);
+                                if (amountInput) amountInput.value = amount.toFixed(2);
+                                calculateTotalCompensation();
+                            }
+                        }
+                        
+                        // 关闭模态框
+                        cropStandardModal.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // 青苗补偿标准选择
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('select-crop-standard')) {
+                    // 显示补偿标准选择模态框
+                    const cropStandardModal = document.getElementById('crop-standard-modal');
+                    if (cropStandardModal) {
+                        cropStandardModal.classList.remove('hidden');
+                    }
+                }
+            });
+            
+            // 文件上传功能
+            const fileUpload = document.getElementById('file-upload');
+            const uploadedFiles = document.getElementById('uploaded-files');
+            
+            fileUpload.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadedFiles.classList.remove('hidden');
+                    // 在实际应用中可以添加文件上传逻辑
+                }
+            });
+            
+            // 已移除对close-form-btn的引用，因为现在使用cancel-btn作为返回按钮
+            
+            // 保存表单
+            document.getElementById('save-form-btn').addEventListener('click', () => {
+                // 表单验证
+                const form = document.getElementById('new-land-form');
+                if (form.checkValidity()) {
+                    // 在实际应用中可以添加表单提交逻辑
+                    alert('表单已保存！');
+                    
+                    // 保存成功后返回到上一页
+                    window.history.back();
+                } else {
+                    // 手动触发浏览器的默认验证行为
+                    form.reportValidity();
+                }
+            });
+            
+            // 取消按钮
+            document.getElementById('cancel-form-btn').addEventListener('click', () => {
+                // 返回到上一页
+                window.history.back();
+            });
+            
+            // 表单字段联动
+            const landTypeSelect = document.querySelector('select[name="land-type"]');
+            const compensationStandardInput = document.querySelector('input[placeholder="保留两位小数"]');
+            
+            // 根据土地性质自动填充补偿标准
+            if (landTypeSelect && compensationStandardInput) {
+                landTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'arable') {
+                        compensationStandardInput.value = '6.50';
+                    } else if (this.value === 'construction') {
+                        compensationStandardInput.value = '12.80';
+                    } else if (this.value === 'unused') {
+                        compensationStandardInput.value = '3.20';
+                    } else {
+                        compensationStandardInput.value = '';
+                    }
+                    
+                    // 计算总金额
+                    calculateTotalCompensation();
+                });
+            }
+            
+            // 添加新的地块行
+            document.getElementById('add-land-row').addEventListener('click', function() {
+                const tableBody = document.getElementById('land-info-table-body');
+                const newRow = document.createElement('tr');
+                const rowCount = tableBody.children.length + 1;
+                
+                newRow.innerHTML = `
+                    <td class="sequential-number">${rowCount}</td>
+                    <td><input type="text" placeholder="格式：TD-YYYY-XXX" required /></td>
+                    <td>
+                        <input type="text" class="land-type-display" value="集体农用地" readonly data-land-type="arable" />
+                    </td>
+                    <td><input type="number" step="0.0001" placeholder="保留四位小数" required /></td>
+                    <td><input type="checkbox" class="crop-compensation-checkbox" /></td>
+                    <td><input type="checkbox" class="land-reward-checkbox" /></td>
+                    <td><input type="text" placeholder="请输入备注信息" /></td>
+                    <td>
+                        <button type="button" class="text-red-500 hover:text-red-700 delete-row mr-2">删除</button>
+                        <button type="button" class="save-land-row px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs">保存</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(newRow);
+                
+                // 添加删除事件
+                newRow.querySelector('.delete-row').addEventListener('click', function() {
+                    newRow.remove();
+                    updateSequentialNumbers();
+                });
+                
+                // 添加保存事件
+                newRow.querySelector('.save-land-row').addEventListener('click', function() {
+                    syncLandInfoToCompensation(newRow, true); // 保存时同步到补偿费用项
+                });
+                
+                // 添加输入事件以计算总金额
+                const numberInputs = newRow.querySelectorAll('input[type="number"]');
+                numberInputs.forEach(input => {
+                    input.addEventListener('input', calculateTotalCompensation);
+                });
+                
+                // 添加地类双击事件
+                const landTypeDisplay = newRow.querySelector('.land-type-display');
+                landTypeDisplay.addEventListener('dblclick', function() {
+                    alert('该地块为测绘成果，不可修改。如要修改，请先同步修改测绘成果，重新推送地块信息。');
+                });
+                
+                // 添加复选框事件
+                const cropCheckbox = newRow.querySelector('.crop-compensation-checkbox');
+                const rewardCheckbox = newRow.querySelector('.land-reward-checkbox');
+                
+                cropCheckbox.addEventListener('change', function() {
+                    toggleCropCompensationEditable(newRow);
+                });
+                
+                rewardCheckbox.addEventListener('change', function() {
+                    toggleLandRewardEditable(newRow);
+                });
+            });
+            
+            // 删除行事件委托
+            document.getElementById('land-info-table-body').addEventListener('click', function(e) {
+                if (e.target.classList.contains('delete-row')) {
+                    e.target.closest('tr').remove();
+                    updateSequentialNumbers();
+                }
+            });
+            
+            // 保存行事件委托
+            document.getElementById('land-info-table-body').addEventListener('click', function(e) {
+                if (e.target.classList.contains('save-land-row')) {
+                    const row = e.target.closest('tr');
+                    syncLandInfoToCompensation(row, true); // 保存时同步到补偿费用项
+                }
+            });
+            
+            // 地类显示字段双击事件委托
+            document.getElementById('land-info-table-body').addEventListener('dblclick', function(e) {
+                if (e.target.classList.contains('land-type-display')) {
+                    alert('该地块为测绘成果，不可修改。如要修改，请先同步修改测绘成果，重新推送地块信息。');
+                }
+            });
+            
+            // 更新序号
+            function updateSequentialNumbers() {
+                const numbers = document.querySelectorAll('.sequential-number');
+                numbers.forEach((number, index) => {
+                    number.textContent = index + 1;
+                });
+                
+                // 重新计算总金额
+                calculateTotalCompensation();
+            }
+            
+            // 补偿标准弹窗选择功能
+                        function showCompensationStandardDialog(type, callback) {
+                            // 这里应该是实际的弹窗逻辑，这里简化为确认对话框
+                            let standard = 0;
+                            if (type === 'land') {
+                                standard = prompt('请输入土地补偿标准：', '6.50');
+                            } else if (type === 'crop') {
+                                standard = prompt('请输入青苗补偿标准：', '2.80');
+                            } else if (type === 'reward') {
+                                standard = prompt('请输入奖励标准：', '1.20');
+                            }
+                             
+                            if (standard !== null) {
+                                callback(parseFloat(standard));
+                            }
+                        }
+                         
+                        // 土地补偿标准选择
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('select-compensation-standard')) {
+                                const button = e.target;
+                                const row = button.closest('tr');
+                                showCompensationStandardDialog('land', function(standard) {
+                                    // 更新按钮文本
+                                    button.textContent = standard.toFixed(2) + '元/亩';
+                                    button.classList.add('bg-blue-200');
+                                    
+                                    // 计算补偿金额
+                                    const areaInput = row.querySelector('.compensation-area');
+                                    const amountInput = row.querySelector('.compensation-amount');
+                                    if (areaInput.value && !isNaN(areaInput.value)) {
+                                        const amount = parseFloat(areaInput.value) * standard;
+                                        amountInput.value = amount.toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                });
+                            }
+                        });
+                         
+                        // 青苗补偿标准选择
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('select-crop-standard')) {
+                                const button = e.target;
+                                const row = button.closest('tr');
+                                showCompensationStandardDialog('crop', function(standard) {
+                                    // 更新按钮文本
+                                    button.textContent = standard.toFixed(2) + '元/亩';
+                                    button.classList.add('bg-blue-200');
+                                    
+                                    // 计算补偿金额
+                                    const areaInput = row.querySelector('.crop-area');
+                                    const amountInput = row.querySelector('.crop-amount');
+                                    if (areaInput.value && !isNaN(areaInput.value)) {
+                                        const amount = parseFloat(areaInput.value) * standard;
+                                        amountInput.value = amount.toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                });
+                            }
+                        });
+                         
+                        // 征地奖励标准选择
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('select-reward-standard')) {
+                                const button = e.target;
+                                const row = button.closest('tr');
+                                showCompensationStandardDialog('reward', function(standard) {
+                                    // 更新按钮文本
+                                    button.textContent = standard.toFixed(2) + '元/亩';
+                                    button.classList.add('bg-blue-200');
+                                    
+                                    // 计算补偿金额
+                                    const areaInput = row.querySelector('.reward-area');
+                                    const amountInput = row.querySelector('.reward-amount');
+                                    if (areaInput.value && !isNaN(areaInput.value)) {
+                                        const amount = parseFloat(areaInput.value) * standard;
+                                        amountInput.value = amount.toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                });
+                            }
+                        });
+                         
+                        // 奖励标准选择
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('select-reward-standard')) {
+                                const button = e.target;
+                                const row = button.closest('tr');
+                                showCompensationStandardDialog('reward', function(standard) {
+                                    // 更新按钮文本
+                                    button.textContent = standard.toFixed(2) + '元/亩';
+                                    button.classList.add('bg-blue-200');
+                                    
+                                    // 计算补偿金额
+                                    const amountInput = row.querySelector('.reward-amount');
+                                    // 这里假设面积来自征地信息卡片中的第一个地块
+                                    const firstLandArea = document.querySelector('#land-info-table-body input[type="number"]');
+                                    if (firstLandArea && firstLandArea.value && !isNaN(firstLandArea.value)) {
+                                        const amount = parseFloat(firstLandArea.value) * standard;
+                                        amountInput.value = amount.toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                });
+                            }
+                        });
+                         
+                        // 同步地块信息到补偿费用项
+                        function syncLandInfoToCompensation(landRow, isNewRow = false) {
+                            const landNumberInput = landRow.querySelector('td:nth-child(2) input[type="text"]');
+                            const landNumber = landNumberInput ? landNumberInput.value : '';
+                            const landAreaInput = landRow.querySelector('td:nth-child(4) input[type="number"]');
+                            const landArea = landAreaInput ? landAreaInput.value : '';
+                            const landTypeDisplay = landRow.querySelector('.land-type-display');
+                            const landTypeText = landTypeDisplay ? landTypeDisplay.value : '';
+                            const landType = landTypeDisplay ? landTypeDisplay.getAttribute('data-land-type') : '';
+                            
+                            // 获取复选框状态
+                            const cropCheckbox = landRow.querySelector('.crop-compensation-checkbox');
+                            const rewardCheckbox = landRow.querySelector('.land-reward-checkbox');
+                            const isCropChecked = cropCheckbox ? cropCheckbox.checked : false;
+                            const isRewardChecked = rewardCheckbox ? rewardCheckbox.checked : false;
+                            
+                            // 如果地块编号为空，不进行同步
+                            if (!landNumber) return;
+                            
+                            // 更新土地补偿费用项中的地块编号、面积和地类
+                            const landCompensationBody = document.getElementById('land-compensation-body');
+                            let landCompensationRow = null;
+                            
+                            // 查找是否有匹配的行
+                            const landCompensationRows = landCompensationBody.querySelectorAll('tr');
+                            for (let i = 0; i < landCompensationRows.length; i++) {
+                                const rowLandNumberInput = landCompensationRows[i].querySelector('td:nth-child(2) input[type="text"]');
+                                if (rowLandNumberInput && rowLandNumberInput.value === landNumber) {
+                                    landCompensationRow = landCompensationRows[i];
+                                    break;
+                                }
+                            }
+                            
+                            // 如果没有找到匹配的行，则创建新行（仅在isNewRow为true时）
+                            if (!landCompensationRow && isNewRow) {
+                                const newRow = document.createElement('tr');
+                                const rowCount = landCompensationBody.children.length + 1;
+                                newRow.innerHTML = `
+                                    <td><input type="number" min="1" step="1" value="${rowCount}" required readonly /></td>
+                                    <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${landNumber}" readonly /></td>
+                                    <td><input type="number" step="0.0001" placeholder="保留四位小数" class="compensation-area" value="${landArea || ''}" readonly /></td>
+                                    <td><input type="text" class="land-type-display" value="${landTypeText || ''}" readonly /></td>
+                                    <td><button type="button" class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm select-compensation-standard">${landType ? getCompensationStandard(landType).toFixed(2) + '元/亩' : '选择标准'}</button></td>
+                                    <td><input type="number" step="0.01" placeholder="保留两位小数" class="compensation-amount" readonly /></td>
+                                `;
+                                landCompensationBody.appendChild(newRow);
+                                landCompensationRow = newRow;
+                                
+                                // 如果有地类信息，自动计算补偿金额
+                                if (landType && landArea && !isNaN(landArea)) {
+                                    const standard = getCompensationStandard(landType);
+                                    const amount = parseFloat(landArea) * standard;
+                                    const amountInput = landCompensationRow.querySelector('.compensation-amount');
+                                    amountInput.value = amount.toFixed(2);
+                                }
+                            } else if (landCompensationRow) {
+                                // 如果找到了匹配的行，则更新其内容
+                                // 同步地块编号
+                                const rowLandNumberInput = landCompensationRow.querySelector('td:nth-child(2) input[type="text"]');
+                                if (rowLandNumberInput) {
+                                    rowLandNumberInput.value = landNumber;
+                                }
+                                
+                                // 同步面积
+                                const compensationAreaInput = landCompensationRow.querySelector('.compensation-area');
+                                if (compensationAreaInput) {
+                                    compensationAreaInput.value = landArea || '';
+                                }
+                                
+                                // 同步地类
+                                const landTypeDisplayInput = landCompensationRow.querySelector('.land-type-display');
+                                if (landTypeDisplayInput) {
+                                    landTypeDisplayInput.value = landTypeText || '';
+                                }
+                                
+                                // 根据地类自动填充补偿标准
+                                if (landType) {
+                                    const standardButton = landCompensationRow.querySelector('.select-compensation-standard');
+                                    if (standardButton) {
+                                        const standard = getCompensationStandard(landType);
+                                        standardButton.textContent = standard.toFixed(2) + '元/亩';
+                                        standardButton.classList.add('bg-blue-200');
+                                        
+                                        // 计算补偿金额
+                                        const amountInput = landCompensationRow.querySelector('.compensation-amount');
+                                        if (landArea && !isNaN(landArea)) {
+                                            const amount = parseFloat(landArea) * standard;
+                                            amountInput.value = amount.toFixed(2);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // 更新青苗补偿费用项中的地块编号
+                            const cropCompensationBody = document.getElementById('crop-compensation-body');
+                            let cropCompensationRow = null;
+                            
+                            // 查找是否有匹配的行
+                            const cropCompensationRows = cropCompensationBody.querySelectorAll('tr');
+                            for (let i = 0; i < cropCompensationRows.length; i++) {
+                                const rowLandNumberInput = cropCompensationRows[i].querySelector('td:nth-child(2) input[type="text"]');
+                                if (rowLandNumberInput && rowLandNumberInput.value === landNumber) {
+                                    cropCompensationRow = cropCompensationRows[i];
+                                    break;
+                                }
+                            }
+                            
+                            // 只有在勾选了青苗补偿费复选框时才处理青苗补偿费用项
+                            if (isCropChecked) {
+                                // 如果没有找到匹配的行，则创建新行（仅在isNewRow为true时）
+                                if (!cropCompensationRow && isNewRow) {
+                                    const newRow = document.createElement('tr');
+                                    const rowCount = cropCompensationBody.children.length + 1;
+                                    newRow.innerHTML = `
+                                        <td><input type="number" min="1" step="1" value="${rowCount}" required readonly /></td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${landNumber}" readonly /></td>
+                                        <td><input type="text" placeholder="请输入青苗种类" class="crop-type" readonly /></td>
+                                        <td><input type="text" placeholder="请输入规格" class="crop-spec" readonly /></td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" class="crop-area" readonly /></td>
+                                        <td><button type="button" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm select-crop-standard" disabled>选择标准</button></td>
+                                        <td><input type="number" step="0.01" placeholder="保留两位小数" class="crop-amount" readonly /></td>
+                                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                    `;
+                                    cropCompensationBody.appendChild(newRow);
+                                    cropCompensationRow = newRow;
+                                    
+                                    // 启用编辑并自动填充地块编号
+                                    const landNumberInput = cropCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const cropTypeInput = cropCompensationRow.querySelector('.crop-type');
+                                    const cropSpecInput = cropCompensationRow.querySelector('.crop-spec');
+                                    const cropAreaInput = cropCompensationRow.querySelector('.crop-area');
+                                    const standardButton = cropCompensationRow.querySelector('.select-crop-standard');
+                                    
+                                    if (landNumberInput) {
+                                        landNumberInput.value = landNumber;
+                                        landNumberInput.removeAttribute('readonly');
+                                    }
+                                    if (cropTypeInput) cropTypeInput.removeAttribute('readonly');
+                                    if (cropSpecInput) cropSpecInput.removeAttribute('readonly');
+                                    if (cropAreaInput) cropAreaInput.removeAttribute('readonly');
+                                    if (standardButton) {
+                                        standardButton.removeAttribute('disabled');
+                                        standardButton.classList.remove('bg-gray-200');
+                                        standardButton.classList.add('bg-blue-100');
+                                        standardButton.classList.remove('text-gray-700');
+                                        standardButton.classList.add('text-blue-700');
+                                    }
+                                } else if (cropCompensationRow) {
+                                    // 如果找到了匹配的行，则更新其地块编号并启用编辑
+                                    const landNumberInput = cropCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const cropTypeInput = cropCompensationRow.querySelector('.crop-type');
+                                    const cropSpecInput = cropCompensationRow.querySelector('.crop-spec');
+                                    const cropAreaInput = cropCompensationRow.querySelector('.crop-area');
+                                    const standardButton = cropCompensationRow.querySelector('.select-crop-standard');
+                                    
+                                    if (landNumberInput) {
+                                        landNumberInput.value = landNumber;
+                                        landNumberInput.removeAttribute('readonly');
+                                    }
+                                    if (cropTypeInput) cropTypeInput.removeAttribute('readonly');
+                                    if (cropSpecInput) cropSpecInput.removeAttribute('readonly');
+                                    if (cropAreaInput) cropAreaInput.removeAttribute('readonly');
+                                    if (standardButton) {
+                                        standardButton.removeAttribute('disabled');
+                                        standardButton.classList.remove('bg-gray-200');
+                                        standardButton.classList.add('bg-blue-100');
+                                        standardButton.classList.remove('text-gray-700');
+                                        standardButton.classList.add('text-blue-700');
+                                    }
+                                }
+                            } else {
+                                // 如果未勾选青苗补偿费复选框，置灰并清空相关字段
+                                if (cropCompensationRow) {
+                                    const landNumberInput = cropCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const cropTypeInput = cropCompensationRow.querySelector('.crop-type');
+                                    const cropSpecInput = cropCompensationRow.querySelector('.crop-spec');
+                                    const cropAreaInput = cropCompensationRow.querySelector('.crop-area');
+                                    const standardButton = cropCompensationRow.querySelector('.select-crop-standard');
+                                    
+                                    if (landNumberInput) landNumberInput.setAttribute('readonly', 'readonly');
+                                    if (cropTypeInput) cropTypeInput.setAttribute('readonly', 'readonly');
+                                    if (cropSpecInput) cropSpecInput.setAttribute('readonly', 'readonly');
+                                    if (cropAreaInput) cropAreaInput.setAttribute('readonly', 'readonly');
+                                    if (standardButton) {
+                                        standardButton.setAttribute('disabled', 'disabled');
+                                        standardButton.classList.remove('bg-blue-100');
+                                        standardButton.classList.add('bg-gray-200');
+                                        standardButton.classList.remove('text-blue-700');
+                                        standardButton.classList.add('text-gray-700');
+                                    }
+                                    
+                                    // 清空值
+                                    if (cropTypeInput) cropTypeInput.value = '';
+                                    if (cropSpecInput) cropSpecInput.value = '';
+                                    if (cropAreaInput) cropAreaInput.value = '';
+                                    if (standardButton) {
+                                        standardButton.textContent = '选择标准';
+                                        standardButton.classList.remove('bg-blue-200');
+                                    }
+                                    const cropAmountInput = cropCompensationRow.querySelector('.crop-amount');
+                                    if (cropAmountInput) cropAmountInput.value = '';
+                                }
+                            }
+                            
+                            // 更新征地奖励费用项中的地块编号和面积
+                            const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                            let rewardCompensationRow = null;
+                            
+                            // 查找是否有匹配的行
+                            const rewardCompensationRows = rewardCompensationBody.querySelectorAll('tr');
+                            for (let i = 0; i < rewardCompensationRows.length; i++) {
+                                const rowLandNumberInput = rewardCompensationRows[i].querySelector('td:nth-child(2) input[type="text"]');
+                                if (rowLandNumberInput && rowLandNumberInput.value === landNumber) {
+                                    rewardCompensationRow = rewardCompensationRows[i];
+                                    break;
+                                }
+                            }
+                            
+                            // 只有在勾选了征地奖励复选框时才处理征地奖励费用项
+                            if (isRewardChecked) {
+                                // 如果没有找到匹配的行，则创建新行（仅在isNewRow为true时）
+                                if (!rewardCompensationRow && isNewRow) {
+                                    const newRow = document.createElement('tr');
+                                    const rowCount = rewardCompensationBody.children.length + 1;
+                                    newRow.innerHTML = `
+                                        <td><input type="number" min="1" step="1" value="${rowCount}" required readonly /></td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" value="${landNumber}" readonly /></td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" class="reward-area" value="${landArea || ''}" readonly /></td>
+                                        <td><button type="button" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm select-reward-standard" disabled>选择标准</button></td>
+                                        <td><input type="number" step="0.01" placeholder="保留两位小数" class="reward-amount" readonly /></td>
+                                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                    `;
+                                    rewardCompensationBody.appendChild(newRow);
+                                    rewardCompensationRow = newRow;
+                                    
+                                    // 启用编辑并自动填充地块编号和面积
+                                    const rewardLandNumberInput = rewardCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const rewardAreaInput = rewardCompensationRow.querySelector('.reward-area');
+                                    const standardButton = rewardCompensationRow.querySelector('.select-reward-standard');
+                                    
+                                    if (rewardLandNumberInput) {
+                                        rewardLandNumberInput.value = landNumber;
+                                        rewardLandNumberInput.removeAttribute('readonly');
+                                    }
+                                    if (rewardAreaInput) {
+                                        rewardAreaInput.value = landArea;
+                                        rewardAreaInput.removeAttribute('readonly');
+                                    }
+                                    if (standardButton) {
+                                        standardButton.removeAttribute('disabled');
+                                        standardButton.classList.remove('bg-gray-200');
+                                        standardButton.classList.add('bg-blue-100');
+                                        standardButton.classList.remove('text-gray-700');
+                                        standardButton.classList.add('text-blue-700');
+                                    }
+                                } else if (rewardCompensationRow) {
+                                    // 如果找到了匹配的行，则更新其内容并启用编辑
+                                    const rewardLandNumberInput = rewardCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const rewardAreaInput = rewardCompensationRow.querySelector('.reward-area');
+                                    const standardButton = rewardCompensationRow.querySelector('.select-reward-standard');
+                                    
+                                    if (rewardLandNumberInput) {
+                                        rewardLandNumberInput.value = landNumber;
+                                        rewardLandNumberInput.removeAttribute('readonly');
+                                    }
+                                    if (rewardAreaInput) {
+                                        rewardAreaInput.value = landArea;
+                                        rewardAreaInput.removeAttribute('readonly');
+                                    }
+                                    if (standardButton) {
+                                        standardButton.removeAttribute('disabled');
+                                        standardButton.classList.remove('bg-gray-200');
+                                        standardButton.classList.add('bg-blue-100');
+                                        standardButton.classList.remove('text-gray-700');
+                                        standardButton.classList.add('text-blue-700');
+                                    }
+                                }
+                            } else {
+                                // 如果未勾选征地奖励复选框，置灰并清空相关字段
+                                if (rewardCompensationRow) {
+                                    const rewardLandNumberInput = rewardCompensationRow.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const rewardAreaInput = rewardCompensationRow.querySelector('.reward-area');
+                                    const standardButton = rewardCompensationRow.querySelector('.select-reward-standard');
+                                    
+                                    if (rewardLandNumberInput) rewardLandNumberInput.setAttribute('readonly', 'readonly');
+                                    if (rewardAreaInput) rewardAreaInput.setAttribute('readonly', 'readonly');
+                                    if (standardButton) {
+                                        standardButton.setAttribute('disabled', 'disabled');
+                                        standardButton.classList.remove('bg-blue-100');
+                                        standardButton.classList.add('bg-gray-200');
+                                        standardButton.classList.remove('text-blue-700');
+                                        standardButton.classList.add('text-gray-700');
+                                    }
+                                    
+                                    // 清空值
+                                    if (rewardAreaInput) rewardAreaInput.value = '';
+                                    if (standardButton) {
+                                        standardButton.textContent = '选择标准';
+                                        standardButton.classList.remove('bg-blue-200');
+                                    }
+                                    const rewardAmountInput = rewardCompensationRow.querySelector('.reward-amount');
+                                    if (rewardAmountInput) rewardAmountInput.value = '';
+                                }
+                            }
+                            
+                            // 重新计算总金额
+                            calculateTotalCompensation();
+                        }
+                        
+                        // 根据地类获取补偿标准
+                        function getCompensationStandard(landType) {
+                            let standard = 0;
+                            switch(landType) {
+                                case 'arable':
+                                    standard = 6.50;
+                                    break;
+                                case 'orchard':
+                                    standard = 5.80;
+                                    break;
+                                case 'forest':
+                                    standard = 4.20;
+                                    break;
+                                case 'grassland':
+                                    standard = 3.50;
+                                    break;
+                                case 'construction':
+                                    standard = 12.80;
+                                    break;
+                                case 'unused':
+                                    standard = 3.20;
+                                    break;
+                                default:
+                                    standard = 0;
+                            }
+                            return standard;
+                        }
+                        
+                        // 切换青苗补偿费可编辑状态
+                        function toggleCropCompensationEditable(landRow) {
+                            const landNumberInput = landRow.querySelector('td:nth-child(2) input[type="text"]');
+                            const landNumber = landNumberInput ? landNumberInput.value : '';
+                            const isChecked = landRow.querySelector('.crop-compensation-checkbox').checked;
+                            
+                            // 查找对应的青苗补偿费行
+                            const cropCompensationRows = document.querySelectorAll('#crop-compensation-body tr');
+                            cropCompensationRows.forEach(row => {
+                                const rowLandNumberInput = row.querySelector('td:nth-child(2) input[type="text"]');
+                                const rowLandNumber = rowLandNumberInput ? rowLandNumberInput.value : '';
+                                
+                                if (rowLandNumber === landNumber) {
+                                    const landNumberInput = row.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const cropTypeInput = row.querySelector('.crop-type');
+                                    const cropSpecInput = row.querySelector('.crop-spec');
+                                    const cropAreaInput = row.querySelector('.crop-area');
+                                    const standardButton = row.querySelector('.select-crop-standard');
+                                    
+                                    if (isChecked) {
+                                        // 启用编辑并自动填充地块编号
+                                        if (landNumberInput) {
+                                            landNumberInput.value = landNumber;
+                                            landNumberInput.removeAttribute('readonly');
+                                        }
+                                        if (cropTypeInput) cropTypeInput.removeAttribute('readonly');
+                                        if (cropSpecInput) cropSpecInput.removeAttribute('readonly');
+                                        if (cropAreaInput) cropAreaInput.removeAttribute('readonly');
+                                        if (standardButton) {
+                                            standardButton.removeAttribute('disabled');
+                                            standardButton.classList.remove('bg-gray-200');
+                                            standardButton.classList.add('bg-blue-100');
+                                            standardButton.classList.remove('text-gray-700');
+                                            standardButton.classList.add('text-blue-700');
+                                        }
+                                    } else {
+                                        // 禁用编辑并置灰
+                                        if (landNumberInput) landNumberInput.setAttribute('readonly', 'readonly');
+                                        if (cropTypeInput) cropTypeInput.setAttribute('readonly', 'readonly');
+                                        if (cropSpecInput) cropSpecInput.setAttribute('readonly', 'readonly');
+                                        if (cropAreaInput) cropAreaInput.setAttribute('readonly', 'readonly');
+                                        if (standardButton) {
+                                            standardButton.setAttribute('disabled', 'disabled');
+                                            standardButton.classList.remove('bg-blue-100');
+                                            standardButton.classList.add('bg-gray-200');
+                                            standardButton.classList.remove('text-blue-700');
+                                            standardButton.classList.add('text-gray-700');
+                                        }
+                                        
+                                        // 清空值
+                                        if (cropTypeInput) cropTypeInput.value = '';
+                                        if (cropSpecInput) cropSpecInput.value = '';
+                                        if (cropAreaInput) cropAreaInput.value = '';
+                                        if (standardButton) {
+                                            standardButton.textContent = '选择标准';
+                                            standardButton.classList.remove('bg-blue-200');
+                                        }
+                                        const cropAmountInput = row.querySelector('.crop-amount');
+                                        if (cropAmountInput) cropAmountInput.value = '';
+                                        calculateTotalCompensation();
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // 切换征地奖励可编辑状态
+                        function toggleLandRewardEditable(landRow) {
+                            const landNumberInput = landRow.querySelector('td:nth-child(2) input[type="text"]');
+                            const landNumber = landNumberInput ? landNumberInput.value : '';
+                            const landAreaInput = landRow.querySelector('td:nth-child(4) input[type="number"]');
+                            const landArea = landAreaInput ? landAreaInput.value : '';
+                            const isChecked = landRow.querySelector('.land-reward-checkbox').checked;
+                            
+                            // 查找对应的征地奖励行
+                            const rewardCompensationRows = document.querySelectorAll('#reward-compensation-body tr');
+                            rewardCompensationRows.forEach(row => {
+                                const rowLandNumberInput = row.querySelector('td:nth-child(2) input[type="text"]');
+                                const rowLandNumber = rowLandNumberInput ? rowLandNumberInput.value : '';
+                                
+                                if (rowLandNumber === landNumber) {
+                                    const rewardLandNumberInput = row.querySelector('input[type="text"]:nth-child(2)'); // 地块编号输入框
+                                    const rewardAreaInput = row.querySelector('.reward-area');
+                                    const standardButton = row.querySelector('.select-reward-standard');
+                                    
+                                    if (isChecked) {
+                                        // 启用编辑并自动填充地块编号和面积
+                                        if (rewardLandNumberInput) {
+                                            rewardLandNumberInput.value = landNumber;
+                                            rewardLandNumberInput.removeAttribute('readonly');
+                                        }
+                                        if (rewardAreaInput) {
+                                            rewardAreaInput.value = landArea;
+                                            rewardAreaInput.removeAttribute('readonly');
+                                        }
+                                        if (standardButton) {
+                                            standardButton.removeAttribute('disabled');
+                                            standardButton.classList.remove('bg-gray-200');
+                                            standardButton.classList.add('bg-blue-100');
+                                            standardButton.classList.remove('text-gray-700');
+                                            standardButton.classList.add('text-blue-700');
+                                        }
+                                    } else {
+                                        // 禁用编辑并置灰
+                                        if (rewardLandNumberInput) rewardLandNumberInput.setAttribute('readonly', 'readonly');
+                                        if (rewardAreaInput) rewardAreaInput.setAttribute('readonly', 'readonly');
+                                        if (standardButton) {
+                                            standardButton.setAttribute('disabled', 'disabled');
+                                            standardButton.classList.remove('bg-blue-100');
+                                            standardButton.classList.add('bg-gray-200');
+                                            standardButton.classList.remove('text-blue-700');
+                                            standardButton.classList.add('text-gray-700');
+                                        }
+                                        
+                                        // 清空值
+                                        if (rewardAreaInput) rewardAreaInput.value = '';
+                                        if (standardButton) {
+                                            standardButton.textContent = '选择标准';
+                                            standardButton.classList.remove('bg-blue-200');
+                                        }
+                                        const rewardAmountInput = row.querySelector('.reward-amount');
+                                        if (rewardAmountInput) rewardAmountInput.value = '';
+                                        calculateTotalCompensation();
+                                    }
+                                }
+                            });
+                        }
+
+                        // 添加补偿项
+                        document.querySelectorAll('.add-compensation-item').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const type = this.getAttribute('data-type');
+                                let tableBody, newRowHTML, baseId;
+                                
+                                if (type === 'land') {
+                                    tableBody = document.getElementById('land-compensation-body');
+                                    baseId = 'land-compensation';
+                                    newRowHTML = `
+                                        <td><input type="number" min="1" step="1" value="${tableBody.children.length + 1}" required readonly /></td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" required /></td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" class="compensation-area" required /></td>
+                                        <td><input type="text" class="land-type-display" readonly /></td>
+                                        <td><button type="button" class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm select-compensation-standard">选择标准</button></td>
+                                        <td><input type="number" step="0.01" placeholder="保留两位小数" class="compensation-amount" readonly /></td>
+                                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                    `;
+                                } else if (type === 'crop') {
+                                    tableBody = document.getElementById('crop-compensation-body');
+                                    baseId = 'crop-compensation';
+                                    newRowHTML = `
+                                        <td><input type="number" min="1" step="1" value="${tableBody.children.length + 1}" required readonly /></td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" required /></td>
+                                        <td><input type="text" placeholder="请输入青苗种类" class="crop-type" required /></td>
+                                        <td><input type="text" placeholder="请输入规格" class="crop-spec" required /></td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" class="crop-area" required /></td>
+                                        <td><button type="button" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm select-crop-standard" disabled>选择标准</button></td>
+                                        <td><input type="number" step="0.01" placeholder="保留两位小数" class="crop-amount" readonly /></td>
+                                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                    `;
+                                } else if (type === 'reward') {
+                                    tableBody = document.getElementById('reward-compensation-body');
+                                    baseId = 'reward-compensation';
+                                    newRowHTML = `
+                                        <td><input type="number" min="1" step="1" value="${tableBody.children.length + 1}" required readonly /></td>
+                                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" required /></td>
+                                        <td><input type="number" step="0.0001" placeholder="保留四位小数" class="reward-area" required /></td>
+                                        <td><button type="button" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm select-reward-standard" disabled>选择标准</button></td>
+                                        <td><input type="number" step="0.01" placeholder="保留两位小数" class="reward-amount" readonly /></td>
+                                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-compensation-item">删除</button></td>
+                                    `;
+                                }
+                                
+                                const newRow = document.createElement('tr');
+                                newRow.innerHTML = newRowHTML;
+                                tableBody.appendChild(newRow);
+                            });
+                        });
+                        
+                        // 删除补偿项
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('delete-compensation-item')) {
+                                const row = e.target.closest('tr');
+                                row.remove();
+                                calculateTotalCompensation();
+                            }
+                        });
+                        
+                        // 计算总金额
+                        function calculateTotalCompensation() {
+                            let total = 0;
+                            
+                            // 计算土地补偿总金额
+                            const landCompensationRows = document.querySelectorAll('#land-compensation-body tr');
+                            landCompensationRows.forEach(row => {
+                                const amountInput = row.querySelector('.compensation-amount');
+                                if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                    total += parseFloat(amountInput.value);
+                                }
+                            });
+                            
+                            // 计算青苗补偿总金额
+                            const cropCompensationRows = document.querySelectorAll('#crop-compensation-body tr');
+                            cropCompensationRows.forEach(row => {
+                                const amountInput = row.querySelector('.crop-amount');
+                                if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                    total += parseFloat(amountInput.value);
+                                }
+                            });
+                            
+                            // 计算征地奖励总金额
+                            const rewardCompensationRows = document.querySelectorAll('#reward-compensation-body tr');
+                            rewardCompensationRows.forEach(row => {
+                                const amountInput = row.querySelector('.reward-amount');
+                                if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                    total += parseFloat(amountInput.value);
+                                }
+                            });
+                            
+                            document.getElementById('total-compensation').textContent = total.toFixed(2);
+                        }
+                        
+                        // 显示补偿标准对话框
+                        function showCompensationStandardDialog(type, callback) {
+                            const dialog = document.getElementById('compensation-standard-dialog');
+                            const standardInput = dialog.querySelector('input[type="number"]');
+                            const confirmButton = dialog.querySelector('.confirm-standard');
+                            const cancelButton = dialog.querySelector('.cancel-standard');
+                            
+                            standardInput.value = '';
+                            
+                            confirmButton.addEventListener('click', function() {
+                                const standard = parseFloat(standardInput.value);
+                                if (!isNaN(standard) && standard > 0) {
+                                    dialog.style.display = 'none';
+                                    callback(standard);
+                                }
+                            });
+                            
+                            cancelButton.addEventListener('click', function() {
+                                dialog.style.display = 'none';
+                            });
+                            
+                            dialog.style.display = 'block';
+                        }
+                        
+                        // 删除补偿项
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('delete-compensation-item')) {
+                                const row = e.target.closest('tr');
+                                const tbody = row.closest('tbody');
+                                row.remove();
+                                
+                                // 更新序号
+                                const rows = tbody.querySelectorAll('tr');
+                                rows.forEach((r, index) => {
+                                    const numberInput = r.querySelector('input[type="number"][min="1"]');
+                                    if (numberInput) {
+                                        numberInput.value = index + 1;
+                                    }
+                                });
+                                
+                                // 重新计算总金额
+                                calculateTotalCompensation();
+                            }
+                        });
+                         
+                        // 删除文件
+                        document.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('delete-file')) {
+                                const row = e.target.closest('tr');
+                                const tbody = row.closest('tbody');
+                                row.remove();
+                                
+                                // 更新序号
+                                const rows = tbody.querySelectorAll('tr');
+                                rows.forEach((r, index) => {
+                                    const numberCell = r.querySelector('td:first-child');
+                                    if (numberCell) {
+                                        numberCell.textContent = index + 1;
+                                    }
+                                });
+                            }
+                        });
+                         
+                        // 面积输入变化时重新计算补偿金额
+                        document.addEventListener('input', function(e) {
+                            if (e.target.classList.contains('compensation-area')) {
+                                const row = e.target.closest('tr');
+                                const amountInput = row.querySelector('.compensation-amount');
+                                const standardButton = row.querySelector('.select-compensation-standard');
+                                
+                                if (standardButton.textContent && standardButton.textContent !== '选择标准') {
+                                    const standardText = standardButton.textContent;
+                                    const standard = parseFloat(standardText.match(/\d+\.\d+/)[0]);
+                                    const area = parseFloat(e.target.value);
+                                    
+                                    if (!isNaN(area) && !isNaN(standard)) {
+                                        amountInput.value = (area * standard).toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                }
+                            } else if (e.target.classList.contains('crop-area')) {
+                                const row = e.target.closest('tr');
+                                const amountInput = row.querySelector('.crop-amount');
+                                const standardButton = row.querySelector('.select-crop-standard');
+                                
+                                if (standardButton.textContent && standardButton.textContent !== '选择标准') {
+                                    const standardText = standardButton.textContent;
+                                    const standard = parseFloat(standardText.match(/\d+\.\d+/)[0]);
+                                    const area = parseFloat(e.target.value);
+                                    
+                                    if (!isNaN(area) && !isNaN(standard)) {
+                                        amountInput.value = (area * standard).toFixed(2);
+                                        calculateTotalCompensation();
+                                    }
+                                }
+                            }
+                        });
+                         
+                        // 获取表单数据用于预览
+                        function getFormDataForPreview() {
+                            const formData = {
+                                basicInfo: {
+                                    projectName: document.getElementById('project-name').value,
+                                    batchNumber: document.getElementById('batch-number').value,
+                                    landType: document.getElementById('land-type').value,
+                                    landDocumentNumber: document.getElementById('land-document-number').value,
+                                    approvalDate: document.getElementById('approval-date').value,
+                                    approvalDepartment: document.getElementById('approval-department').value,
+                                    landArea: document.getElementById('land-area').value,
+                                    region: document.getElementById('region').value,
+                                    remarks: document.getElementById('remarks').value
+                                },
+                                landParcels: [],
+                                landCompensations: [],
+                                cropCompensations: [],
+                                rewardCompensations: [],
+                                summary: {
+                                    landCompensationAmount: document.getElementById('land-compensation-amount').value,
+                                    cropCompensationAmount: document.getElementById('crop-compensation-amount').value,
+                                    landRewardAmount: document.getElementById('land-reward-amount').value,
+                                    totalCompensation: document.getElementById('total-compensation').value
+                                },
+                                uploadedFiles: []
+                            };
+                            
+                            // 获取地块信息
+                            const landInfoTableBody = document.getElementById('land-info-table-body');
+                            if (landInfoTableBody) {
+                                const rows = landInfoTableBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    formData.landParcels.push({
+                                        landNumber: row.querySelector('td:nth-child(2) input')?.value || '',
+                                        area: row.querySelector('td:nth-child(3) input')?.value || '',
+                                        hasCropCompensation: row.querySelector('td:nth-child(4) input')?.checked || false,
+                                        hasLandReward: row.querySelector('td:nth-child(5) input')?.checked || false,
+                                        remarks: row.querySelector('td:nth-child(6) input')?.value || '',
+                                        owner: document.querySelector('input[placeholder="请输入权属单位或个人姓名"]').value || ''
+                                    });
+                                });
+                            }
+                            
+                            // 获取土地补偿费用
+                            const landCompensationBody = document.getElementById('land-compensation-body');
+                            if (landCompensationBody) {
+                                const rows = landCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    formData.landCompensations.push({
+                                        landNumber: row.querySelector('td:nth-child(2) input')?.value || '',
+                                        landType: row.querySelector('.land-type-display')?.textContent.trim() || '',
+                                        compensationStandard: row.querySelector('.select-compensation-standard')?.textContent.match(/\d+(\.\d+)?/)?.[0] || '0',
+                                        area: row.querySelector('.compensation-area')?.value || '',
+                                        compensationAmount: row.querySelector('.compensation-amount')?.value || '',
+                                        remarks: ''
+                                    });
+                                });
+                            }
+                            
+                            // 获取青苗补偿费
+                            const cropCompensationBody = document.getElementById('crop-compensation-body');
+                            if (cropCompensationBody) {
+                                const rows = cropCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    formData.cropCompensations.push({
+                                        landNumber: row.querySelector('td:nth-child(2) input')?.value || '',
+                                        cropType: row.querySelector('.crop-type')?.value || '',
+                                        compensationStandard: row.querySelector('.select-crop-standard')?.textContent.match(/\d+(\.\d+)?/)?.[0] || '0',
+                                        area: row.querySelector('.crop-area')?.value || '',
+                                        compensationAmount: row.querySelector('.crop-amount')?.value || '',
+                                        remarks: ''
+                                    });
+                                });
+                            }
+                            
+                            // 获取征地奖励
+                            const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                            if (rewardCompensationBody) {
+                                const rows = rewardCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    formData.rewardCompensations.push({
+                                        landNumber: row.querySelector('td:nth-child(2) input')?.value || '',
+                                        rewardType: row.querySelector('.reward-type')?.value || '',
+                                        compensationStandard: row.querySelector('.select-reward-standard')?.textContent.match(/\d+(\.\d+)?/)?.[0] || '0',
+                                        area: row.querySelector('.reward-area')?.value || '',
+                                        compensationAmount: row.querySelector('.reward-amount')?.value || '',
+                                        remarks: ''
+                                    });
+                                });
+                            }
+                            
+                            // 获取已上传文件
+                            const uploadedFilesBody = document.getElementById('uploaded-files-body');
+                            if (uploadedFilesBody) {
+                                const rows = uploadedFilesBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    formData.uploadedFiles.push({
+                                        name: row.querySelector('td:nth-child(2) span')?.textContent || '',
+                                        size: row.querySelector('td:nth-child(3)')?.textContent || '',
+                                        uploadTime: row.querySelector('td:nth-child(4)')?.textContent || '',
+                                        uploader: row.querySelector('td:nth-child(5)')?.textContent || ''
+                                    });
+                                });
+                            }
+                            
+                            return formData;
+                        }
+                        
+                        // 在页面中添加预览模态框容器
+                        function addPreviewModal() {
+                            const modalHTML = `
+                                <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+                                    <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+                                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                            <h3 class="text-lg font-bold text-gray-800">征地信息预览</h3>
+                                            <button id="close-preview-modal" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                                <i class="fas fa-times text-lg"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex-1 overflow-auto">
+                                            <iframe id="preview-iframe" src="" class="w-full h-full border-0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.insertAdjacentHTML('beforeend', modalHTML);
+                             
+                            // 添加关闭模态框的事件监听
+                            document.getElementById('close-preview-modal').addEventListener('click', function() {
+                                document.getElementById('preview-modal').classList.add('hidden');
+                            });
+                             
+                            // 点击模态框背景也关闭
+                            document.getElementById('preview-modal').addEventListener('click', function(e) {
+                                if (e.target === this) {
+                                    this.classList.add('hidden');
+                                }
+                            });
+                        }
+                        
+                        // 添加预览模态框
+                        addPreviewModal();
+                        
+                        // 在主内容区显示预览
+                        const previewButton = document.getElementById('preview-button');
+                        console.log('预览按钮元素:', previewButton);
+                        
+                        // 为模态框添加更高的z-index确保可见
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            #preview-modal {
+                                z-index: 9999 !important;
+                                display: none;
+                            }
+                            #preview-modal.show {
+                                display: flex !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        
+                        if (previewButton) {
+                            previewButton.addEventListener('click', function() {
+                                console.log('预览按钮被点击');
+                                try {
+                                    // 使用let声明变量，以便可以重新赋值
+                                    let previewModal = document.getElementById('preview-modal');
+                                    let previewIframe = document.getElementById('preview-iframe');
+                                    
+                                    if (!previewModal || !previewIframe) {
+                                        console.error('未找到预览模态框或iframe元素');
+                                        // 如果模态框不存在，重新创建
+                                        addPreviewModal();
+                                        // 重新获取元素
+                                        previewModal = document.getElementById('preview-modal');
+                                        previewIframe = document.getElementById('preview-iframe');
+                                    }
+                                    
+                                    console.log('模态框元素:', previewModal);
+                                    console.log('iframe元素:', previewIframe);
+                                    
+                                    // 获取表单数据
+                                    let formData = getFormDataForPreview();
+                                    console.log('表单数据:', formData);
+                                    
+                                    // 如果没有地块数据，添加一些模拟数据以便预览
+                                    if (formData.landParcels.length === 0) {
+                                        console.log('添加模拟数据用于预览');
+                                        formData = {
+                                            basicInfo: {
+                                                projectName: '测试项目',
+                                                batchNumber: '2023-Batch-001',
+                                                landType: 'arable',
+                                                landDocumentNumber: 'DOC-2023-001',
+                                                approvalDate: '2023-09-25',
+                                                approvalDepartment: '国土局',
+                                                landArea: '10.5',
+                                                region: '测试区域',
+                                                remarks: '这是测试备注'
+                                            },
+                                            landParcels: [
+                                                {
+                                                    landNumber: 'TEST-001',
+                                                    area: '2.5',
+                                                    hasCropCompensation: true,
+                                                    hasLandReward: true,
+                                                    remarks: '测试地块1',
+                                                    owner: '张三'
+                                                },
+                                                {
+                                                    landNumber: 'TEST-002',
+                                                    area: '3.0',
+                                                    hasCropCompensation: false,
+                                                    hasLandReward: true,
+                                                    remarks: '测试地块2',
+                                                    owner: '李四'
+                                                }
+                                            ],
+                                            landCompensations: [
+                                                {
+                                                    landNumber: 'TEST-001',
+                                                    landType: '耕地',
+                                                    compensationStandard: '12000',
+                                                    area: '2.5',
+                                                    compensationAmount: '30000'
+                                                },
+                                                {
+                                                    landNumber: 'TEST-002',
+                                                    landType: '耕地',
+                                                    compensationStandard: '12000',
+                                                    area: '3.0',
+                                                    compensationAmount: '36000'
+                                                }
+                                            ],
+                                            cropCompensations: [
+                                                {
+                                                    landNumber: 'TEST-001',
+                                                    cropType: '水稻',
+                                                    compensationStandard: '5000',
+                                                    area: '2.5',
+                                                    compensationAmount: '12500'
+                                                }
+                                            ],
+                                            rewardCompensations: [
+                                                {
+                                                    landNumber: 'TEST-001',
+                                                    rewardType: '按时签约奖励',
+                                                    compensationStandard: '3000',
+                                                    area: '2.5',
+                                                    compensationAmount: '7500'
+                                                },
+                                                {
+                                                    landNumber: 'TEST-002',
+                                                    rewardType: '按时签约奖励',
+                                                    compensationStandard: '3000',
+                                                    area: '3.0',
+                                                    compensationAmount: '9000'
+                                                }
+                                            ],
+                                            summary: {
+                                                landCompensationAmount: '66000',
+                                                cropCompensationAmount: '12500',
+                                                landRewardAmount: '16500',
+                                                totalCompensation: '95000'
+                                            },
+                                            uploadedFiles: []
+                                        };
+                                        console.log('使用模拟数据:', formData);
+                                    }
+                                    
+                                    // 将表单数据转换为URL参数
+                                    const params = new URLSearchParams();
+                                    for (const [key, value] of Object.entries(formData)) {
+                                        params.append(key, JSON.stringify(value));
+                                    }
+                                    // 使用正确的相对路径
+                                    const url = `./land-form-preview.html?${params.toString()}`;
+                                    console.log('预览页面URL:', url);
+                                    
+                                    // 在模态框中显示预览
+                                    previewIframe.src = url;
+                                    
+                                    // 使用不同的方式显示模态框，确保生效
+                                    previewModal.classList.remove('hidden');
+                                    previewModal.classList.add('show');
+                                    previewModal.style.display = 'flex';
+                                    
+                                    console.log('模态框样式:', window.getComputedStyle(previewModal).display);
+                                    console.log('模态框类:', previewModal.className);
+                                    
+                                    // 添加延时检查，确保模态框确实显示
+                                    setTimeout(() => {
+                                        const computedStyle = window.getComputedStyle(previewModal);
+                                        console.log('延时后模态框显示状态:', computedStyle.display);
+                                        if (computedStyle.display === 'none' || computedStyle.display === '') {
+                                            console.error('模态框未能显示，可能被其他样式覆盖');
+                                            alert('预览模态框未能正常显示，请检查浏览器控制台获取更多信息');
+                                        }
+                                    }, 100);
+                                } catch (error) {
+                                    console.error('预览过程出错:', error);
+                                    alert('预览过程出错: ' + error.message);
+                                }
+                            });
+                        } else {
+                            console.error('未找到预览按钮元素');
+                        }
+                        
+                        // 计算总补偿金额
+                        function calculateTotalCompensation() {
+                            let landCompensation = 0;
+                            let cropCompensation = 0;
+                            let landReward = 0;
+                             
+                            // 获取土地补偿费用
+                            const landCompensationBody = document.getElementById('land-compensation-body');
+                            if (landCompensationBody) {
+                                const rows = landCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    const amountInput = row.querySelector('.compensation-amount');
+                                    if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                        landCompensation += parseFloat(amountInput.value);
+                                    }
+                                });
+                            }
+                             
+                            // 获取青苗补偿费
+                            const cropCompensationBody = document.getElementById('crop-compensation-body');
+                            if (cropCompensationBody) {
+                                const rows = cropCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    const amountInput = row.querySelector('.crop-amount');
+                                    if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                        cropCompensation += parseFloat(amountInput.value);
+                                    }
+                                });
+                            }
+                             
+                            // 获取征地奖励
+                            const rewardCompensationBody = document.getElementById('reward-compensation-body');
+                            if (rewardCompensationBody) {
+                                const rows = rewardCompensationBody.querySelectorAll('tr');
+                                rows.forEach(row => {
+                                    const amountInput = row.querySelector('.reward-amount');
+                                    if (amountInput && amountInput.value && !isNaN(amountInput.value)) {
+                                        landReward += parseFloat(amountInput.value);
+                                    }
+                                });
+                            }
+                             
+                            // 计算总金额（转换为元）
+                            const total = (landCompensation + cropCompensation + landReward) * 10000;
+                             
+                            // 更新显示
+                            document.getElementById('total-compensation').value = total.toFixed(2);
+                            document.getElementById('land-compensation-amount').value = (landCompensation * 10000).toFixed(2);
+                            document.getElementById('crop-compensation-amount').value = (cropCompensation * 10000).toFixed(2);
+                            document.getElementById('land-reward-amount').value = (landReward * 10000).toFixed(2);
+                        }
+                         
+                        // 文件上传功能增强
+                        document.getElementById('file-upload').addEventListener('change', function() {
+                            if (this.files.length > 0) {
+                                const uploadedFilesContainer = document.getElementById('uploaded-files');
+                                const uploadedFilesBody = document.getElementById('uploaded-files-body');
+                                const now = new Date();
+                                const dateString = now.getFullYear() + '-' + 
+                                                 String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                                                 String(now.getDate()).padStart(2, '0') + ' ' + 
+                                                 String(now.getHours()).padStart(2, '0') + ':' + 
+                                                 String(now.getMinutes()).padStart(2, '0');
+                                 
+                                Array.from(this.files).forEach(file => {
+                                    const fileSize = (file.size / (1024 * 1024)).toFixed(2) + 'MB';
+                                    const fileIcon = file.type.includes('pdf') ? 'fa-file-pdf text-red-500' : 
+                                                   file.type.includes('image') ? 'fa-file-image text-green-500' : 
+                                                   'fa-file text-gray-500';
+                                    
+                                    const newRow = document.createElement('tr');
+                                    const rowCount = uploadedFilesBody.children.length + 1;
+                                    
+                                    newRow.innerHTML = `
+                                        <td>${rowCount}</td>
+                                        <td class="flex items-center">
+                                            <i class="fas ${fileIcon} mr-2"></i>
+                                            <span class="text-sm text-gray-700">${file.name}</span>
+                                        </td>
+                                        <td>${fileSize}</td>
+                                        <td>${dateString}</td>
+                                        <td>当前用户</td>
+                                        <td>
+                                            <div class="flex space-x-2">
+                                                <button type="button" class="text-blue-500 hover:text-blue-700">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <button type="button" class="text-red-500 hover:text-red-700 delete-file">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    `;
+                                    
+                                    uploadedFilesBody.appendChild(newRow);
+                                });
+                                
+                                uploadedFilesContainer.classList.remove('hidden');
+                            }
+                        });
+        <!-- 返回按钮点击事件 -->
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            window.history.back();
+        });
+        
+        // 所属区域选择确认功能
+        document.getElementById('region-select').addEventListener('change', function(e) {
+            const selectedValue = e.target.value;
+            const selectedText = e.target.options[e.target.selectedIndex].text;
+            const currentValue = 'rongshui'; // 当前默认值
+            
+            // 如果选择了不同的区域
+            if (selectedValue !== currentValue) {
+                // 显示确认对话框
+                if (confirm('请确认是否将该条数据全部移动到新的区域下？')) {
+                    // 模拟数据移动操作
+                    // 在实际应用中，这里会执行数据移动的逻辑
+                    alert('数据已移动');
+                    
+                    // 显示保存提示
+                    setTimeout(() => {
+                        alert('数据已保存');
+                    }, 100);
+                } else {
+                    // 如果用户取消，恢复原来的选项
+                    e.target.value = currentValue;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

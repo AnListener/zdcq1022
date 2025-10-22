@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征地台账 - 征拆管理系统</title>
+    <!-- 本地CSS -->
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <!-- CDN作为备用 -->
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" id="cdn-css" onload="checkCDNLoad()" onerror="fallbackToLocal()">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" id="font-awesome-css" onload="checkFontAwesomeLoad()" onerror="fallbackToLocalStorage()">
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+        
+        // 检查CDN是否加载成功
+        function checkCDNLoad() {
+            // 创建一个测试元素来检测Tailwind是否加载成功
+            const test = document.createElement('div');
+            test.className = 'bg-blue-500';
+            test.style.visibility = 'hidden';
+            test.style.position = 'absolute';
+            document.body.appendChild(test);
+            
+            // 获取计算后的样式
+            const computedStyle = window.getComputedStyle(test);
+            const backgroundColor = computedStyle.backgroundColor;
+            
+            // 移除测试元素
+            document.body.removeChild(test);
+            
+            // 如果背景颜色不是蓝色，说明CDN没有正确加载
+            if (backgroundColor !== 'rgb(59, 130, 246)' && backgroundColor !== '#3b82f6') {
+                console.warn('CDN CSS failed to load, using local CSS');
+                fallbackToLocal();
+            } else {
+                console.log('CDN CSS loaded successfully');
+                // 隐藏本地CSS以避免冲突
+                document.getElementById('local-css').disabled = true;
+            }
+        }
+        
+        // CDN加载失败时的备用方案
+        function fallbackToLocal() {
+            console.log('Switching to local CSS fallback');
+            const cdnCSS = document.getElementById('cdn-css');
+            const localCSS = document.getElementById('local-css');
+            
+            if (cdnCSS) {
+                cdnCSS.disabled = true;
+            }
+            
+            if (localCSS) {
+                localCSS.disabled = false;
+            }
+        }
+        
+        // 检查Font Awesome是否加载成功
+        function checkFontAwesomeLoad() {
+            // 创建一个测试元素来检测Font Awesome是否加载成功
+            const test = document.createElement('i');
+            test.className = 'fas fa-home';
+            test.style.visibility = 'hidden';
+            test.style.position = 'absolute';
+            document.body.appendChild(test);
+            
+            // 获取计算后的样式
+            const computedStyle = window.getComputedStyle(test);
+            const fontFamily = computedStyle.fontFamily;
+            
+            // 移除测试元素
+            document.body.removeChild(test);
+            
+            // 如果字体族不包含Font Awesome，说明CDN没有正确加载
+            if (!fontFamily.includes('Font Awesome')) {
+                console.warn('Font Awesome failed to load from CDN');
+                fallbackToLocalStorage();
+            } else {
+                console.log('Font Awesome loaded successfully');
+            }
+        }
+        
+        // Font Awesome加载失败时的备用方案
+        function fallbackToLocalStorage() {
+            console.log('Using localStorage for icons');
+            // 这里可以添加本地SVG图标或CSS图标
+        }
+        
+        // 页面加载完成后检查CSS是否加载成功
+        window.addEventListener('load', function() {
+            // 延迟检查以确保样式完全应用
+            setTimeout(checkCDNLoad, 100);
+            setTimeout(checkFontAwesomeLoad, 100);
+        });
+        
+        // 网络错误处理
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'LINK' && e.target.id === 'cdn-css') {
+                console.warn('CDN CSS failed to load, using local CSS');
+                fallbackToLocal();
+            } else if (e.target.tagName === 'LINK' && e.target.id === 'font-awesome-css') {
+                console.warn('Font Awesome failed to load, using localStorage');
+                fallbackToLocalStorage();
+            }
+        }, true);
+    </script>
+    <style>
+        /* 区域树样式 */
+        .tree-node:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tree-node.active {
+            background-color: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .tree-children {
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-container {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+        }
+        
+        .region-tree-container.region-tree-collapsed {
+            width: 0;
+            padding: 0;
+            border: none;
+            overflow: visible;
+        }
+        
+        .region-tree-container.region-tree-collapsed > *:not(.region-tree-toggle) {
+            display: none;
+        }
+        
+        .region-tree-toggle {
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-toggle:hover {
+            background: #f9fafb;
+        }
+        
+        /* 折叠按钮旋转动画 */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+        
+        /* 骨架屏动画 */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        .skeleton-loading {
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                征地台账
+            </h1>
+            <p class="text-gray-600 mt-2">管理征地相关信息台账</p>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="flex flex-1 overflow-hidden mt-6 gap-4 transition-all duration-300">
+            <!-- 左侧地区分类树 -->
+            <div class="region-tree-container w-80 sm:w-72 md:w-80 bg-white rounded-lg shadow-sm p-4 flex-shrink-0 transition-all duration-300 relative">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                    <h2 class="font-bold text-gray-800 text-lg">区域选择</h2>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">共128项</span>
+                </div>
+                
+                <!-- 折叠按钮 -->
+                <div class="region-tree-toggle" id="region-tree-toggle" title="折叠/展开地区分类">
+                    <i class="fas fa-chevron-left text-xs text-gray-500"></i>
+                </div>
+                
+                <!-- 项目选择下拉 -->
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择项目</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="project-selector">
+                        <option value="all">全部项目</option>
+                        <option value="project1">融罗高速项目</option>
+                    </select>
+                </div>
+                
+                <!-- 行政区域树 -->
+                <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    <!-- 柳州-融水县-融水镇 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-100 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                <span class="font-medium text-gray-800">柳州-融水县-融水镇</span>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-3 py-1 font-medium">78</span>
+                        </div>
+                    </div>
+                    <!-- 柳北区 -->
+                    <div class="tree-node rounded-lg">
+                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-100 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                <span class="text-gray-700">柳北区</span>
+                            </div>
+                            <span class="text-xs bg-red-100 text-red-800 rounded-full px-2 py-1 font-medium">48</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧内容区域 -->
+            <div id="main-content-area" class="flex-1 bg-white rounded-lg shadow-sm transition-all duration-300 overflow-hidden">
+                <!-- 筛选条件区域 -->
+                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="font-bold text-gray-800">筛选条件</h2>
+                        <button id="collapse-filter-btn" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-chevron-up transition-transform duration-200"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">姓名、身份证、地块编号</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入姓名、身份证或地块编号">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">权属人类型</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">全部</option>
+                                <option value="individual">个人</option>
+                                <option value="collective">集体</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">批次选择</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">全部批次</option>
+                                <option value="batch1">第1批次</option>
+                                <option value="batch2">第2批次</option>
+                                <option value="batch3">第3批次</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">记录状态</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">全部状态</option>
+                                <option value="toPublish">待公示</option>
+                                <option value="toAudit">待审核</option>
+                                <option value="audited">已审核</option>
+                                <option value="toSettle">待结算</option>
+                                <option value="settled">已结算</option>
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-2 lg:col-span-4 flex justify-end space-x-3">
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-redo-alt mr-1"></i> 重置
+                            </button>
+                            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-search mr-1"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 统计信息 -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold mb-4 text-center">数据统计：G7221衡阳-南宁公路（融安至罗城段）融水段-融水县融水镇三合村金鸡屯-第1批次 </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-700">已录征地户数（户）</p>
+                            <p class="text-2xl font-bold text-blue-900">190</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-700">已录地块数（块）</p>
+                            <p class="text-2xl font-bold text-green-900">2509</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-yellow-700">已录征地面积</p>
+                            <p class="text-2xl font-bold text-yellow-900">1895.90亩</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <p class="text-sm text-purple-700">补偿总金额（元）</p>
+                            <p class="text-2xl font-bold text-purple-900">¥85,000,000</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <p class="text-sm text-red-700">待审核数（条）</p>
+                            <p class="text-2xl font-bold text-red-900">71</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮区域 -->
+                <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center bg-white">
+                    <div class="flex space-x-3">
+                        <button id="add-land-btn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-plus mr-1"></i> 新增征地记录
+                        </button>
+                        <button id="delete-land-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            <i class="fas fa-trash-alt mr-1"></i> 批量删除
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-file-export mr-1"></i> 导出数据
+                        </button>
+                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-file-import mr-1"></i> 导入数据
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 数据表格 -->
+                <div class="overflow-x-auto bg-white">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属区域</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">地块编号</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">权属单位/人</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">权属类型</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">面积(亩)</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">补偿金额(元)</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">记录状态</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">1</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">TD-2024-001</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">张三</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">个人</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">3.5000</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">238000.00</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        待公示
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye mr-1"></i>查看
+                                    </button>
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                        <i class="fas fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬自治县</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">TD-2024-002</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">李四</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">个人</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2.8000</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">426000.00</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        待公示
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye mr-1"></i>查看
+                                    </button>
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                        <i class="fas fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">3</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">鱼峰区</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">TD-2024-003</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">王五</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">个人</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5.2000</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">348000.00</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        待审核
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye mr-1"></i>查看
+                                    </button>
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                        <i class="fas fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">4</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">城中区</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">TD-2024-004</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">集体</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">8.6000</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">185000.00</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        已审核
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye mr-1"></i>查看
+                                    </button>
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                        <i class="fas fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">柳北区</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">TD-2024-005</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">个人</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">4.1000</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">279000.00</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                        待结算
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye mr-1"></i>查看
+                                    </button>
+                                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                        <i class="fas fa-edit mr-1"></i>编辑
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        显示第 1 到 5 条记录，共 128 条记录
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 rounded bg-blue-500 text-white">1</button>
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">4</button>
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">5</button>
+                        <button class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 新增征地模态框容器 - 全屏显示 -->
+                <div id="new-land-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modal-backdrop"></div>
+                    <div class="w-full max-w-7xl max-h-[90vh] bg-white rounded-lg shadow-xl z-10 overflow-hidden">
+                        <!-- 这里将通过JavaScript动态加载新增征地表单内容 -->
+                        <div id="modal-content" class="h-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let currentModalMode = ''; // 'add', 'edit', 'view', 'import'
+        let currentRecordId = '';
+        
+        // 区域树展开/折叠功能
+        function selectTreeNode(nodeId) {
+            const arrow = document.getElementById(nodeId + '-arrow');
+            const children = document.getElementById(nodeId + '-children');
+            
+            if (arrow && children) {
+                if (children.style.display === 'none') {
+                    children.style.display = 'block';
+                    arrow.classList.add('rotate-180');
+                } else {
+                    children.style.display = 'none';
+                    arrow.classList.remove('rotate-180');
+                }
+            }
+        }
+        
+        function selectSubTreeNode(parentId, childId) {
+            // 模拟选择子节点后的操作
+            console.log('Selected child node:', parentId, childId);
+        }
+        
+        // 地区分类树折叠/展开
+        document.getElementById('region-tree-toggle').addEventListener('click', function() {
+            const regionTree = document.querySelector('.region-tree-container');
+            const mainContent = document.getElementById('main-content-area');
+            const arrow = this.querySelector('i');
+            
+            if (regionTree.classList.contains('region-tree-collapsed')) {
+                regionTree.classList.remove('region-tree-collapsed');
+                arrow.classList.remove('rotate-180');
+                mainContent.classList.remove('w-full');
+            } else {
+                regionTree.classList.add('region-tree-collapsed');
+                arrow.classList.add('rotate-180');
+                mainContent.classList.add('w-full');
+            }
+        });
+        
+        // 筛选条件展开/折叠
+        document.getElementById('collapse-filter-btn').addEventListener('click', function() {
+            const filterForm = document.getElementById('filter-form');
+            const arrow = this.querySelector('i');
+            
+            if (filterForm.style.display === 'none') {
+                filterForm.style.display = 'grid';
+                arrow.classList.remove('rotate-180');
+            } else {
+                filterForm.style.display = 'none';
+                arrow.classList.add('rotate-180');
+            }
+        });
+        
+        // 筛选条件重置功能
+        document.querySelector('.px-4.py-2.border.border-gray-300.rounded-lg.text-gray-700').addEventListener('click', function() {
+            const formInputs = document.querySelectorAll('#filter-form input, #filter-form select');
+            formInputs.forEach(input => {
+                if (input.type === 'select-one') {
+                    input.value = 'all';
+                } else {
+                    input.value = '';
+                }
+            });
+        });
+        
+        // 初始化功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const addLandBtn = document.getElementById('add-land-btn');
+            const deleteLandBtn = document.getElementById('delete-land-btn');
+            const newLandModal = document.getElementById('new-land-modal');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const modalContent = document.getElementById('modal-content');
+            
+            // 点击新增征地按钮，加载表单并显示模态框
+            addLandBtn.addEventListener('click', function() {
+                openModal('add');
+            });
+            
+            // 点击批量删除按钮
+            deleteLandBtn.addEventListener('click', function() {
+                const selectedCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+                if (selectedCheckboxes.length === 0) {
+                    alert('请至少选择一条记录进行删除');
+                    return;
+                }
+                
+                if (confirm(`确定要删除选中的 ${selectedCheckboxes.length} 条记录吗？此操作不可撤销。`)) {
+                    // 在实际应用中，这里会发送删除请求到服务器
+                    alert(`已成功删除 ${selectedCheckboxes.length} 条记录`);
+                    // 刷新页面或更新列表
+                    // location.reload();  // 或者局部更新列表
+                }
+            });
+            
+            // 为表格中的操作按钮添加事件监听
+            addTableActionListeners();
+            
+            // 为全选复选框添加事件监听
+            document.querySelector('thead input[type="checkbox"]').addEventListener('change', function() {
+                const isChecked = this.checked;
+                document.querySelectorAll('tbody input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateDeleteButtonState();
+            });
+            
+            // 为单个复选框添加事件监听
+            document.querySelectorAll('tbody input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateDeleteButtonState);
+            });
+            
+            // 点击模态框背景关闭模态框
+            modalBackdrop.addEventListener('click', function() {
+                closeModal();
+            });
+            
+            // 初始化删除按钮状态
+            updateDeleteButtonState();
+        });
+        
+        // 打开模态框函数
+    function openModal(mode, recordId = '') {
+        // 对于导出、导入、新增和编辑操作，直接页面跳转而不是打开模态框
+        if (mode === 'export') {
+            // 直接跳转到导出数据预览页面
+            window.location.href = 'export-data-preview.html';
+            return;
+        } else if (mode === 'import') {
+            // 直接跳转到导入数据表单页面
+            window.location.href = 'import-data-form.html';
+            return;
+        } else if (mode === 'add') {
+            // 直接跳转到新增征地表单页面
+            window.location.href = 'new-land-form.html';
+            return;
+        } else if (mode === 'edit') {
+            // 直接跳转到新增征地表单页面（编辑模式）
+            window.location.href = 'new-land-form.html';
+            return;
+        } else if (mode === 'view') {
+            // 直接跳转到新增征地表单页面（查看模式）
+            window.location.href = 'new-land-form.html';
+            return;
+        }
+        
+        console.error('未知的模态框模式:', mode);
+    }
+        
+        // 关闭模态框函数
+    function closeModal() {
+        const newLandModal = document.getElementById('new-land-modal');
+        const modalContent = document.getElementById('modal-content');
+        
+        newLandModal.classList.add('hidden');
+        modalContent.innerHTML = '';
+        currentModalMode = '';
+        currentRecordId = '';
+    }
+    
+    // 供iframe调用的关闭函数
+    window.closeNewLandForm = function() {
+        closeModal();
+    };
+    
+    // 供iframe调用的刷新数据函数
+    window.refreshTableData = function() {
+        // 模拟刷新数据
+        alert('数据已更新，正在刷新表格...');
+        // 在实际应用中，这里会重新加载表格数据
+    };
+        
+        // 填充表单数据函数
+    function fillFormData(recordId, mode) {
+        // 在实际应用中，这里会根据recordId从服务器获取数据
+        // 这里我们使用模拟数据来演示功能
+        
+        // 查找对应的行数据
+        const rows = document.querySelectorAll('tbody tr');
+        let rowData = null;
+        
+        for (let row of rows) {
+            const landNumber = row.querySelector('td:nth-child(4)').textContent;
+            if (landNumber === recordId) {
+                rowData = {
+                    region: row.querySelector('td:nth-child(3)').textContent,
+                    landNumber: landNumber,
+                    owner: row.querySelector('td:nth-child(5)').textContent,
+                    ownerType: row.querySelector('td:nth-child(6)').textContent,
+                    area: row.querySelector('td:nth-child(7)').textContent,
+                    compensation: row.querySelector('td:nth-child(8)').textContent,
+                    status: row.querySelector('td:nth-child(9) span').textContent.trim()
+                };
+                break;
+            }
+        }
+        
+        if (!rowData) {
+            console.warn('未找到记录ID对应的数据:', recordId);
+            return;
+        }
+        
+        // 填充表单数据
+        const modalContent = document.getElementById('modal-content');
+        
+        // 填充基础信息
+        if (mode === 'edit' || mode === 'view') {
+            // 设置表单字段的值
+            const regionSelect = modalContent.querySelector('select[required]');
+            if (regionSelect) {
+                // 根据区域文本设置对应的选项
+                const regionText = rowData.region;
+                if (regionText.includes('融水')) {
+                    regionSelect.value = 'rongshui';
+                } else if (regionText.includes('罗城')) {
+                    regionSelect.value = 'luocheng';
+                } else if (regionText.includes('鱼峰')) {
+                    regionSelect.value = 'yufeng';
+                } else if (regionText.includes('城中')) {
+                    regionSelect.value = 'chengzhong';
+                } else if (regionText.includes('柳北')) {
+                    regionSelect.value = 'liubei';
+                }
+            }
+            
+            // 填充权属人姓名
+            const ownerInput = modalContent.querySelector('input[placeholder="请输入权属单位或个人姓名"]');
+            if (ownerInput) {
+                ownerInput.value = rowData.owner;
+            }
+            
+            // 填充权属人类型
+            const ownerTypeSelect = modalContent.querySelectorAll('select[required]')[1]; // 第二个select是权属人类型
+            if (ownerTypeSelect) {
+                if (rowData.ownerType === '个人') {
+                    ownerTypeSelect.value = 'personal';
+                } else if (rowData.ownerType === '集体') {
+                    ownerTypeSelect.value = 'collective';
+                }
+            }
+            
+            // 填充地块信息
+            const landTableBody = modalContent.querySelector('#land-info-table-body');
+            if (landTableBody && landTableBody.children.length > 0) {
+                const firstRow = landTableBody.children[0];
+                const landNumberInput = firstRow.querySelector('input[type="text"]');
+                const areaInput = firstRow.querySelector('input[type="number"]');
+                
+                if (landNumberInput) {
+                    landNumberInput.value = rowData.landNumber;
+                }
+                
+                if (areaInput) {
+                    areaInput.value = rowData.area;
+                }
+            }
+            
+            // 如果是查看模式，还需要隐藏保存按钮
+            if (mode === 'view') {
+                const saveBtn = modalContent.querySelector('#save-form-btn');
+                if (saveBtn) {
+                    saveBtn.style.display = 'none';
+                }
+            }
+        }
+    }
+        
+        // 为模态框内的按钮添加事件监听
+        function addModalEventListeners() {
+            const modalContent = document.getElementById('modal-content');
+            
+            // 关闭按钮
+            const closeBtn = modalContent.querySelector('#close-form-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+            
+            // 取消按钮
+            const cancelBtn = modalContent.querySelector('#cancel-form-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeModal);
+            }
+            
+            // 保存/提交按钮
+            const saveBtn = modalContent.querySelector('#save-form-btn');
+            const submitBtn = modalContent.querySelector('#submit-form-btn');
+            const submitElement = saveBtn || submitBtn;
+            
+            if (submitElement && currentModalMode !== 'view') {
+                submitElement.addEventListener('click', function() {
+                    const form = modalContent.querySelector('#new-land-form');
+                    if (form) {
+                        // 表单验证
+                        if (form.checkValidity()) {
+                            // 在实际应用中，这里会处理表单提交逻辑
+                            const operationType = currentModalMode === 'add' ? '添加' : '更新';
+                            alert(`征地信息已成功${operationType}！`);
+                            closeModal();
+                            
+                            // 刷新页面或更新列表
+                            // location.reload();  // 或者局部更新列表
+                        } else {
+                            // 手动触发浏览器的默认验证行为
+                            form.reportValidity();
+                        }
+                    }
+                });
+            }
+            
+            // 实现标签页切换功能
+            const tabButtons = modalContent.querySelectorAll('.tab-button');
+            const tabContents = modalContent.querySelectorAll('.tab-content');
+            
+            if (tabButtons.length > 0 && tabContents.length > 0) {
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const tabId = this.getAttribute('data-tab');
+                        
+                        // 移除所有标签页按钮的激活状态
+                        tabButtons.forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        
+                        // 隐藏所有标签页内容
+                        tabContents.forEach(content => {
+                            content.classList.add('hidden');
+                        });
+                        
+                        // 激活当前点击的标签页按钮
+                        this.classList.add('active');
+                        // 显示对应的标签页内容
+                        const activeContent = modalContent.querySelector('#' + tabId);
+                        if (activeContent) {
+                            activeContent.classList.remove('hidden');
+                        }
+                    });
+                });
+            }
+            
+            // 阻止模态框内的点击事件冒泡到背景
+            modalContent.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+            
+            // 添加表单字段联动功能
+            const landTypeSelect = modalContent.querySelector('select[name="land-type"]');
+            const compensationStandardInput = modalContent.querySelector('input[placeholder="保留两位小数"]');
+            
+            if (landTypeSelect && compensationStandardInput) {
+                landTypeSelect.addEventListener('change', function() {
+                    // 根据土地性质自动填充补偿标准
+                    if (this.value === 'arable') {
+                        compensationStandardInput.value = '65500';
+                    } else if (this.value === 'construction') {
+                        compensationStandardInput.value = '12800';
+                    } else if (this.value === 'unused') {
+                        compensationStandardInput.value = '30200';
+                    } else {
+                        compensationStandardInput.value = '';
+                    }
+                    
+                    // 如果有计算总金额的函数，在这里调用
+                    // calculateTotalCompensation();
+                });
+            }
+            
+            // 地块表格的添加和删除行功能
+            const addLandRowBtn = modalContent.querySelector('#add-land-row');
+            if (addLandRowBtn) {
+                addLandRowBtn.addEventListener('click', function() {
+                    const tableBody = modalContent.querySelector('#land-info-table-body');
+                    const rowCount = tableBody.children.length + 1;
+                    
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td class="sequential-number">${rowCount}</td>
+                        <td><input type="text" placeholder="格式：TD-YYYY-XXX" required></td>
+                        <td><input type="number" step="0.0001" placeholder="保留四位小数" required></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="text" placeholder="请输入备注信息"></td>
+                        <td><button type="button" class="text-red-500 hover:text-red-700 delete-row">删除</button></td>
+                    `;
+                    
+                    tableBody.appendChild(newRow);
+                    
+                    // 为新添加的删除按钮添加事件
+                    newRow.querySelector('.delete-row').addEventListener('click', function() {
+                        newRow.remove();
+                        updateSequentialNumbers(modalContent);
+                    });
+                });
+            }
+        }
+        
+        // 为表格中的操作按钮添加事件监听
+        function addTableActionListeners() {
+            // 查看按钮
+            document.querySelectorAll('button:has(.fa-eye)').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const recordId = row.querySelector('td:nth-child(4)').textContent; // 使用地块编号作为记录ID
+                    // 跳转到新的查看页面
+                    window.location.href = 'land-record-view.html?recordId=' + encodeURIComponent(recordId);
+                });
+            });
+            
+            // 编辑按钮
+            document.querySelectorAll('button:has(.fa-edit)').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const recordId = row.querySelector('td:nth-child(4)').textContent; // 使用地块编号作为记录ID
+                    // 直接跳转到新增征地表单页面（编辑模式通过URL参数传递记录ID）
+                    window.location.href = 'new-land-form.html?mode=edit&recordId=' + encodeURIComponent(recordId);
+                });
+            });
+            
+            // 删除按钮
+            document.querySelectorAll('button:has(.fa-trash)').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const recordId = row.querySelector('td:nth-child(4)').textContent; // 使用地块编号作为记录ID
+                    const ownerName = row.querySelector('td:nth-child(6)').textContent;
+                    
+                    if (confirm(`确定要删除 ${ownerName} 的征地记录（${recordId}）吗？此操作不可撤销。`)) {
+                        // 在实际应用中，这里会发送删除请求到服务器
+                        alert(`已成功删除征地记录（${recordId}）`);
+                        // 刷新页面或更新列表
+                        // location.reload();  // 或者局部更新列表
+                    }
+                });
+            });
+            
+            // 导出数据按钮
+        document.querySelector('button:has(.fa-file-export)').addEventListener('click', function() {
+            // 直接跳转到导出数据预览页面
+            window.location.href = 'export-data-preview.html';
+        });
+        
+        // 导入数据按钮
+        document.querySelector('button:has(.fa-file-import)').addEventListener('click', function() {
+            // 直接跳转到导入数据表单页面
+            window.location.href = 'import-data-form.html';
+        });
+        }
+        
+        // 更新批量删除按钮状态
+        function updateDeleteButtonState() {
+            const selectedCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+            const deleteLandBtn = document.getElementById('delete-land-btn');
+            
+            if (selectedCheckboxes.length > 0) {
+                deleteLandBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                deleteLandBtn.disabled = false;
+            } else {
+                deleteLandBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                deleteLandBtn.disabled = true;
+            }
+        }
+        
+        // 更新序号
+        function updateSequentialNumbers(context = document) {
+            const rows = context.querySelectorAll('.sequential-number');
+            rows.forEach((cell, index) => {
+                cell.textContent = index + 1;
+            });
+        }
+        
+        // 暴露给子窗口的方法
+        window.closeNewLandForm = closeModal;
+    </script>
+</body>
+</html>

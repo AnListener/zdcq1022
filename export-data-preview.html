@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导出数据预览 - 征拆管理系统</title>
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 主内容区全屏显示样式 */
+        .page-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        .page-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: white;
+        }
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        /* Excel预览样式 */
+        .excel-container {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        .excel-header {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .excel-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .excel-subtitle {
+            color: #6c757d;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+        .excel-table th {
+            background-color: #d0e3f4;
+            color: #165dac;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #c7d2fe;
+            position: sticky;
+            top: 0;
+        }
+        .excel-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        .excel-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .excel-footer {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body class="bg-transparent">
+    <div class="page-container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h2 class="page-title">导出数据预览</h2>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <div class="excel-container">
+                <!-- 表单头部 -->
+                <div class="excel-header">
+                    <h2 class="excel-title">征地补偿明细表</h2>
+                    <p class="excel-subtitle">项目名称：G7221衡阳-南宁公路（融安至罗城段）融水段</p>
+                    <p class="excel-subtitle">批次：第1批次 | 生成时间：2024-09-25 14:30:22</p>
+                </div>
+        
+        <!-- 选择报表类型 -->
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <label class="block text-sm font-medium text-gray-700 mb-2">请选择报表类型：</label>
+            <div class="flex flex-wrap gap-3">
+                <button id="type-detail" class="px-4 py-2 bg-blue-500 text-white rounded-lg transition-colors">
+                    <i class="fas fa-list-ol mr-1"></i> 费用明细表
+                </button>
+                <button id="type-public" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    <i class="fas fa-bullhorn mr-1"></i> 公示表
+                </button>
+                <button id="type-summary" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    <i class="fas fa-chart-bar mr-1"></i> 汇总表
+                </button>
+            </div>
+        </div>
+        
+        <!-- Excel样式预览区域 -->
+        <div class="p-4 overflow-x-auto">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>所属区域</th>
+                        <th>地块编号</th>
+                        <th>地块数量</th>
+                        <th>权属单位/人</th>
+                        <th>权属类型</th>
+                        <th>面积(亩)</th>
+                        <th>土地性质</th>
+                        <th>补偿标准(元/亩)</th>
+                        <th>补偿金额(元)</th>
+                        <th>地上附着物</th>
+                        <th>青苗补偿</th>
+                        <th>记录状态</th>
+                        <th>批次</th>
+                        <th>备注</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 模拟数据行 -->
+                    <tr>
+                        <td>1</td>
+                        <td>融水苗族自治县</td>
+                        <td>TD-2024-001</td>
+                        <td>1</td>
+                        <td>张三</td>
+                        <td>个人</td>
+                        <td>3.5000</td>
+                        <td>耕地</td>
+                        <td>68000</td>
+                        <td>238000.00</td>
+                        <td>有</td>
+                        <td>有</td>
+                        <td>待公示</td>
+                        <td>第1批次</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>罗城仫佬自治县</td>
+                        <td>TD-2024-002</td>
+                        <td>2</td>
+                        <td>李四</td>
+                        <td>个人</td>
+                        <td>2.8000</td>
+                        <td>耕地</td>
+                        <td>68000</td>
+                        <td>190400.00</td>
+                        <td>有</td>
+                        <td>有</td>
+                        <td>待公示</td>
+                        <td>第1批次</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>鱼峰区</td>
+                        <td>TD-2024-003</td>
+                        <td>1</td>
+                        <td>王五</td>
+                        <td>个人</td>
+                        <td>5.2000</td>
+                        <td>建设用地</td>
+                        <td>65000</td>
+                        <td>338000.00</td>
+                        <td>有</td>
+                        <td>无</td>
+                        <td>待审核</td>
+                        <td>第1批次</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>城中区</td>
+                        <td>TD-2024-004</td>
+                        <td>3</td>
+                        <td>赵六</td>
+                        <td>集体</td>
+                        <td>8.6000</td>
+                        <td>未利用地</td>
+                        <td>30200</td>
+                        <td>259720.00</td>
+                        <td>无</td>
+                        <td>无</td>
+                        <td>已审核</td>
+                        <td>第1批次</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>柳北区</td>
+                        <td>TD-2024-005</td>
+                        <td>2</td>
+                        <td>孙七</td>
+                        <td>个人</td>
+                        <td>4.3000</td>
+                        <td>耕地</td>
+                        <td>68000</td>
+                        <td>292400.00</td>
+                        <td>有</td>
+                        <td>有</td>
+                        <td>待结算</td>
+                        <td>第1批次</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+                <!-- 表单操作按钮 -->
+                <div class="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+                    <div class="flex space-x-2">
+                        <button id="preview-print-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-print mr-1"></i> 打印预览
+                        </button>
+                        <button id="export-setting-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-cog mr-1"></i> 导出设置
+                        </button>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="cancel-export-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-times mr-1"></i> 取消
+                        </button>
+                        <button id="confirm-export-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fas fa-file-excel mr-1"></i> 确认导出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    </div>
+    
+    <script>
+        // 报表类型切换
+        document.getElementById('type-detail').addEventListener('click', function() {
+            // 更新按钮状态
+            document.querySelectorAll('#type-detail, #type-public, #type-summary').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            this.classList.add('bg-blue-500', 'text-white');
+            
+            // 在实际应用中，这里会加载不同类型的报表数据
+        });
+        
+        document.getElementById('type-public').addEventListener('click', function() {
+            // 更新按钮状态
+            document.querySelectorAll('#type-detail, #type-public, #type-summary').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            this.classList.add('bg-blue-500', 'text-white');
+            
+            // 在实际应用中，这里会加载不同类型的报表数据
+        });
+        
+        document.getElementById('type-summary').addEventListener('click', function() {
+            // 更新按钮状态
+            document.querySelectorAll('#type-detail, #type-public, #type-summary').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            this.classList.add('bg-blue-500', 'text-white');
+            
+            // 在实际应用中，这里会加载不同类型的报表数据
+        });
+        
+        // 打印预览按钮
+        document.getElementById('preview-print-btn').addEventListener('click', function() {
+            alert('正在准备打印预览...');
+            // 在实际应用中，这里会触发打印预览
+        });
+        
+        // 导出设置按钮
+        document.getElementById('export-setting-btn').addEventListener('click', function() {
+            alert('打开导出设置...');
+            // 在实际应用中，这里会打开导出设置面板
+        });
+        
+        // 取消按钮
+        document.getElementById('cancel-export-btn').addEventListener('click', function() {
+            // 在主内容区全屏显示模式下，返回上一页
+            window.history.back();
+        });
+        
+
+        
+        // 确认导出按钮
+        document.getElementById('confirm-export-btn').addEventListener('click', function() {
+            // 显示导出进度
+            const confirmBtn = this;
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 导出中...';
+            
+            // 模拟导出过程
+            setTimeout(() => {
+                alert('数据导出成功！文件已保存到您的下载文件夹。');
+                
+                // 恢复按钮状态
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalText;
+                
+                // 在主内容区全屏显示模式下，返回上一页
+                window.history.back();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

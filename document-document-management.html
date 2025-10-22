@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>征拆资料管理 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./styles.css" rel="stylesheet" id="local-css">
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                征拆资料管理
+            </h1>
+            <p class="text-gray-600 mt-2">管理征拆过程中的各类资料文档，包括前期测绘资料、过程记录、协议凭证等</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 左侧分类导航 -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-lg p-6 h-full">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">资料分类</h2>
+                    <div class="space-y-1">
+                        <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer bg-blue-50">
+                            <i class="fas fa-folder text-blue-500 mr-2"></i>
+                            <span class="text-gray-800">全部资料</span>
+                            <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">128</span>
+                        </div>
+                        <div class="ml-4 space-y-1">
+                            <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-file-image text-green-500 mr-2"></i>
+                                <span class="text-gray-700">征拆前期资料</span>
+                                <span class="ml-auto bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">36</span>
+                            </div>
+                            <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-file-alt text-indigo-500 mr-2"></i>
+                                <span class="text-gray-700">户主信息</span>
+                                <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">28</span>
+                            </div>
+                            <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-file-signature text-purple-500 mr-2"></i>
+                                <span class="text-gray-700">现场记录表</span>
+                                <span class="ml-auto bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">19</span>
+                            </div>
+                            <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-file-contract text-red-500 mr-2"></i>
+                                <span class="text-gray-700">协议文档</span>
+                                <span class="ml-auto bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">24</span>
+                            </div>
+                            <div class="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-receipt text-yellow-500 mr-2"></i>
+                                <span class="text-gray-700">支付凭证</span>
+                                <span class="ml-auto bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">21</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快速访问 -->
+                    <h2 class="text-lg font-bold text-gray-800 mt-6 mb-4">快速访问</h2>
+                    <div class="space-y-2">
+                        <button class="w-full flex items-center p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-clock text-gray-500 mr-2"></i>
+                            <span class="text-gray-700">最近访问</span>
+                        </button>
+                        <button class="w-full flex items-center p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-star text-gray-500 mr-2"></i>
+                            <span class="text-gray-700">收藏夹</span>
+                        </button>
+                        <button class="w-full flex items-center p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-trash text-gray-500 mr-2"></i>
+                            <span class="text-gray-700">回收站</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧内容区域 -->
+            <div class="lg:w-3/4">
+                <!-- 折叠控制按钮 -->
+                <div class="mb-4 flex space-x-2">
+                    <button id="toggle-filters" class="flex items-center text-sm text-gray-600 hover:text-gray-900 bg-white px-3 py-1 rounded-lg shadow">
+                        <i class="fas fa-filter mr-1"></i>
+                        筛选条件
+                        <i class="fas fa-chevron-up ml-1 text-xs transition-transform duration-300" id="filter-arrow"></i>
+                    </button>
+                    <button class="flex items-center text-sm text-gray-600 hover:text-gray-900 bg-white px-3 py-1 rounded-lg shadow">
+                        <i class="fas fa-sliders-h mr-1"></i>
+                        高级搜索
+                    </button>
+                </div>
+
+                <!-- 筛选区域 -->
+                <div id="filter-section" class="bg-white rounded-xl shadow-lg p-6 mb-6 transition-all duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">项目名称</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>全部项目</option>
+                                <option>融水县征地补偿项目</option>
+                                <option>罗城县房屋拆迁项目</option>
+                                <option>融水县附着物补偿项目</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">资料类型</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>全部类型</option>
+                                <option>图片</option>
+                                <option>文档</option>
+                                <option>PDF</option>
+                                <option>视频</option>
+                                <option>其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">上传时间</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">上传人</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入上传人">
+                        </div>
+                        <div class="flex items-end space-x-2">
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-search mr-1"></i>搜索
+                            </button>
+                            <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-redo mr-1"></i>重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮区域 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                        <div class="flex space-x-2">
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-plus mr-1"></i>新增资料
+                            </button>
+                            <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-upload mr-1"></i>批量上传
+                            </button>
+                            <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-folder-plus mr-1"></i>新建分类
+                            </button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-trash mr-1"></i>删除所选
+                            </button>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-download mr-1"></i>下载所选
+                            </button>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-share-alt mr-1"></i>分享
+                            </button>
+                            <div class="relative">
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <i class="fas fa-ellipsis-h mr-1"></i>更多
+                                    <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 资料列表 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-800">资料列表</h2>
+                            <div class="flex space-x-2">
+                                <button class="p-2 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">资料名称</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">所属项目</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传人</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传时间</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">大小</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- 资料1 -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">融水县征地红线图.pdf</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">PDF</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水县征地补偿项目</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">张三</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-09-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2.5 MB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-download mr-1"></i>下载
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- 资料2 -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-image text-green-500 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">房屋现状照片.jpg</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">图片</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城县房屋拆迁项目</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">李四</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-09-14</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1.8 MB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-download mr-1"></i>下载
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- 资料3 -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-word text-blue-500 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">户主信息登记表.docx</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">文档</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水县征地补偿项目</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">王五</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-09-12</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">0.5 MB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-download mr-1"></i>下载
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- 资料4 -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">现场测量记录表.xlsx</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">表格</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">罗城县房屋拆迁项目</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-09-10</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">0.3 MB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-download mr-1"></i>下载
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- 资料5 -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-contract text-purple-500 mr-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">征地补偿协议.pdf</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">PDF</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">融水县附着物补偿项目</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-09-08</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1.2 MB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-download mr-1"></i>下载
+                                        </button>
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>删除
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 分页控件 -->
+                    <div class="px-6 py-4 border-t border-gray-200 bg-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    上一页
+                                </button>
+                                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    下一页
+                                </button>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        显示第 <span class="font-medium">1</span> 到 <span class="font-medium">5</span> 条，共 <span class="font-medium">128</span> 条结果
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">上一页</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                            1
+                                        </button>
+                                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                            2
+                                        </button>
+                                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                            3
+                                        </button>
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                            ...
+                                        </span>
+                                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                            26
+                                        </button>
+                                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">下一页</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="./document-management.js" defer></script>
+</body>
+</html>

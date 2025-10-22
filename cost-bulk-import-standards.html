@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量导入补偿标准 - 高速公路征地拆迁管理系统</title>
+    <!-- 本地CSS -->
+    <link href="./styles.css" rel="stylesheet">
+    <!-- CDN作为备用 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./styles.css" rel="stylesheet">
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        /* 区域树样式 */
+        .tree-node:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tree-node.active {
+            background-color: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .tree-children {
+            transition: all 0.3s ease;
+        }
+        
+        .region-tree-container {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+        }
+        
+        .region-tree-container.region-tree-collapsed {
+            width: 0;
+            padding: 0;
+            border: none;
+            overflow: visible;
+        }
+        
+        .region-tree-container.region-tree-collapsed > *:not(.region-tree-toggle) {
+            display: none;
+        }
+        
+        .region-tree-toggle {
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .region-tree-toggle:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* 文件上传区域样式 */
+        .file-drop-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+        }
+        
+        .file-drop-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .file-drop-area:hover {
+            border-color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="p-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-file-import text-red-500 mr-2"></i>
+                批量导入补偿标准
+            </h1>
+            <p class="text-gray-600 mt-2">从Excel文件批量导入补偿标准数据</p>
+            <p class="text-sm text-gray-500 mt-1">导入完成后可在结果页面查看数据清单示例</p>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="mb-6">
+            <button id="back-to-list-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                <i class="fas fa-arrow-left mr-1"></i>返回补偿标准清单
+            </button>
+        </div>
+
+        <div class="flex gap-6">
+            <!-- 左侧区域树 -->
+            <div class="region-tree-container w-80 bg-white rounded-xl shadow-lg p-6 flex-shrink-0 transition-all duration-300 relative">
+                <div class="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+                    <h2 class="font-bold text-gray-800 text-lg">地区分类</h2>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">共26项</span>
+                </div>
+                
+                <!-- 折叠按钮 -->
+                <div class="region-tree-toggle" id="region-tree-toggle" title="折叠/展开地区分类">
+                    <i class="fas fa-chevron-left text-xs text-gray-500"></i>
+                </div>
+                
+                <!-- 项目选择下拉 -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">选择项目</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" id="project-selector">
+                        <option value="all">全部项目</option>
+                        <option value="project1">融罗高速项目</option>
+                    </select>
+                </div>
+                
+                <!-- 行政区域树 -->
+                <div class="space-y-3">
+                    <!-- 融水苗族自治县 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-lg" onclick="selectTreeNode('rongshui')">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-down text-sm mr-3 transform transition-transform duration-200" id="rongshui-arrow"></i>
+                                <span class="font-medium text-gray-800">融水县</span>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-3 py-1 font-medium">15</span>
+                        </div>
+                        <div class="tree-children ml-3 pl-10 pr-3 py-2" id="rongshui-children">
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'rongshui-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">融水镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">5</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'hemu-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">和睦镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">3</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'sanfang-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">三防镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">4</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('rongshui', 'huaibao-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">怀宝镇</span>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 font-medium">3</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 罗城仫佬族自治县 -->
+                    <div class="tree-node rounded-lg bg-gray-50">
+                        <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 rounded-lg" onclick="selectTreeNode('luocheng')">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-down text-sm mr-3 transform transition-transform duration-200" id="luocheng-arrow"></i>
+                                <span class="font-medium text-gray-800">罗城县</span>
+                            </div>
+                            <span class="text-xs bg-green-100 text-green-800 rounded-full px-3 py-1 font-medium">11</span>
+                        </div>
+                        <div class="tree-children ml-3 pl-10 pr-3 py-2" id="luocheng-children">
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'dongmen-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">东门镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">4</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'longan-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">龙岸镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">3</span>
+                            </div>
+                            <div class="tree-node py-3 px-4 rounded cursor-pointer flex items-center justify-between hover:bg-gray-100 mb-2" onclick="selectSubTreeNode('luocheng', 'huangjin-zhen')">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chevron-right text-xs mr-2 text-gray-400"></i>
+                                    <span class="text-gray-700">黄金镇</span>
+                                </div>
+                                <span class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 font-medium">4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧内容区域 -->
+            <div class="flex-1">
+                <!-- 导入说明 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">导入说明</h2>
+                    <div class="text-sm text-gray-600 space-y-2">
+                        <p>1. 请下载模板文件，按照模板格式填写补偿标准数据</p>
+                        <p>2. 支持的文件格式：Excel (.xlsx, .xls)</p>
+                        <p>3. 文件大小限制：不超过10MB</p>
+                        <p>4. 每次导入最多支持1000条记录</p>
+                        <p>5. 模板字段：序号、区域、补偿对象名称、规格、补偿标准、计量单位、计算公式、费用类别、创建时间、创建人、生效日期、状态、备注</p>
+                        <p>6. 导入成功后可在结果页面查看已导入数据清单示例</p>
+                        <div class="mt-4">
+                            <button id="download-template-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-download mr-1"></i>下载导入模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">选择文件</h2>
+                    <div class="file-drop-area" id="file-drop-area">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 mb-2">拖拽文件到此处或点击选择文件</p>
+                        <p class="text-gray-400 text-sm mb-4">支持Excel格式文件 (.xlsx, .xls)</p>
+                        <button id="select-file-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            选择文件
+                        </button>
+                        <input type="file" id="file-input" class="hidden" accept=".xlsx,.xls">
+                    </div>
+                    <div id="file-info" class="mt-4 hidden">
+                        <p class="text-sm text-gray-600">已选择文件：<span id="file-name" class="font-medium"></span></p>
+                        <p class="text-sm text-gray-600">文件大小：<span id="file-size" class="font-medium"></span></p>
+                    </div>
+                </div>
+
+                <!-- 导入设置 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">导入设置</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">导入模式</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option value="append">追加模式（保留现有数据）</option>
+                                <option value="overwrite">覆盖模式（清空现有数据）</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">重复数据处理</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option value="skip">跳过重复数据</option>
+                                <option value="update">更新重复数据</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导入按钮 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-end space-x-3">
+                        <button id="cancel-import-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
+                            取消
+                        </button>
+                        <button id="import-btn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors" disabled>
+                            开始导入
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 导入进度 -->
+                <div id="import-progress" class="bg-white rounded-xl shadow-lg p-6 mt-6 hidden">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">导入进度</h2>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div id="progress-bar" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span id="progress-text">准备导入...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                </div>
+
+                <!-- 导入结果 -->
+                <div id="import-result" class="bg-white rounded-xl shadow-lg p-6 mt-6 hidden">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">导入结果</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span>成功导入：<span id="success-count" class="font-medium">0</span> 条记录</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
+                            <span>跳过重复：<span id="skip-count" class="font-medium">0</span> 条记录</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            <span>导入失败：<span id="fail-count" class="font-medium">0</span> 条记录</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 已导入数据清单示例 -->
+                    <div class="mt-6">
+                        <h3 class="text-md font-bold text-gray-700 mb-3">已导入数据清单示例</h3>
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">区域</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">补偿对象名称</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">规格</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">补偿标准</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计量单位</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计算公式</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用类别</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">生效日期</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">1</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">住宅用地</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">一类</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">土地补偿</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">张三</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">商业用地</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">二类</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">土地补偿</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">李四</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">3</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">住宅房屋</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">砖混结构</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">房屋补偿</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">王五</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">4</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">商业房屋</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">框架结构</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">房屋补偿</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">5</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">果树</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">柑橘树</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">按棵计算</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">棵</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">棵数×单价</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">附着物补偿</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">注：以上为导入数据示例，实际导入时请确保数据格式与模板一致</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button id="view-result-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            查看详细结果
+                        </button>
+                        <button id="continue-import-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors ml-3">
+                            继续导入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化页面功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化区域树功能
+            initRegionTree();
+            
+            // 初始化文件上传功能
+            initFileUpload();
+            
+            // 初始化按钮事件
+            initButtons();
+        });
+
+        // 初始化区域树功能
+        function initRegionTree() {
+            // 区域树折叠按钮
+            const toggle = document.getElementById('region-tree-toggle');
+            const container = document.querySelector('.region-tree-container');
+            
+            if (toggle && container) {
+                toggle.addEventListener('click', function() {
+                    container.classList.toggle('region-tree-collapsed');
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-chevron-left');
+                        icon.classList.toggle('fa-chevron-right');
+                    }
+                });
+            }
+            
+            // 区域树节点展开/折叠功能
+            window.selectTreeNode = function(id) {
+                const arrow = document.getElementById(id + '-arrow');
+                const children = document.getElementById(id + '-children');
+                
+                if (arrow && children) {
+                    arrow.classList.toggle('rotate-180');
+                    children.style.display = children.style.display === 'none' ? 'block' : 'none';
+                }
+            };
+            
+            // 子区域节点选择功能
+            window.selectSubTreeNode = function(parentId, childId) {
+                console.log('Selected sub node:', parentId, childId);
+            };
+        }
+
+        // 初始化文件上传功能
+        function initFileUpload() {
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const selectFileBtn = document.getElementById('select-file-btn');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const importBtn = document.getElementById('import-btn');
+            
+            // 点击选择文件按钮
+            if (selectFileBtn && fileInput) {
+                selectFileBtn.addEventListener('click', function() {
+                    fileInput.click();
+                });
+            }
+            
+            // 文件选择事件
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        handleFileSelection(file);
+                        if (importBtn) {
+                            importBtn.disabled = false;
+                        }
+                    }
+                });
+            }
+            
+            // 拖拽事件
+            if (fileDropArea) {
+                fileDropArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+                
+                fileDropArea.addEventListener('dragleave', function() {
+                    this.classList.remove('dragover');
+                });
+                
+                fileDropArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    
+                    if (e.dataTransfer.files.length > 0) {
+                        const file = e.dataTransfer.files[0];
+                        handleFileSelection(file);
+                        if (importBtn) {
+                            importBtn.disabled = false;
+                        }
+                    }
+                });
+            }
+            
+            // 处理文件选择
+            function handleFileSelection(file) {
+                // 检查文件类型
+                const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+                if (!allowedTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                    alert('请选择Excel文件 (.xlsx 或 .xls)');
+                    return;
+                }
+                
+                // 检查文件大小
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    alert('文件大小不能超过10MB');
+                    return;
+                }
+                
+                // 显示文件信息
+                if (fileInfo && fileName && fileSize) {
+                    fileName.textContent = file.name;
+                    fileSize.textContent = formatFileSize(file.size);
+                    fileInfo.classList.remove('hidden');
+                }
+            }
+            
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        }
+
+        // 初始化按钮事件
+        function initButtons() {
+            // 返回按钮
+            const backBtn = document.getElementById('back-to-list-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    // 返回到补偿标准清单页面
+                    window.location.href = 'compensation-standards.html#tab-standard-list';
+                });
+            }
+            
+            // 下载模板按钮
+            const downloadBtn = document.getElementById('download-template-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    // 下载导入模板
+                    downloadTemplate();
+                });
+            }
+            
+            // 取消导入按钮
+            const cancelBtn = document.getElementById('cancel-import-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    // 重置文件选择
+                    resetFileSelection();
+                });
+            }
+            
+            // 开始导入按钮
+            const importBtn = document.getElementById('import-btn');
+            if (importBtn) {
+                importBtn.addEventListener('click', function() {
+                    // 开始导入
+                    startImport();
+                });
+            }
+            
+            // 查看详细结果按钮
+            const viewResultBtn = document.getElementById('view-result-btn');
+            if (viewResultBtn) {
+                viewResultBtn.addEventListener('click', function() {
+                    // 显示详细导入结果模态框
+                    showDetailedResultModal();
+                });
+            }
+            
+            // 继续导入按钮
+            const continueBtn = document.getElementById('continue-import-btn');
+            if (continueBtn) {
+                continueBtn.addEventListener('click', function() {
+                    // 重置导入结果，继续导入
+                    resetImportResult();
+                });
+            }
+        }
+
+        // 下载导入模板
+        function downloadTemplate() {
+            // 创建一个示例Excel文件用于下载
+            // 实际项目中应该提供真实的模板文件
+            alert('下载导入模板功能已触发。实际项目中将提供真实的Excel模板文件。');
+            
+            // 创建一个简单的CSV格式数据作为示例
+            const csvContent = `序号,区域,补偿对象名称,规格,补偿标准,计量单位,计算公式,费用类别,创建时间,创建人,生效日期,状态,备注
+1,融水苗族自治县,住宅用地,一类,按面积计算,平方米,面积×单价,土地补偿,2023-01-15,张三,2023-01-15,现行,-
+2,罗城仫佬族自治县,商业用地,二类,按面积计算,平方米,面积×单价,土地补偿,2023-01-15,李四,2023-01-15,现行,-
+3,融水苗族自治县,住宅房屋,砖混结构,按面积计算,平方米,面积×单价,房屋补偿,2023-01-15,王五,2023-01-15,现行,-
+4,罗城仫佬族自治县,商业房屋,框架结构,按面积计算,平方米,面积×单价,房屋补偿,2023-01-15,赵六,2023-01-15,现行,-
+5,融水苗族自治县,果树,柑橘树,按棵计算,棵,棵数×单价,附着物补偿,2023-01-15,孙七,2023-01-15,现行,-
+6,罗城仫佬族自治县,水井,砖石结构,按口计算,口,口数×单价,附着物补偿,2023-01-15,周八,2023-01-15,现行,-
+7,融水苗族自治县,临时安置,-,按月计算,月,月数×单价,临时安置,2023-01-15,吴九,2023-01-15,现行,-
+8,罗城仫佬族自治县,搬迁补助,-,按户计算,户,户数×单价,搬迁补助,2023-01-15,郑十,2023-01-15,现行,-
+9,融水苗族自治县,停产停业,-,按月计算,月,月数×单价,停产停业,2023-01-15,王十一,2023-01-15,现行,-
+10,罗城仫佬族自治县,青苗,水稻,按面积计算,亩,面积×单价,青苗补偿,2023-01-15,李十二,2023-01-15,现行,-`;
+            
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', '补偿标准导入模板.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 重置文件选择
+        function resetFileSelection() {
+            const fileInput = document.getElementById('file-input');
+            const fileInfo = document.getElementById('file-info');
+            const importBtn = document.getElementById('import-btn');
+            
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            if (fileInfo) {
+                fileInfo.classList.add('hidden');
+            }
+            
+            if (importBtn) {
+                importBtn.disabled = true;
+            }
+        }
+
+        // 开始导入
+        function startImport() {
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('请选择要导入的文件');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // 显示导入进度
+            showImportProgress();
+            
+            // 模拟导入过程
+            simulateImportProcess(file);
+        }
+
+        // 显示导入进度
+        function showImportProgress() {
+            const importProgress = document.getElementById('import-progress');
+            if (importProgress) {
+                importProgress.classList.remove('hidden');
+            }
+        }
+
+        // 模拟导入过程
+        function simulateImportProcess(file) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercent = document.getElementById('progress-percent');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // 导入完成
+                    setTimeout(() => {
+                        showImportResult();
+                    }, 500);
+                }
+                
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                }
+                
+                if (progressPercent) {
+                    progressPercent.textContent = Math.round(progress) + '%';
+                }
+                
+                if (progressText) {
+                    progressText.textContent = `正在导入 ${file.name}...`;
+                }
+            }, 200);
+        }
+
+        // 显示导入结果
+        function showImportResult() {
+            const importProgress = document.getElementById('import-progress');
+            const importResult = document.getElementById('import-result');
+            
+            if (importProgress) {
+                importProgress.classList.add('hidden');
+            }
+            
+            if (importResult) {
+                // 设置模拟数据
+                document.getElementById('success-count').textContent = '85';
+                document.getElementById('skip-count').textContent = '5';
+                document.getElementById('fail-count').textContent = '2';
+                
+                importResult.classList.remove('hidden');
+            }
+        }
+
+        // 重置导入结果
+        function resetImportResult() {
+            const importResult = document.getElementById('import-result');
+            if (importResult) {
+                importResult.classList.add('hidden');
+            }
+            
+            // 重置文件选择
+            resetFileSelection();
+        }
+        
+        // 显示详细导入结果模态框
+        function showDetailedResultModal() {
+            // 检查模态框是否已存在
+            if (document.querySelector('#detailed-result-modal')) {
+                document.querySelector('#detailed-result-modal').remove();
+            }
+            
+            // 创建模态框元素
+            const modal = document.createElement('div');
+            modal.id = 'detailed-result-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl w-11/12 md:w-3/4 lg:w-2/3 max-h-[90vh] overflow-y-auto">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800">详细导入结果</h3>
+                        <button id="close-detailed-modal" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">区域</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">补偿对象名称</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">规格</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">补偿标准</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计量单位</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计算公式</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用类别</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">生效日期</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">1</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">住宅用地</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">一类</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">土地补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">张三</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">商业用地</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">二类</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">土地补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">李四</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">3</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">住宅房屋</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">砖混结构</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">房屋补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">王五</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">4</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">商业房屋</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">框架结构</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">平方米</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">房屋补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">赵六</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">5</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">果树</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">柑橘树</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按棵计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">棵</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">棵数×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">附着物补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">孙七</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">6</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">水井</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">砖石结构</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按口计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">口</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">口数×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">附着物补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">周八</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">7</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">临时安置</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按月计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">月</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">月数×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">临时安置</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">吴九</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">8</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">搬迁补助</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按户计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">户</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">户数×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">搬迁补助</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">郑十</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">9</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">融水苗族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">停产停业</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按月计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">月</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">月数×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">停产停业</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">王十一</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">罗城仫佬族自治县</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">青苗</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">水稻</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">按面积计算</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">亩</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">面积×单价</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">青苗补偿</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">李十二</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-01-15</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                现行
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mt-4 text-sm text-gray-600">共显示10条示例数据，实际导入数据可能更多</p>
+                        <div class="mt-6 flex justify-end">
+                            <button id="close-detailed-result" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 添加关闭事件
+            modal.querySelector('#close-detailed-modal').addEventListener('click', function() {
+                document.body.removeChild(modal);
+            });
+            
+            modal.querySelector('#close-detailed-result').addEventListener('click', function() {
+                document.body.removeChild(modal);
+            });
+            
+            // 点击模态框外部关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

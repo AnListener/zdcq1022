@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目费用报表预览 - 高速公路征地拆迁管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .area-unit {
+            color: #4b5563;
+            font-weight: 500;
+            margin-left: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 全屏容器 -->
+    <div class="fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- 顶部导航栏 -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-chart-bar text-teal-500 mr-2"></i>
+                项目费用报表预览
+            </h1>
+            <div class="flex space-x-2">
+                <button id="export-excel" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-file-excel mr-1"></i>导出Excel
+                </button>
+                <button id="export-pdf" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-file-pdf mr-1"></i>导出PDF
+                </button>
+                <button id="print-report" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-print mr-1"></i>打印
+                </button>
+                <button id="close-preview" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-times mr-1"></i>关闭
+                </button>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="flex-1 overflow-auto p-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- 报表信息 -->
+                <div class="mb-6 bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">融罗高速项目费用报表</h2>
+                            <p class="text-gray-600 mt-1">报表生成时间：2023年10月25日 14:30:22</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <p class="text-gray-600">报表周期：2023年1月1日 - 2023年9月30日</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Excel样式表格 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <!-- 表头 -->
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">序号</th>
+                                    <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">项目编号</th>
+                                    <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">项目名称</th>
+                                    <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">关联集团费用项</th>
+                                    <th colspan="3" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300 bg-blue-50">资金情况(万元)</th>
+                                    <th rowspan="2" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">状态</th>
+                                </tr>
+                                <tr>
+                                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300 bg-blue-50">分配资金</th>
+                                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300 bg-blue-50">已支出</th>
+                                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300 bg-blue-50">剩余资金</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-500 border border-gray-300">1</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-001</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融罗高速</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">征地补偿费</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">3200.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1860.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1340.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-500 border border-gray-300">2</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-002</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融罗高速</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">房屋拆迁费</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">2800.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1680.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1120.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-500 border border-gray-300">3</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-003</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融罗高速</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">附着物补偿费</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">2600.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1420.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1180.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-500 border border-gray-300">4</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-004</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融罗高速</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">临时安置费</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1900.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">980.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">920.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-500 border border-gray-300">5</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-005</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融罗高速</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">其他补偿费</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1200.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">650.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">550.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            启用
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- 合计行 -->
+                                <tr class="bg-gray-50 font-bold">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center text-gray-700 border border-gray-300" colspan="4">合计</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">11700.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">6590.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">5110.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-center border border-gray-300"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 行政区域分配详情 -->
+                <div class="mt-6 bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-bold text-gray-800">行政区域分配详情</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <!-- 表头 -->
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">项目编号</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">行政区域</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">分配资金(万元)</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">设计面积(㎡)</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">附着物数量</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border border-gray-300">关联补偿标准</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-001</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">融水县</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">2000.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">80000<span class="area-unit">㎡</span></td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1200</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                                        <div class="flex flex-wrap gap-1">
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">住宅用地补偿标准</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">XM-2023-001</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">罗城县</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">1200.00</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">40000<span class="area-unit">㎡</span></td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 border border-gray-300">800</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                                        <div class="flex flex-wrap gap-1">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">商业用地补偿标准</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 统计摘要 -->
+                <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">统计摘要</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="border rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600">项目总数</p>
+                            <p class="text-2xl font-bold text-teal-600">5</p>
+                        </div>
+                        <div class="border rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600">总分配资金(万元)</p>
+                            <p class="text-2xl font-bold text-teal-600">11700.00</p>
+                        </div>
+                        <div class="border rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600">总支出资金(万元)</p>
+                            <p class="text-2xl font-bold text-teal-600">6590.00</p>
+                        </div>
+                        <div class="border rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600">资金使用率</p>
+                            <p class="text-2xl font-bold text-teal-600">56.32%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(window.location.href);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 关闭预览页面
+        document.getElementById('close-preview').addEventListener('click', function() {
+            // 返回上一页
+            window.history.back();
+        });
+
+        // 导出Excel
+        document.getElementById('export-excel').addEventListener('click', function() {
+            alert('导出Excel功能已触发');
+            // 这里应该添加实际的导出Excel逻辑
+        });
+
+        // 导出PDF
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            alert('导出PDF功能已触发');
+            // 这里应该添加实际的导出PDF逻辑
+        });
+
+        // 打印报表
+        document.getElementById('print-report').addEventListener('click', function() {
+            window.print();
+        });
+
+        // 页面加载时获取参数
+        document.addEventListener('DOMContentLoaded', function() {
+            const id = getUrlParameter('id');
+            console.log('报表预览ID:', id);
+            // 这里可以根据ID加载对应的报表数据
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导入费用项 - 征拆项目管理系统</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        // 检查是否在iframe中运行，如果不是则重定向到app.html
+        if (window.self === window.top) {
+            // 不在iframe中，重定向到app.html并加载此页面
+            const currentPage = window.location.pathname.substring(1); // 移除开头的斜杠
+            window.location.href = '/index.html?page=' + encodeURIComponent(currentPage);
+        }
+    </script>
+    <style>
+        .step-active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .step-inactive {
+            background-color: #e5e7eb;
+            color: #6b7280;
+        }
+        .step-completed {
+            background-color: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- 顶部导航 -->
+    <div class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="text-gray-500 hover:text-gray-700 mr-4">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">导入费用项</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between relative">
+            <!-- 连接线 -->
+            <div class="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 z-0"></div>
+            
+            <!-- 步骤1 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-active flex items-center justify-center mb-2">
+                    <span>1</span>
+                </div>
+                <span class="text-sm font-medium">上传文件</span>
+            </div>
+            
+            <!-- 步骤2 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-inactive flex items-center justify-center mb-2">
+                    <span>2</span>
+                </div>
+                <span class="text-sm font-medium">数据映射</span>
+            </div>
+            
+            <!-- 步骤3 -->
+            <div class="flex flex-col items-center relative z-10">
+                <div class="w-8 h-8 rounded-full step-inactive flex items-center justify-center mb-2">
+                    <span>3</span>
+                </div>
+                <span class="text-sm font-medium">导入确认</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 表单内容 -->
+    <div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-6">上传费用项文件</h2>
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+                <i class="fas fa-file-upload text-4xl text-gray-400 mb-4"></i>
+                <p class="text-gray-600 mb-2">拖拽文件到此处或点击上传</p>
+                <p class="text-sm text-gray-500 mb-4">支持 Excel 文件格式 (.xlsx, .xls)</p>
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    选择文件
+                </button>
+                <input type="file" id="file-input" class="hidden" accept=".xlsx,.xls">
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">导入模板</h3>
+                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-excel text-green-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="font-medium">费用项导入模板.xlsx</p>
+                            <p class="text-sm text-gray-500">包含必填字段说明和示例数据</p>
+                        </div>
+                    </div>
+                    <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
+                        <i class="fas fa-download mr-2"></i>下载模板
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-md font-medium text-gray-900 mb-3">导入说明</h3>
+                <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                    <li>请确保文件格式为 Excel (.xlsx, .xls)</li>
+                    <li>文件大小不超过 10MB</li>
+                    <li>请按照模板格式填写数据，确保必填字段完整</li>
+                    <li>费用项名称不能重复</li>
+                    <li>导入前系统会自动校验数据格式和完整性</li>
+                </ul>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-btn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    取消
+                </button>
+                <button id="next-btn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" disabled>
+                    下一步
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script src="./cost/import-cost-items.js"></script>
+</body>
+</html>
